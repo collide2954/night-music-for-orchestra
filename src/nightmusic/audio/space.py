@@ -103,14 +103,12 @@ def _paths(seat: Seat) -> list[tuple[tuple[float, float, float], float, bool]]:
     ]
 
 
-def early_response(seat: Seat) -> np.ndarray:
-    """Return the two-channel impulse response from a seat to the microphones.
+def taps(seat: Seat) -> list[tuple[int, int, float, bool]]:
+    """Return the sound paths from a seat to the microphones.
 
-    The response has the direct sound and the first reflections.
+    Each path is (delay in samples, channel, gain, is a reflection).
     """
-    length = int(0.14 * dsp.RATE)
-    direct = np.zeros((length, 2), dtype=np.float64)
-    reflected = np.zeros((length, 2), dtype=np.float64)
+    result = []
     for position, gain, is_reflection in _paths(seat):
         offset = np.subtract(position, ARRAY)
         distance = float(np.linalg.norm(offset))
@@ -122,21 +120,48 @@ def early_response(seat: Seat) -> np.ndarray:
             pattern = 0.5 * (1.0 + np.cos(azimuth - side * CAPSULE_ANGLE) * elevation_loss)
             # The sound arrives earlier at the microphone on the side of the source.
             path = distance - side * 0.5 * CAPSULE_DISTANCE * np.sin(azimuth)
-            index = int(round((path - NEAREST_PATH) / SPEED_OF_SOUND * dsp.RATE))
-            if 0 <= index < length:
-                target = reflected if is_reflection else direct
-                target[index, channel] += gain * pattern * REFERENCE_DISTANCE / distance
-    # A reflection loses high frequencies at the wall and in the air.
-    reflected = signal.sosfilt(dsp.lowpass(5500.0, 1), reflected, axis=0)
-    return (direct + reflected).astype(np.float32)
+            delay = max(0, int(round((path - NEAREST_PATH) / SPEED_OF_SOUND * dsp.RATE)))
+            result.append(
+                (
+                    delay,
+                    channel,
+                    float(gain * pattern * REFERENCE_DISTANCE / distance),
+                    is_reflection,
+                )
+            )
+    return result
 
 
-def place(stem: np.ndarray, seat: Seat) -> np.ndarray:
-    """Return the two-channel sound of a one-channel signal from a seat."""
-    response = early_response(seat)
-    left = signal.oaconvolve(stem, response[:, 0])[: len(stem)]
-    right = signal.oaconvolve(stem, response[:, 1])[: len(stem)]
-    return np.stack([left, right], axis=1).astype(np.float32)
+class Stage:
+    """Collect the sound of all players at the microphones."""
+
+    def __init__(self, length: int) -> None:
+        self.length = length
+        self.direct = np.zeros((length, 2), dtype=np.float32)
+        self.reflected = np.zeros((length, 2), dtype=np.float32)
+        self.send = np.zeros(length, dtype=np.float32)
+
+    def add(self, stem: np.ndarray, seat: Seat) -> None:
+        """Add a one-channel signal that comes from a seat."""
+        sounding = np.flatnonzero(stem)
+        if len(sounding) == 0:
+            return
+        first, last = int(sounding[0]), int(sounding[-1]) + 1
+        active = stem[first:last]
+        for delay, channel, gain, is_reflection in taps(seat):
+            target = self.reflected if is_reflection else self.direct
+            start = first + delay
+            stop = min(self.length, last + delay)
+            if stop > start:
+                target[start:stop, channel] += np.float32(gain) * active[: stop - start]
+        self.send[first:last] += np.float32(reverb_send(seat)) * active
+
+    def mix(self, reverb_gain: float) -> np.ndarray:
+        """Return the two-channel mix: direct sound, first reflections, and reverberation."""
+        # A reflection loses high frequencies at the wall and in the air.
+        reflected = signal.sosfilt(dsp.lowpass(5500.0, 1), self.reflected, axis=0)
+        wet = reverberate(self.send)
+        return (self.direct + reflected + np.float32(reverb_gain) * wet).astype(np.float32)
 
 
 def reverb_send(seat: Seat) -> float:

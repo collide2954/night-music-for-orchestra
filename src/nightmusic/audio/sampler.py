@@ -18,6 +18,7 @@ from .library import Sample, build_index
 
 REFERENCE_LEVEL = 0.2  # root mean square of the loudest playing of the loudest instrument
 GRACE_SECONDS = 0.085
+FILTER_TAIL = 2400  # samples of silence after a note, for the end of the filter sound
 CACHE_BYTES = 1_500_000_000
 
 # Filters for playing techniques that the sample libraries do not have.
@@ -213,12 +214,11 @@ def render_player(
     the groups at different places on the stage.
     """
     length = int(np.ceil(total_seconds * dsp.RATE))
-    buses: dict[tuple[str, int], np.ndarray] = {}
+    groups: dict[int, np.ndarray] = {}
     banks: dict[str, Voicebank] = {}
     if not notes:
         return []
     random = np.random.default_rng(zlib.crc32(notes[0].player.encode()))
-    lowcut = 1000.0
 
     for note in notes:
         if note.instrument not in banks:
@@ -229,7 +229,6 @@ def render_player(
     for index, note in enumerate(ordered):
         bank = banks[note.instrument]
         sound = bank.sound
-        lowcut = min(lowcut, sound.lowcut_hz)
 
         start = structure.seconds(note.start)
         end = structure.seconds(note.start + note.duration)
@@ -238,6 +237,7 @@ def render_player(
             end = start + GRACE_SECONDS
         seconds = end - start
         key, bus = _articulation_key(note, bank, seconds)
+        note_filters = [*BUS_FILTERS.get(bus, []), dsp.highpass(sound.lowcut_hz, 2)]
         held = _sounding_seconds(note, seconds)
 
         following = ordered[index + 1] if index + 1 < len(ordered) else None
@@ -309,14 +309,23 @@ def render_player(
 
                 gain_start = level_to_rms(sound, note.level) / max(sample.level, 1e-6)
                 gain_end = level_to_rms(sound, note.level_end) / max(sample.level, 1e-6)
-                envelope = np.geomspace(gain_start, gain_end, len(body)).astype(np.float32)
+                scale_all = np.float32(choice.weight * weight / norm * divisi)
+                if abs(gain_end - gain_start) < 1e-9 * max(gain_start, 1e-9):
+                    body *= np.float32(gain_start) * scale_all
+                else:
+                    # A change of loudness in a note: a straight line in decibels.
+                    ramp = np.linspace(np.log(gain_start), np.log(gain_end), len(body))
+                    body *= np.exp(ramp).astype(np.float32) * scale_all
                 if note.accent > 0:
                     boost = level_to_rms(sound, min(1.0, note.level + note.accent)) / level_to_rms(
                         sound, note.level
                     )
-                    decay = np.exp(-np.arange(len(body)) / (0.18 * dsp.RATE))
-                    envelope *= (1.0 + (boost - 1.0) * decay).astype(np.float32)
-                body *= envelope * np.float32(choice.weight * weight / norm * divisi)
+                    span = min(len(body), int(0.9 * dsp.RATE))
+                    decay = np.exp(-np.arange(span) / (0.18 * dsp.RATE))
+                    body[:span] *= (1.0 + (boost - 1.0) * decay).astype(np.float32)
+                # The filters of the technique and of the instrument, on this note only.
+                padded = np.concatenate([body, np.zeros(FILTER_TAIL, dtype=np.float32)])
+                body = dsp.apply(padded, *note_filters)
 
                 offset = int((start - lead + jitter + spread) * dsp.RATE)
                 if offset < 0:
@@ -324,20 +333,11 @@ def render_player(
                     offset = 0
                 stop = min(length, offset + len(body))
                 if stop > offset:
-                    slot = (bus, voice_number)
-                    if slot not in buses:
-                        buses[slot] = np.zeros(length, dtype=np.float32)
-                    buses[slot][offset:stop] += body[: stop - offset]
+                    if voice_number not in groups:
+                        groups[voice_number] = np.zeros(length, dtype=np.float32)
+                    groups[voice_number][offset:stop] += body[: stop - offset]
 
-    groups: dict[int, np.ndarray] = {}
-    for (bus, voice_number), audio in buses.items():
-        filters = BUS_FILTERS.get(bus, [])
-        filtered = dsp.apply(audio, *filters) if filters else audio
-        if voice_number in groups:
-            groups[voice_number] += filtered
-        else:
-            groups[voice_number] = filtered.copy()
-    return [dsp.apply(groups[number], dsp.highpass(lowcut, 2)) for number in sorted(groups)]
+    return [groups[number] for number in sorted(groups)]
 
 
 ROLL_STROKES_PER_SECOND = 13.0

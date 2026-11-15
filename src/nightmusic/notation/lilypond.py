@@ -526,10 +526,13 @@ def video_file(work: Work, index: int, staff_size: float) -> str:
         emitter = _Emitter(work, for_part=False, left_hand=player.id.endswith(".lh"))
         instrument = _instrument_at(work, player, index)
         emitter.set_instrument(instrument)
-        body = emitter.emit(work.chunks[player.id][index][1].children)
-        blocks.append(
-            f"{identifier(player.id)} = {{\n\\clef {emitter.clef_of(instrument)}\n{body}\n}}"
+        children = work.chunks[player.id][index][1].children
+        shift = emitter.interval.semitones if emitter.interval else 0
+        clef = best_clef(
+            emitter.clef_of(instrument), instrument, [midi + shift for midi in _pitches(children)]
         )
+        body = emitter.emit(children)
+        blocks.append(f"{identifier(player.id)} = {{\n\\clef {clef}\n{body}\n}}")
         tag = (
             f"\\override StaffSymbol.output-attributes = "
             f'#\'((class . "staff") (data-staff . "{player.id}"))'

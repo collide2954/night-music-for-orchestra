@@ -174,8 +174,8 @@ def render(
     @lru_cache(maxsize=64)
     def chrome(
         bar: int, mark: str, tempo: str, second: int, lit: tuple[bool, ...]
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """Return the top band and the ribbon: colour and opacity of each."""
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Return the pictures of the top band and of the ribbon."""
         layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(layer)
         baseline = int(18 * scale)
@@ -207,8 +207,9 @@ def render(
                 shorts[name], font=label_font, fill=text_colour,
             )  # fmt: skip
         pixels = np.asarray(layer, dtype=np.float32)
-        upper, lower = pixels[:band_top], pixels[band_bottom:]
-        return upper[:, :, :3], upper[:, :, 3:4] / 255.0, lower[:, :, :3], lower[:, :, 3:4] / 255.0
+        alpha = pixels[:, :, 3:4] / 255.0
+        solid = (PAPER * (1.0 - alpha) + pixels[:, :, :3] * alpha).astype(np.uint8)
+        return solid[:band_top].copy(), solid[band_bottom:].copy()
 
     marks = sorted(structure.marks.items())
     tempos = [point for point in structure.tempo_points if point.text]
@@ -224,32 +225,41 @@ def render(
         stdin=subprocess.PIPE,
     )  # fmt: skip
     assert encoder.stdin is not None
+
+    @lru_cache(maxsize=24)
+    def tinted(index: int, sounding: tuple[str, ...]) -> np.ndarray:
+        """Return the screen with a colour band on each staff that sounds."""
+        current = screen(index)
+        picture = current.base.copy()
+        pad = int(7 * scale)
+        for name in sounding:
+            top, bottom = current.staves[name]
+            colour = np.array(FAMILY_COLOURS[families[name]], dtype=np.float32)
+            band = picture[top - pad : bottom + pad, current.left : current.right]
+            band += 0.13 * (colour - band)
+            marker = picture[
+                top - pad : bottom + pad,
+                current.left - int(16 * scale) : current.left - int(7 * scale),
+            ]
+            marker += 0.9 * (colour - marker)
+        return np.clip(picture, 0, 255).astype(np.uint8)
+
     for number in range(frames):
         position = float(positions[number])
         index = max(0, int(np.searchsorted(starts, position, side="right")) - 1)
         current = screen(index)
-        frame = current.base.copy()
-
-        # Colour band on each staff that sounds now.
-        for name, (top, bottom) in current.staves.items():
-            if activity[name][number]:
-                colour = np.array(FAMILY_COLOURS[families[name]], dtype=np.float32)
-                pad = int(7 * scale)
-                band = frame[top - pad : bottom + pad, current.left : current.right]
-                band += 0.13 * (colour - band)
-                marker = frame[
-                    top - pad : bottom + pad,
-                    current.left - int(16 * scale) : current.left - int(7 * scale),
-                ]
-                marker += 0.9 * (colour - marker)
+        sounding = tuple(name for name in current.staves if activity[name][number])
+        frame = tinted(index, sounding).copy()
 
         # The cursor.
         x = int(np.interp(position, current.times, current.xs)) + int(6 * scale)
         top, bottom = current.top - int(16 * scale), current.bottom + int(16 * scale)
-        glow = frame[top:bottom, x - int(7 * scale) : x + int(8 * scale)]
-        glow += 0.14 * (CURSOR - glow)
-        line = frame[top:bottom, x - 1 : x + max(2, int(2 * scale))]
-        line += 0.85 * (CURSOR - line)
+        left, right = x - int(7 * scale), x + int(8 * scale)
+        strip = frame[top:bottom, left:right].astype(np.float32)
+        strip += 0.14 * (CURSOR - strip)
+        centre = slice(x - 1 - left, x + max(2, int(2 * scale)) - left)
+        strip[:, centre] += 0.85 * (CURSOR - strip[:, centre])
+        frame[top:bottom, left:right] = strip.astype(np.uint8)
 
         # The top band, the ribbon, and the progress line.
         bar = structure.bar_at(Fraction(position).limit_denominator(64)).number
@@ -258,12 +268,12 @@ def render(
             (point.text for point in reversed(tempos) if float(point.position) <= position), ""
         )
         lit = tuple(bool(activity[name][number]) for name in names)
-        upper, upper_alpha, lower, lower_alpha = chrome(bar, mark, tempo, number // fps, lit)
-        frame[:band_top] += upper_alpha * (upper - frame[:band_top])
-        frame[band_bottom:] += lower_alpha * (lower - frame[band_bottom:])
+        upper, lower = chrome(bar, mark, tempo, number // fps, lit)
+        frame[:band_top] = upper
+        frame[band_bottom:] = lower
         done = int(width * number / max(frames - 1, 1))
-        frame[height - int(5 * scale) :, :done] = CURSOR
-        encoder.stdin.write(np.clip(frame, 0, 255).astype(np.uint8).tobytes())
+        frame[height - int(5 * scale) :, :done] = CURSOR.astype(np.uint8)
+        encoder.stdin.write(frame.tobytes())
     encoder.stdin.close()
     if encoder.wait() != 0:
         raise RuntimeError("the video encoder failed")

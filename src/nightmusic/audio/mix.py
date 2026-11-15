@@ -35,9 +35,7 @@ def render(work: Work, *, players: list[str] | None = None) -> tuple[np.ndarray,
     """Render the work. Return the two-channel master and its report."""
     structure = work.structure
     total = structure.duration_seconds + TAIL_SECONDS
-    length = int(np.ceil(total * dsp.RATE))
-    dry = np.zeros((length, 2), dtype=np.float32)
-    send = np.zeros(length, dtype=np.float32)
+    stage = space.Stage(int(np.ceil(total * dsp.RATE)))
     count = 0
     for player in work.orchestra.players:
         if players is not None and player.id not in players:
@@ -47,12 +45,8 @@ def render(work: Work, *, players: list[str] | None = None) -> tuple[np.ndarray,
             continue
         count += 1
         for group, stem in enumerate(sampler.render_player(notes, structure, total)):
-            seat = space.seat_of(player.id, group)
-            dry += space.place(stem, seat)
-            send += stem * np.float32(space.reverb_send(seat))
-    wet = space.reverberate(send)
-    mix = dry + wet * np.float32(dsp.db(REVERB_GAIN_DB))
-    return master(mix, count)
+            stage.add(stem, space.seat_of(player.id, group))
+    return master(stage.mix(dsp.db(REVERB_GAIN_DB)), count)
 
 
 def master(mix: np.ndarray, players: int = 0) -> tuple[np.ndarray, MixReport]:
