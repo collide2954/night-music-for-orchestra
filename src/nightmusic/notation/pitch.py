@@ -73,7 +73,9 @@ class Pitch:
         """Return the LilyPond name with octave marks, for example `cis'`."""
         letter = STEP_NAMES[self.step]
         suffix = _SUFFIX_OF_ALTER[self.alter]
-        if letter in "ae" and suffix.startswith("es"):
+        # LilyPond has the short forms as, es, ases, and eses. The names of the
+        # three-quarter flats have no short form (aeseh, eeseh).
+        if letter in "ae" and suffix in ("es", "eses"):
             suffix = suffix[1:]
         marks = self.octave - 3
         return letter + suffix + ("'" * marks if marks > 0 else "," * -marks)

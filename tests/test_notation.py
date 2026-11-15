@@ -20,7 +20,7 @@ def test_pitch_names_and_midi():
     assert Pitch.parse("as").midi == 56
     assert Pitch.parse("deh'").midi == 61.5
     assert Pitch.parse("cih'").midi == 60.5
-    for name in ["c'", "bes,", "fis''", "es'", "as", "deh'", "eseh", "aisis,,", "eeh'"]:
+    for name in ["c'", "bes,", "fis''", "es'", "as", "deh'", "eeseh", "aisis,,", "eeh'"]:
         assert Pitch.parse(name).name == name
     assert from_midi(61).name == "des'"
     assert from_midi(61, prefer_sharps=True).name == "cis'"
@@ -142,3 +142,15 @@ def test_lilypond_compiles_the_files(tmp_path):
         assert result.returncode == 0, result.stderr
     assert len(paths) == 43
     assert (tmp_path / "score.pdf").exists()
+
+
+def test_three_quarter_flat_names_are_valid_in_lilypond():
+    from fractions import Fraction
+
+    from nightmusic.notation.pitch import Interval, Pitch
+
+    low = Pitch.parse("beseh'").transposed(Interval(3, 5))  # a fourth higher
+    assert low.alter == Fraction(-3, 2)
+    assert low.name == "eeseh''"
+    assert Pitch.parse("es'").name == "es'"
+    assert Pitch.parse("aeseh").name == "aeseh"
