@@ -63,10 +63,25 @@ def render(
     bars: tuple[int, int] | None = None,
     workers: int | None = None,
 ) -> tuple[np.ndarray, MixReport]:
-    """Render the work. Return the two-channel master and its report.
+    """Render the work. Return the two-channel master and its report."""
+    mix, count = render_mix(work, players=players, bars=bars, workers=workers)
+    return master(mix, count, full=bars is None)
+
+
+def render_mix(
+    work: Work,
+    *,
+    players: list[str] | None = None,
+    bars: tuple[int, int] | None = None,
+    workers: int | None = None,
+    instruments: set[str] | None = None,
+) -> tuple[np.ndarray, int]:
+    """Render the work. Return the two-channel mix (not the master) and the number of players.
 
     `players` gives the players that play (default: all). `bars` gives the
     first and the last bar of an excerpt (default: the full work).
+    `instruments` gives the instruments that play (default: all). The mix
+    of an excerpt starts `SEGMENT_LEAD` seconds before its first bar.
 
     The function divides the time into segments and renders the segments in
     parallel processes. The sum of the segments is the same as one render of
@@ -81,7 +96,10 @@ def render(
     for player in work.orchestra.players:
         if players is not None and player.id not in players:
             continue
-        entry = sampler.prepare(perform(work, player.id), structure)
+        notes = perform(work, player.id)
+        if instruments is not None:
+            notes = [note for note in notes if note.instrument in instruments]
+        entry = sampler.prepare(notes, structure)
         if entry is not None and np.any((entry.starts >= begin) & (entry.starts < end)):
             prepared.append((player.id, entry))
 
@@ -120,10 +138,12 @@ def render(
                     add(first, sound)
     finally:
         _JOB.clear()
-    return master(mix, len(prepared), full=bars is None)
+    return mix, len(prepared)
 
 
-def master(mix: np.ndarray, players: int = 0, *, full: bool = True) -> tuple[np.ndarray, MixReport]:
+def master(
+    mix: np.ndarray, players: int = 0, *, full: bool = True, tone: bool = True
+) -> tuple[np.ndarray, MixReport]:
     """Make the master from the mix. The function changes `mix` in place.
 
     The steps are:
@@ -135,12 +155,12 @@ def master(mix: np.ndarray, players: int = 0, *, full: bool = True) -> tuple[np.
     3. Level: the integrated loudness goes to the target, and the largest
        sample stays below the limit.
 
-    For an excerpt (`full` is false), steps 1 and 2 use the values of the
-    last full master, if they are known. Thus an excerpt sounds almost the
-    same as in the full work.
+    An excerpt (`full` is false) does not get step 2. If `tone` is false,
+    the mix does not get step 1: this is for a mix that is a recording of
+    real instruments in a real room.
     """
     change = np.zeros(1)
-    if len(mix) >= 16384:
+    if tone and len(mix) >= 16384:
         mix, _centres, change = reference.match_tone_balance(mix)
     ratio, largest = 1.0, 0.0
     if full:

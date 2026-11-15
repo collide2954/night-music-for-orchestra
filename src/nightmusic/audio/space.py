@@ -171,6 +171,8 @@ class Stage:
 
         The result is longer than the stage: it contains the end of the reverberation.
         """
+        if self.length == 0:
+            return np.zeros((0, 2), dtype=np.float32)  # no player has a note in this time
         # A reflection loses high frequencies at the wall and in the air.
         reflected = signal.sosfilt(dsp.lowpass(5500.0, 1), self.reflected, axis=0)
         result = np.float32(reverb_gain) * reverberate(self.send)
