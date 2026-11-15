@@ -2,7 +2,12 @@
 #
 # The sequence of the instruments in this file is the sequence in the score.
 # Pitches are MIDI numbers of the real sound (60 = middle C).
-# "transposition" is the number of semitones from the real sound up to the written note.
+# "transposition" is the number of semitones from the real sound up to the written note
+# in the part of the player.
+# "score_transposition" is the same number for the conductor score. The score is in C:
+# only the instruments that play in a different octave are transposed there.
+# If "score_transposition" is not given, it is 0.
+# "score_clef" is the clef in the conductor score, if it is different from the part.
 # The ranges are safe ranges for professional players.
 
 [summary]
@@ -261,6 +266,7 @@ instruments = ["double bass"]
 transposition = -12
 clef = "treble"
 range = [74, 108]
+score_transposition = -12
 
 [instrument."flute"]
 transposition = 0
@@ -296,11 +302,14 @@ range = [50, 94]
 transposition = 14
 clef = "treble"
 range = [34, 82]
+score_clef = "bass"
 
 [instrument."contrabass clarinet"]
 transposition = 26
 clef = "treble"
 range = [22, 65]
+score_transposition = 12
+score_clef = "bass"
 
 [instrument."bassoon"]
 transposition = 0
@@ -311,6 +320,7 @@ range = [34, 76]
 transposition = 12
 clef = "bass"
 range = [22, 55]
+score_transposition = 12
 
 [instrument."ocarina"]
 transposition = 0
@@ -361,16 +371,19 @@ range = [36, 96]
 transposition = -24
 clef = "treble"
 range = [79, 108]
+score_transposition = -24
 
 [instrument."crotales"]
 transposition = -24
 clef = "treble"
 range = [84, 108]
+score_transposition = -24
 
 [instrument."xylophone"]
 transposition = -12
 clef = "treble"
 range = [65, 108]
+score_transposition = -12
 
 [instrument."tubular bells"]
 transposition = 0
@@ -401,6 +414,7 @@ range = [55, 93]
 transposition = -12
 clef = "grand"
 range = [48, 108]
+score_transposition = -12
 
 [instrument."piano"]
 transposition = 0
@@ -431,3 +445,4 @@ range = [36, 84]
 transposition = 12
 clef = "bass"
 range = [24, 67]
+score_transposition = 12
