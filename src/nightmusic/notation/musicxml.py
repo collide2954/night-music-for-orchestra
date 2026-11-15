@@ -149,7 +149,7 @@ class _Event:
     dynamic: str = ""  # the dynamic mark in effect at the note
     short: bool = False  # the player makes short strokes (spiccato)
     plucked: bool = False  # the player plucks the string (pizzicato)
-    taper: bool = False  # the note gets softer at its end
+    taper: Fraction = Fraction(0)  # the length of the end of the note that gets softer
 
 
 @dataclass
@@ -429,6 +429,7 @@ RING_SECONDS = {
 TAPER_MARKS = {"ppppp", "pppp", "ppp", "pp", "p", "mp", "mf"}
 TAPER_LENGTH = Fraction(2)  # shortest note that gets softer at its end (quarter notes)
 TAPER_REST = Fraction(1)  # shortest rest after the note (quarter notes)
+TAPER_SECONDS = 1.2  # the time at the end of the note in which it gets softer
 
 
 def _shape(events: list[_Event], work: Work) -> None:
@@ -436,7 +437,8 @@ def _shape(events: list[_Event], work: Work) -> None:
 
     - A note of an instrument that rings gets the length of its ring.
     - The last long note of a phrase of a wind or string instrument gets
-      softer at its end, as a player does it.
+      softer in its last second, as a player does it. A measurement of the
+      sound of MuseScore gave a decrease of 5 to 10 dB at mf.
     """
     structure = work.structure
     by_voice: dict[int, list[_Event]] = {}
@@ -467,10 +469,15 @@ def _shape(events: list[_Event], work: Work) -> None:
                 and limit - end >= TAPER_REST
                 and event.dynamic in TAPER_MARKS
                 and not event.plucked
+                and event.ratio == 1
                 and "hairpin" not in kinds
                 and "tie" not in kinds
             ):
-                event.taper = True
+                # The end of the note: about `TAPER_SECONDS`, in steps of an eighth note,
+                # and not more than half of the note.
+                quarters = TAPER_SECONDS * structure.bpm_at(event.start) / 60.0
+                steps = max(1, round(quarters * 2))
+                event.taper = min(Fraction(steps, 2), event.length / 2)
 
 
 def _tempo_points(work: Work, first: Fraction, last: Fraction) -> dict[Fraction, float]:
@@ -694,20 +701,23 @@ def _part_xml(
                 if first_note:
                     before = _state_marks(start) + before
                     first_note = False
-                taper = event.taper and not hairpins[voice]
-                if taper:
-                    before.append(_direction('<wedge type="diminuendo"/>'))
                 lines.extend(before)
                 length = min(event.length, bar.end - cursor)
                 ends = length == event.length
-                write(event, length, head=True, tail=ends, voice=voice)
+                taper = event.taper if ends and not hairpins[voice] else Fraction(0)
+                if taper:
+                    # The note is two tied notes: the second note gets softer.
+                    write(event, length - taper, head=True, tail=False, voice=voice)
+                    lines.append(_direction('<wedge type="diminuendo"/>'))
+                    write(event, taper, head=False, tail=True, voice=voice)
+                    lines.append(_direction('<wedge type="stop"/>'))
+                    restate[voice] = True
+                else:
+                    write(event, length, head=True, tail=ends, voice=voice)
                 if not event.grace:
                     cursor += length
                     if not ends:
                         carried[voice] = (event, event.length - length)
-                if taper:
-                    lines.append(_direction('<wedge type="stop"/>'))
-                    restate[voice] = True
                 wrote = True
             cursors[voice] = index
             if cursor < bar.end and wrote:

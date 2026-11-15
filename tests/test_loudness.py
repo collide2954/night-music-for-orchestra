@@ -34,3 +34,35 @@ def test_gain_riding_makes_the_range_smaller_and_keeps_the_loud_part():
     # The middle of the loud part does not change.
     start = 55 * dsp.RATE
     assert np.allclose(ridden[start : start + 1000], audio[start : start + 1000], atol=1e-4)
+
+
+def _strokes(seconds: float, amplitude: float, period: float, decay_db: float) -> np.ndarray:
+    """Return strokes of a tone: each stroke becomes softer by `decay_db` in one period."""
+    audio = _tone(seconds, amplitude)
+    time = np.arange(len(audio)) / dsp.RATE
+    envelope = 10.0 ** (-decay_db * ((time % period) / period) / 20.0)
+    return audio * envelope[:, None].astype(np.float32)
+
+
+def _decay_db(audio: np.ndarray, start: float, length: float) -> float:
+    """Return the fall of the level in dB from `start` to `start + length` (in seconds)."""
+
+    def level(moment: float) -> float:
+        first = int(moment * dsp.RATE)
+        return dsp.to_db(float(np.sqrt(np.mean(np.square(audio[first : first + 4800])))))
+
+    return level(start) - level(start + length)
+
+
+def test_gain_riding_by_passage_keeps_the_decay_of_a_note():
+    # A loud passage, then a soft passage: two strokes that die away slowly, as a tam-tam does.
+    audio = np.concatenate([_tone(40.0, 0.2), _strokes(60.0, 0.05, 30.0, 45.0)])
+    natural = _decay_db(audio, 72.0, 20.0)
+    followed, _, _ = loudness.ride(audio.copy(), 12.0)
+    by_passage, ratio, gain = loudness.ride(audio.copy(), 12.0, passages=[0.0, 40.0])
+    assert ratio > 1.0 and gain > 3.0
+    # With the passages, the stroke dies away as before. Without them, the level follows it.
+    assert abs(_decay_db(by_passage, 72.0, 20.0) - natural) < 0.5
+    assert _decay_db(followed, 72.0, 20.0) < natural - 3.0
+    # The soft passage is louder than before, in relation to the loud passage.
+    assert _decay_db(by_passage, 20.0, 52.0) < _decay_db(audio, 20.0, 52.0) - 3.0

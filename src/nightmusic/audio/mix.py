@@ -5,12 +5,14 @@ from __future__ import annotations
 import multiprocessing
 import os
 import subprocess
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
 import soundfile
 
+from ..compose import stats
 from ..notation.work import Work
 from ..perform.events import perform
 from . import dsp, loudness, reference, sampler, space
@@ -65,7 +67,7 @@ def render(
 ) -> tuple[np.ndarray, MixReport]:
     """Render the work. Return the two-channel master and its report."""
     mix, count = render_mix(work, players=players, bars=bars, workers=workers)
-    return master(mix, count, full=bars is None)
+    return master(mix, count, full=bars is None, passages=stats.passages(work))
 
 
 def render_mix(
@@ -149,6 +151,7 @@ def master(
     tone: bool = True,
     largest_gain_db: float = loudness.LARGEST_GAIN_DB,
     largest_ratio: float = loudness.LARGEST_RATIO,
+    passages: Sequence[float] | None = None,
 ) -> tuple[np.ndarray, MixReport]:
     """Make the master from the mix. The function changes `mix` in place.
 
@@ -158,6 +161,8 @@ def master(
        the reference recordings (see `reference.py`).
     2. Gain riding: the soft passages go up slowly, until the loudness range
        is in the range of the reference recordings (see `loudness.py`).
+       `passages` are the start times of the passages of the music: each
+       passage has one level change.
     3. Level: the integrated loudness goes to the target, and the largest
        sample stays below the limit.
 
@@ -170,7 +175,9 @@ def master(
         mix, _centres, change = reference.match_tone_balance(mix)
     ratio, largest = 1.0, 0.0
     if full:
-        mix, ratio, largest = loudness.ride(mix, TARGET_RANGE, largest_gain_db, largest_ratio)
+        mix, ratio, largest = loudness.ride(
+            mix, TARGET_RANGE, largest_gain_db, largest_ratio, passages
+        )
     power = loudness.block_power(mix)
     measured = loudness.integrated(power)
     gain_db = TARGET_LUFS - measured if np.isfinite(measured) else 0.0

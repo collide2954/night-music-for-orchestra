@@ -10,9 +10,15 @@ can use at home. The engineer of a classical recording moves the level
 slowly: up in the soft passages, down in the loud passages. The function
 `ride()` does this. It changes the level slowly (in some seconds), thus the
 loudness of each note in relation to its adjacent notes does not change.
+
+If `ride()` gets the passages of the music, each passage has one level
+change. Thus the level does not follow the decay of a note: a bell or a
+gong in a soft passage dies away as the instrument does it.
 """
 
 from __future__ import annotations
+
+from collections.abc import Sequence
 
 import numpy as np
 from scipy import ndimage, signal
@@ -121,10 +127,39 @@ def program_level(power: np.ndarray) -> np.ndarray:
     high = np.clip(low + blocks, 0, len(power))
     mean = (sums[high] - sums[low]) / np.maximum(high - low, 1)
     level = -0.691 + 10.0 * np.log10(np.maximum(mean, 1e-12))
+    return _slow(level)
+
+
+def _slow(level: np.ndarray) -> np.ndarray:
+    """Hold the loudest level for some seconds before and after, then make the changes slow."""
     level = ndimage.maximum_filter1d(level, int(2 * HOLD_SECONDS * 10) + 1, mode="nearest")
     window = signal.windows.hann(int(SMOOTH_SECONDS * 10) | 1)
     padded = np.pad(level, len(window) // 2, mode="edge")
     return np.convolve(padded, window / window.sum(), mode="valid")
+
+
+def passage_level(power: np.ndarray, starts: Sequence[float]) -> np.ndarray:
+    """Return the slow loudness of the programme for each block, from the passages of the music.
+
+    `starts` are the start times of the passages in seconds. All blocks of
+    a passage get the loudness of that passage. Thus the level is constant
+    in a passage, and it changes slowly between two passages.
+    """
+    count = len(power)
+    edges = sorted({min(max(round(start * 10), 0), count) for start in starts} | {0, count})
+    level = np.full(count, np.nan)
+    for first, last in zip(edges, edges[1:], strict=False):
+        value = integrated(power[first:last])
+        if np.isfinite(value):
+            level[first:last] = value
+    # A passage with no sound gets the level of the passage before it (or after it).
+    known = np.flatnonzero(np.isfinite(level))
+    if len(known) == 0:
+        return np.full(count, -70.0)
+    level = level[
+        known[np.clip(np.searchsorted(known, np.arange(count), side="right") - 1, 0, None)]
+    ]
+    return _slow(level)
 
 
 def riding_gain(
@@ -141,14 +176,19 @@ def ride(
     target_range: float,
     largest_gain_db: float = LARGEST_GAIN_DB,
     largest_ratio: float = LARGEST_RATIO,
+    passages: Sequence[float] | None = None,
 ) -> tuple[np.ndarray, float, float]:
     """Move the level slowly until the loudness range is not more than `target_range`.
 
     The function changes `audio` in place. It returns the audio, the ratio
     that it used (1 = no change), and the largest gain in dB.
+
+    `passages` are the start times of the passages of the music in seconds.
+    If the function gets them, each passage has one level change. If not,
+    the level follows the loudness of the sound.
     """
     power = block_power(audio)
-    level = program_level(power)
+    level = program_level(power) if passages is None else passage_level(power, passages)
     step = 10
 
     def range_with(ratio: float) -> float:

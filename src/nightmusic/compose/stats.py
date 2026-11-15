@@ -96,3 +96,65 @@ def measure(work: Work) -> Stats:
         share_f_or_louder=share(level > loud_limit),
         share_fff=share(level > loudest_limit),
     )
+
+
+PASSAGE_GRID = 0.1  # the grid of the loudness plan, in seconds
+PASSAGE_SECONDS = 6.0  # a passage is not shorter than this
+
+
+def loudness_plan(work: Work) -> np.ndarray:
+    """Return the dynamic mark in effect for each 0.1 s of the work.
+
+    The value is the number of the mark in `DYNAMIC_LEVEL` (0 = the softest
+    mark). It is the loudest mark of the notes that sound at that moment.
+    A moment with no notes has the value of the moment before it.
+    """
+    structure = work.structure
+    count = int(np.ceil(structure.duration_seconds / PASSAGE_GRID)) + 1
+    level = np.zeros(count)
+    for player in work.orchestra.players:
+        for note in perform(work, player.id):
+            if note.grace:
+                continue
+            first = int(structure.seconds(note.start) / PASSAGE_GRID)
+            end = structure.seconds(note.start + note.duration)
+            last = max(first + 1, int(np.ceil(end / PASSAGE_GRID)))
+            level[first:last] = np.maximum(level[first:last], note.level)
+    marks = np.array(sorted(DYNAMIC_LEVEL.values()))
+    limits = 0.5 * (marks[:-1] + marks[1:])
+    plan = np.searchsorted(limits, level)
+    # Fill the moments with no notes.
+    sounding = np.flatnonzero(level > 0)
+    if len(sounding) == 0:
+        return np.zeros(count, dtype=int)
+    places = np.clip(np.searchsorted(sounding, np.arange(count), side="right") - 1, 0, None)
+    return plan[sounding[places]]
+
+
+def passages(work: Work, smallest: float = PASSAGE_SECONDS) -> list[float]:
+    """Return the start times of the passages of the work, in seconds.
+
+    A passage is a part of the music that has one dynamic mark in effect
+    for `smallest` seconds or more. A short change of the mark (for example
+    one loud call in a soft passage) does not start a new passage.
+
+    The master uses the passages for its gain riding: each passage gets one
+    level change.
+    """
+    plan = loudness_plan(work)
+    width = int(smallest / PASSAGE_GRID) | 1
+    # The mark of each moment: the mark that is in effect for the most time around it.
+    padded = np.pad(plan, width // 2, mode="edge")
+    windows = np.lib.stride_tricks.sliding_window_view(padded, width)
+    classes = int(plan.max()) + 1
+    counts = np.stack([(windows == value).sum(axis=1) for value in range(classes)])
+    smooth = counts.argmax(axis=0)
+    changes = np.flatnonzero(np.diff(smooth)) + 1
+    starts = [0, *changes.tolist()]
+    # A passage that is too short becomes a part of the passage before it.
+    # Then two adjacent passages with the same mark are one passage.
+    kept = [starts[0]]
+    for start, after in zip(starts[1:], [*starts[2:], len(smooth)], strict=True):
+        if after - start >= smallest / PASSAGE_GRID and smooth[start] != smooth[kept[-1]]:
+            kept.append(start)
+    return [value * PASSAGE_GRID for value in kept]

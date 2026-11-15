@@ -125,6 +125,12 @@ def test_the_last_note_of_a_soft_phrase_gets_softer_and_the_dynamic_comes_again(
     first, second = text.split('<measure number="2">')
     assert '<wedge type="diminuendo"/>' in first and '<wedge type="stop"/>' in first
     assert "<dynamics><p/></dynamics>" in second
+    # The tempo is 60: the last quarter note of the whole note gets softer.
+    held, soft = first.split('<wedge type="diminuendo"/>')
+    assert (
+        f"<duration>{3 * musicxml.DIVISIONS}</duration>" in held and '<tie type="start"/>' in held
+    )
+    assert f"<duration>{musicxml.DIVISIONS}</duration>" in soft and '<tie type="stop"/>' in soft
     loud, _names = musicxml.score(_work_with("fl1", r"c''1\ff | r2 d''2 |"))
     assert "wedge" not in loud  # a loud phrase stops with its full sound
 
@@ -134,3 +140,22 @@ def test_spiccato_makes_short_notes():
         _work_with("vn1", r"c''8\spicc d'' e'' f'' g''2 | a''8\arco b'' r4 r2 |")
     )
     assert text.count("<staccato/>") == 4  # the four eighth notes, not the half note
+
+
+def test_the_mixer_gets_the_levels_of_some_instruments():
+    from nightmusic.audio import musescore
+
+    score = (
+        '<Part id="1"><Staff id="1"/><trackName>Timpani</trackName>'
+        '<Instrument id="timpani"><longName>Timpani</longName></Instrument></Part>'
+        '<Part id="2"><Staff id="2"/><trackName>Taiko</trackName>'
+        '<Instrument id="taiko"><longName>Taiko</longName></Instrument></Part>'
+    )
+    tracks = musescore.mixer_tracks(score, ["Timpani (timp)", "Taiko (perc6)"])
+    assert tracks == [
+        {
+            "partId": "2",
+            "instrumentId": "taiko",
+            "out": {"volumeDb": musescore.TRIM_DB["Taiko"], "balance": 0, "fxChain": {}},
+        }
+    ]

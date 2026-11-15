@@ -19,13 +19,14 @@ The project can make the audio from two sources of sound.
    - The file gives the tempo at each bar line. Thus the time of each bar is the same as in the tempo plan.
    - The file changes some notes, to make the start and the end of the sounds more natural (see "How the notes start and stop").
 2. MuseScore changes the MusicXML file into its own format.
-3. The code changes two items in that file ([`audio/musescore.py`](../src/nightmusic/audio/musescore.py)):
+3. The code changes three items in that file ([`audio/musescore.py`](../src/nightmusic/audio/musescore.py)):
    - The words of the playing techniques (for example "sul pont.") become marks that MuseScore plays.
    - The master control of the mixer goes down by 18 dB. Without this, a loud passage of the full orchestra has distortion.
+   - The mixer gets the levels of some instruments (the table `TRIM_DB` in the code). A measurement of each instrument alone gave these levels. For example, one stroke of the taiko of Muse Sounds was 8 dB louder than one stroke of the bass drum.
 4. MuseScore renders the file to a WAV file (32-bit floating point).
 5. The sampler of this project renders the instruments that Muse Sounds do not have: cimbalom, accordion, ocarina, mandolin, and frame drum.
    A measurement with the timpani gives the two sources the same level.
-6. The master step sets the loudness. It does not change the tone balance of this mix.
+6. The master step sets the loudness (see "How the master sets the loudness"). It does not change the tone balance of this mix.
 
 MuseScore renders five groups of the orchestra as five files (stems): woodwinds, brass, percussion, keyboards with harp, and strings.
 
@@ -41,11 +42,22 @@ The MusicXML file is for the audio only. Thus it can give MuseScore the sound th
 | Item in the score | Item in the MusicXML file | Effect |
 | --- | --- | --- |
 | A note of an instrument that rings (harp, piano, celesta, bells, gongs, cymbals, drums, timpani) | The note continues to the subsequent note of that player, or for the ring time of the instrument | The sound decays. It does not stop at the end of the written note. |
-| A soft long note before a rest (mf or softer, two quarter notes or longer) | A decrease of loudness on the note, then the dynamic mark again | The end of a phrase becomes soft. It does not stop suddenly. |
+| A soft long note before a rest (mf or softer, two quarter notes or longer) | Two tied notes. The second note is the last second of the sound: it has a decrease of loudness. Then the dynamic mark comes again. | The end of a phrase becomes soft (5 to 10 dB at mf). It does not stop suddenly. |
 | A short bow stroke (spiccato) | A staccato note | The stroke is short and has a clear start. |
 | A roll on a percussion instrument | A tremolo note | The instrument plays a roll. |
 
 The table `RING_SECONDS` in the code gives the ring time of each instrument.
+
+## How the master sets the loudness
+
+In the render of MuseScore, the soft passages are about 50 dB below the loudest passages.
+The reference recordings of real orchestras have a loudness range of 14 to 24 LU.
+Thus the master moves the level slowly, as the engineer of a classical recording does it: the soft passages go up.
+
+- Each passage of the music gets one level change. A passage is a part of the music that has one dynamic mark in effect for 6 seconds or more ([`compose/stats.py`](../src/nightmusic/compose/stats.py)).
+- The level is constant in a passage. Thus it does not follow the decay of a note: a bell or a gong in a soft passage dies away as the instrument does it.
+- Between two passages, the level changes in some seconds.
+- The loudness range of the master is 20 LU. The integrated loudness is -20 LUFS, and the largest sample is below -1 dBFS.
 
 ## How the build server gets the audio
 

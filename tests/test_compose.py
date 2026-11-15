@@ -123,3 +123,18 @@ def test_scatter_puts_figures_between_rests():
     text = scatter(3, 3, 2, {(1, 4): r"c'8 d'8 e'4", (3, 1.5): r"g'8"})
     assert text == "r2 r4 c'8 d'8 e'4 r4 | R1*3/2 | r8 g'8 r4 r2 r2 |"
     assert music.length(music.parse(text)) == 18
+
+
+def test_passages_follow_the_dynamic_marks():
+    from nightmusic.compose import stats
+    from nightmusic.notation.work import Work, load_orchestra
+
+    work = Work("Test", load_orchestra())
+    section = work.section(12, 4, 4)
+    work.structure.tempo(section.bar(1), 1, 60, "Lento")
+    # 16 s soft, with one loud call of 2 s in it. Then 16 s loud, then 16 s soft.
+    soft = r"c''1\pp ~ | c''1 ~ | c''1 ~ | c''1 | "
+    section.write("vn1", soft + r"c''1\ff ~ | c''1 ~ | c''1 ~ | c''1 | " + soft)
+    section.write("tpt1", r"R1 | r2 c''2\f | R1*10 |")
+    section.close()
+    assert stats.passages(work) == [0.0, 16.0, 32.0]

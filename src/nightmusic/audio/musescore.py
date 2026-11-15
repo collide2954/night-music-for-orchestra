@@ -31,6 +31,7 @@ from pathlib import Path
 
 import numpy as np
 
+from ..compose import stats
 from ..notation import musicxml
 from ..notation.work import Work
 from . import dsp, reference
@@ -63,6 +64,16 @@ PLAY_TECHNIQUES = {
 }
 
 STAFF_TEXT = re.compile(r"<StaffText>(.*?)</StaffText>", re.DOTALL)
+PART = re.compile(r'<Part id="(\d+)">.*?<Instrument id="([^"]+)"', re.DOTALL)
+
+# The level of some instruments of Muse Sounds in relation to the orchestra, in dB.
+# The mixer of MuseScore gets these values. They come from measurements of each
+# instrument alone, in the heavy section of part 2 and in the first climax:
+# - One stroke of the taiko was 8 dB louder than one stroke of the bass drum.
+# - The snare drum was 4 dB louder than the bass drum.
+# - One stroke of the tom-toms was 16 dB softer than one stroke of the bass drum.
+# - A stroke of the tam-tam (fff) was 11 dB softer than the hand cymbals.
+TRIM_DB = {"Taiko": -9.0, "Snare Drum": -3.0, "Concert Toms": 8.0, "Tam-tam": 6.0}
 TEXT = re.compile(r"<text>(.*?)</text>", re.DOTALL)
 
 
@@ -128,7 +139,7 @@ def render(
     packed = directory / "score.mscz"
     packed.unlink(missing_ok=True)
     _run(["-o", str(packed), str(source)], log)
-    count = prepare_file(packed, profile)
+    count = prepare_file(packed, profile, names)
     sound = directory / "score.wav"
     sound.unlink(missing_ok=True)
     _run(["-o", str(sound), str(packed)], log)
@@ -136,17 +147,34 @@ def render(
     return _load(sound), names
 
 
-def prepare_file(packed: Path, profile: str) -> int:
+def mixer_tracks(score: str, names: list[str]) -> list[dict]:
+    """Return the mixer settings for the parts that have a level in `TRIM_DB`.
+
+    `score` is the text of the MuseScore file. `names` are the names of its
+    parts, in the sequence of the file, for example "Taiko (perc6)".
+    """
+    tracks = []
+    for (part, instrument), name in zip(PART.findall(score), names, strict=True):
+        trim = TRIM_DB.get(name.rsplit(" (", 1)[0], 0.0)
+        if trim:
+            out = {"volumeDb": trim, "balance": 0, "fxChain": {}}
+            tracks.append({"partId": part, "instrumentId": instrument, "out": out})
+    return tracks
+
+
+def prepare_file(packed: Path, profile: str, names: list[str] | None = None) -> int:
     """Change the MuseScore file for the render. Return the number of technique marks.
 
     The file is a ZIP archive. The function changes two files in it:
 
     - The score: the words of the playing techniques become technique marks.
-    - The audio settings: the sound profile, and a lower level of the master
-      control. With the control at 0 dB, a loud passage of the full
-      orchestra is too loud for the output of MuseScore and has distortion.
+    - The audio settings: the sound profile, a lower level of the master
+      control, and the levels of `TRIM_DB`. With the master control at 0 dB,
+      a loud passage of the full orchestra is too loud for the output of
+      MuseScore and has distortion.
     """
     count = 0
+    tracks: list[dict] = []
     contents: dict[str, bytes] = {}
     with zipfile.ZipFile(packed) as archive:
         for name in archive.namelist():
@@ -155,10 +183,15 @@ def prepare_file(packed: Path, profile: str) -> int:
         if name.endswith(".mscx"):
             changed, count = play_techniques(data.decode("utf-8"))
             contents[name] = changed.encode("utf-8")
-        elif name == "audiosettings.json":
+            if names is not None:
+                tracks = mixer_tracks(changed, names)
+    for name, data in contents.items():
+        if name == "audiosettings.json":
             settings = json.loads(data.decode("utf-8"))
             settings["activeSoundProfile"] = profile
             settings.setdefault("master", {})["volumeDb"] = MASTER_VOLUME_DB
+            if tracks:
+                settings["tracks"] = tracks
             contents[name] = json.dumps(settings, indent=4).encode("utf-8")
     with zipfile.ZipFile(packed, "w", zipfile.ZIP_DEFLATED) as archive:
         for name, data in contents.items():
@@ -227,7 +260,7 @@ SMALLEST_CORRELATION = 0.35
 # Limits of the gain riding of the master for this source of sound.
 RIDING_GAIN_DB = 26.0
 RIDING_RATIO = 4.0
-RENDER_VERSION = 2  # a change of this number makes all kept stems invalid
+RENDER_VERSION = 3  # a change of this number makes all kept stems invalid
 
 
 def render_stems(
@@ -245,11 +278,12 @@ def render_stems(
         text, names = musicxml.score(work, bars, players=players)
         if not names:
             return name, None
-        folder = directory / name
+        # An excerpt has its own folder: thus the stems of the full work stay.
+        folder = directory / (name if bars is None else f"{name}-{bars[0]}-{bars[1]}")
         record = folder / "stem.json"
         sound = folder / "score.wav"
         key = hashlib.sha256(
-            f"{RENDER_VERSION}|{profile}|{MASTER_VOLUME_DB}|{text}".encode()
+            f"{RENDER_VERSION}|{profile}|{MASTER_VOLUME_DB}|{sorted(TRIM_DB.items())}|{text}".encode()
         ).hexdigest()
         kept = json.loads(record.read_text(encoding="utf-8")) if record.exists() else {}
         if sound.exists() and kept.get("key") == key:
@@ -328,4 +362,5 @@ def render_master(
         tone=False,
         largest_gain_db=RIDING_GAIN_DB,
         largest_ratio=RIDING_RATIO,
+        passages=stats.passages(work),
     )
