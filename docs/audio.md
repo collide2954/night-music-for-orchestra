@@ -22,9 +22,36 @@ The project can make the audio from two sources of sound.
    - The words of the playing techniques (for example "sul pont.") become marks that MuseScore plays.
    - The master control of the mixer goes down by 18 dB. Without this, a loud passage of the full orchestra has distortion.
 4. MuseScore renders the file to a WAV file (32-bit floating point).
-5. The sampler of this project renders the instruments that Muse Sounds do not have: cimbalom, accordion, ocarina, mandolin, tuned gongs, and the unpitched percussion.
+5. The sampler of this project renders the instruments that Muse Sounds do not have: cimbalom, accordion, ocarina, mandolin, and frame drum.
    A measurement with the timpani gives the two sources the same level.
 6. The master step sets the loudness. It does not change the tone balance of this mix.
+
+MuseScore renders five groups of the orchestra as five files (stems): woodwinds, brass, percussion, keyboards with harp, and strings.
+
+- Three MuseScore programs run at the same time. Thus the render is faster.
+- A stem stays from the last render if its music did not change.
+- The table `STEM_GAIN_DB` in the code gives the level of each stem. A change of the balance between the groups needs no new render.
+
+## How the build server gets the audio
+
+A build server cannot install Muse Sounds. Thus the audio master goes through a release of the repository.
+
+1. Make the master on the computer that has Muse Sounds:
+
+   ```bash
+   uv run nightmusic audio --engine musescore
+   ```
+
+2. Put the master in the release `audio`:
+
+   ```bash
+   uv run nightmusic publish-audio
+   ```
+
+   The command also writes a checksum of the music (all notes and the tempo plan) into the release.
+3. The build workflow runs `uv run nightmusic fetch-audio`.
+   - If the checksum of the release is the same as the checksum of the music of the commit, the build uses the master of the release.
+   - If not, the build makes the audio with the open sample libraries.
 
 ## How to install the MuseScore source (Fedora 45)
 
@@ -58,4 +85,6 @@ The environment variable `NIGHTMUSIC_MUSESCORE` can give the path of a different
 
 - A build server cannot make this audio.
 - Muse Sounds have no sound for some instruments of the work. For these, the audio uses the open samples.
+- Muse Sounds have no contrabass clarinet. The contrabassoon sound plays its notes.
+- After a change of the music, the master of the release is not valid until a new render.
 - The audio is not a recording of an orchestra.

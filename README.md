@@ -55,7 +55,7 @@ It also has four instruments that are not usual in an orchestra: cimbalom, accor
 | 2. Design | Form, orchestra, and material of the work | Complete |
 | 3. Composition | The music, written as code | First version complete (457 bars) |
 | 4. Engraving | Conductor score and parts | Complete. See "Limits". |
-| 5. Audio | Audio from free sample libraries | First version. The realism is not sufficient. See "Limits". |
+| 5. Audio | Audio from MuseScore Studio with Muse Sounds (free sample libraries) | Second version. See [`docs/audio.md`](docs/audio.md). |
 | 6. Video | Score video with part tracking | Complete |
 
 ## How the project makes the results
@@ -73,8 +73,10 @@ src/nightmusic/video     pages + cursor + ribbon -> MP4
 ```
 
 - The music is text in a subset of the LilyPond language. The code reads it one time and uses it for all results.
-- The audio uses free sample libraries. A model of a stage with a main pair of microphones gives the stereo image. A model of a concert hall gives the reverberation.
-- The master has three steps: equalization, gain riding, and level. The targets are measured values of real orchestra recordings (see [`research/measured/reference_recordings.csv`](research/measured/reference_recordings.csv)).
+- The audio has two sources of sound (see [`docs/audio.md`](docs/audio.md)):
+  - MuseScore Studio with the free Muse Sounds libraries. This is the audio of the release. A build server cannot make it: the computer of the owner makes it and puts it in the release `audio`.
+  - Open sample libraries with the sampler of this project. The build server uses this source if the release has no audio for the music of the commit. This sound is not realistic.
+- The master sets the loudness to measured values of real orchestra recordings (see [`research/measured/reference_recordings.csv`](research/measured/reference_recordings.csv)).
 
 ## Style study
 
@@ -164,15 +166,15 @@ make study
 
 ## Limits
 
-- The audio comes from free sample libraries. It is not a recording of an orchestra.
-- The owner of the project listened to the first audio master. The samples, the balance, the
-  equalization, and the realism are not sufficient. The measured values of the master
-  (loudness, tone balance, stereo width) are in the range of real recordings, but these
-  values do not show if the sound is realistic. A better source of sound is the subsequent task.
+- The audio comes from sample libraries. It is not a recording of an orchestra.
+- The first audio master used only open sample libraries. The owner of the project listened
+  to it: the samples, the balance, the equalization, and the realism were not sufficient.
+  The measured values of that master (loudness, tone balance, stereo width) were in the range
+  of real recordings, but these values do not show if the sound is realistic.
+  The second master uses Muse Sounds.
 - Some instruments use the samples of a similar instrument:
   the accordion (chromatic harmonica), the cimbalom (Hungarian zither),
-  the contrabass clarinet (bass clarinet), the clarinet in E-flat (clarinet in B-flat),
-  and the tuned gongs (tubular bells).
+  the contrabass clarinet (contrabassoon), and the tuned gongs (tubular bells).
 - The audio does not play trills as trills.
 - The parts do not have cue notes.
 - No orchestra has played the work. A conductor and the players must examine the parts before a performance.

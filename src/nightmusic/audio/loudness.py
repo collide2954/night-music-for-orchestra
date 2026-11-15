@@ -127,14 +127,21 @@ def program_level(power: np.ndarray) -> np.ndarray:
     return np.convolve(padded, window / window.sum(), mode="valid")
 
 
-def riding_gain(level: np.ndarray, ratio: float) -> np.ndarray:
+def riding_gain(
+    level: np.ndarray, ratio: float, largest_gain_db: float = LARGEST_GAIN_DB
+) -> np.ndarray:
     """Return the gain in dB for each block: soft passages go up."""
     knee = float(np.percentile(level, 95)) - KNEE_BELOW_LOUDEST
     below = np.maximum(knee - level, 0.0)
-    return np.minimum(below * (1.0 - 1.0 / ratio), LARGEST_GAIN_DB)
+    return np.minimum(below * (1.0 - 1.0 / ratio), largest_gain_db)
 
 
-def ride(audio: np.ndarray, target_range: float) -> tuple[np.ndarray, float, float]:
+def ride(
+    audio: np.ndarray,
+    target_range: float,
+    largest_gain_db: float = LARGEST_GAIN_DB,
+    largest_ratio: float = LARGEST_RATIO,
+) -> tuple[np.ndarray, float, float]:
     """Move the level slowly until the loudness range is not more than `target_range`.
 
     The function changes `audio` in place. It returns the audio, the ratio
@@ -145,20 +152,20 @@ def ride(audio: np.ndarray, target_range: float) -> tuple[np.ndarray, float, flo
     step = 10
 
     def range_with(ratio: float) -> float:
-        gain = riding_gain(level, ratio)
+        gain = riding_gain(level, ratio, largest_gain_db)
         changed = power * 10.0 ** (gain / 10.0)
         return loudness_range(short_term(changed, step))[0]
 
     if range_with(1.0) <= target_range:
         return audio, 1.0, 0.0
-    low, high = 1.0, LARGEST_RATIO
+    low, high = 1.0, largest_ratio
     for _ in range(18):
         middle = 0.5 * (low + high)
         if range_with(middle) > target_range:
             low = middle
         else:
             high = middle
-    gain = riding_gain(level, high)
+    gain = riding_gain(level, high, largest_gain_db)
     # The gain of each sample: a straight line between the centres of the blocks.
     centres = (np.arange(len(gain)) + 0.5) * BLOCK
     for start in range(0, len(audio), CHUNK):

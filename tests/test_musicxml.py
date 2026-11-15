@@ -84,3 +84,19 @@ def test_staff_texts_of_techniques_become_playing_techniques():
     assert count == 1
     assert "<playTechType>sul_ponticello</playTechType>" in after
     assert "<StaffText>\n  <text>dolce</text>" in after
+
+
+def test_a_stem_that_is_too_wide_gets_a_smaller_difference_signal():
+    import numpy as np
+
+    random = np.random.default_rng(1)
+    wide = random.normal(0.0, 0.1, (48000, 2)).astype(np.float32)  # independent channels
+    narrowed, gain_db = musescore.narrow(wide.copy())
+    correlation = float(np.corrcoef(narrowed[:, 0], narrowed[:, 1])[0, 1])
+    assert gain_db < 0.0
+    assert abs(correlation - musescore.SMALLEST_CORRELATION) < 0.03
+    # A stem that is not too wide does not change.
+    shared = random.normal(0.0, 0.1, 48000).astype(np.float32)
+    normal = np.stack([shared + 0.3 * wide[:, 0], shared + 0.3 * wide[:, 1]], axis=1)
+    same, gain_db = musescore.narrow(normal.copy())
+    assert gain_db == 0.0 and np.array_equal(same, normal)

@@ -216,6 +216,17 @@ STEMS = {
 STEM_GAIN_DB = {"woodwinds": 0.0, "brass": 0.0, "percussion": 0.0, "keys": 0.0, "strings": 0.0}
 
 PARALLEL_RENDERS = 3  # number of MuseScore programs that run at the same time
+
+# The sound of MuseScore is much wider than a recording of a real orchestra:
+# the left and the right channel are almost independent, and the brass has
+# more difference signal than sum signal. The measured recordings have a
+# correlation of 0.39 to 0.69. A stem with a smaller correlation than this
+# value gets a smaller difference signal.
+SMALLEST_CORRELATION = 0.35
+
+# Limits of the gain riding of the master for this source of sound.
+RIDING_GAIN_DB = 26.0
+RIDING_RATIO = 4.0
 RENDER_VERSION = 2  # a change of this number makes all kept stems invalid
 
 
@@ -260,6 +271,34 @@ def _load(sound: Path) -> np.ndarray:
     return audio
 
 
+def narrow(audio: np.ndarray, smallest: float = SMALLEST_CORRELATION) -> tuple[np.ndarray, float]:
+    """Make a stem less wide, if its channels are too independent.
+
+    The function changes `audio` in place. It returns the audio and the gain
+    of the difference signal in dB (0 = no change).
+    """
+    sum_power, difference_power = 0.0, 0.0
+    step = 60 * dsp.RATE
+    for start in range(0, len(audio), step):
+        part = audio[start : start + step].astype(np.float64)
+        sum_power += float(np.sum(np.square(part[:, 0] + part[:, 1])))
+        difference_power += float(np.sum(np.square(part[:, 0] - part[:, 1])))
+    if sum_power <= 0.0 or difference_power <= 0.0:
+        return audio, 0.0
+    correlation = (sum_power - difference_power) / (sum_power + difference_power)
+    if correlation >= smallest:
+        return audio, 0.0
+    wanted = (1.0 - smallest) / (1.0 + smallest)  # difference power / sum power
+    gain = float(np.sqrt(wanted * sum_power / difference_power))
+    for start in range(0, len(audio), step):
+        part = audio[start : start + step]
+        middle = 0.5 * (part[:, 0] + part[:, 1])
+        side = 0.5 * (part[:, 0] - part[:, 1]) * np.float32(gain)
+        part[:, 0] = middle + side
+        part[:, 1] = middle - side
+    return audio, dsp.to_db(gain)
+
+
 def render_master(
     work: Work, directory: Path, bars: tuple[int, int] | None = None, profile: str = PROFILE
 ):
@@ -276,6 +315,17 @@ def render_master(
     length = max([len(others), *(len(audio) for audio in stems.values())])
     total = np.zeros((length, 2), dtype=np.float32)
     for name, audio in stems.items():
+        audio, side_db = narrow(audio)
+        print(f"musescore: stem {name}: difference signal {side_db:+.1f} dB")
         total[: len(audio)] += np.float32(dsp.db(STEM_GAIN_DB[name])) * audio
     total[: len(others)] += np.float32(gain) * others
-    return mix.master(total, len(stems) + count, full=bars is None, tone=False)
+    # The soft passages of Muse Sounds are much softer than those of the open
+    # samples: the gain riding of the master can do more.
+    return mix.master(
+        total,
+        len(stems) + count,
+        full=bars is None,
+        tone=False,
+        largest_gain_db=RIDING_GAIN_DB,
+        largest_ratio=RIDING_RATIO,
+    )

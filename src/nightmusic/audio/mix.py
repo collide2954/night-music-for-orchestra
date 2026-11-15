@@ -142,7 +142,13 @@ def render_mix(
 
 
 def master(
-    mix: np.ndarray, players: int = 0, *, full: bool = True, tone: bool = True
+    mix: np.ndarray,
+    players: int = 0,
+    *,
+    full: bool = True,
+    tone: bool = True,
+    largest_gain_db: float = loudness.LARGEST_GAIN_DB,
+    largest_ratio: float = loudness.LARGEST_RATIO,
 ) -> tuple[np.ndarray, MixReport]:
     """Make the master from the mix. The function changes `mix` in place.
 
@@ -164,7 +170,7 @@ def master(
         mix, _centres, change = reference.match_tone_balance(mix)
     ratio, largest = 1.0, 0.0
     if full:
-        mix, ratio, largest = loudness.ride(mix, TARGET_RANGE)
+        mix, ratio, largest = loudness.ride(mix, TARGET_RANGE, largest_gain_db, largest_ratio)
     power = loudness.block_power(mix)
     measured = loudness.integrated(power)
     gain_db = TARGET_LUFS - measured if np.isfinite(measured) else 0.0
