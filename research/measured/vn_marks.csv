@@ -1,0 +1,133 @@
+bar,kind,text
+1,tempo,Sehr langsam
+3,expression,immer leise
+7,expression,immer leise
+11,expression,immer leise
+17,expression,cresc
+18,expression,espress
+21,expression,dim
+24,expression,steigernd
+26,expression,accell
+28,expression,molto rit.
+29,tempo,Etwas bewegter
+31,expression,steigernd
+39,tempo,rit
+40,tempo,tempo
+41,expression,dim
+50,tempo,mit Dämpfer
+57,expression,cresc
+58,expression,dim
+67,expression,steigernd
+67,expression,cresc e accel
+69,tempo,Lebhafter
+74,expression,rit
+75,tempo,Etwas belebter
+79,tempo,Etwas zurückhaltend
+79,expression,warm
+82,tempo,Wieder belebter
+86,tempo,Etwas zurückhaltend
+87,expression,warm
+89,tempo,dim e rit.
+91,tempo,Lebhafter
+100,expression,arpeggiando
+100,tempo,Breiter
+102,expression,dolce
+105,tempo,Etwas Ruhiger
+109,expression,dolce
+110,expression,rit
+111,expression,warm
+114,expression,rit
+123,tempo,"Drängend, etwas unruhiger"
+126,expression,steigernd
+128,tempo,rascher werdend
+128,expression,steigernd
+132,tempo,Lebhaft bewegt
+134,expression,dim
+137,expression,"wild, leidenschaflich"
+140,expression,rit
+143,expression,dim
+146,expression,wild
+149,expression,rit
+152,expression,dim
+153,tempo,Noch bewegter
+160,expression,cresc
+170,expression,cresc
+172,expression,cresc
+173,expression,molto cresc
+175,tempo,Schneller werdend
+176,tempo,Sehr breit
+177,expression,molto rit
+180,expression,cresc
+181,tempo,Sehr langsam
+185,expression,dim
+186,expression,dim e rit
+188,expression,sehr ausdrücksvoll
+196,expression,espress
+196,expression,dim
+199,expression,dim
+201,tempo,Schwer betont
+215,tempo,Etwas zurückhaltend
+215,expression,zehr zart
+229,tempo,Sehr breit und langsam
+229,expression,( arpeggiando )
+231,expression,cresc
+232,expression,dim
+243,expression,dim
+247,expression,rit
+266,tempo,Etwas gedehnt
+268,expression,cresc
+270,tempo,Wieder wie früher
+276,expression,dim
+277,expression,die punktierte Viertel gleich
+277,expression,den Viertel von früher
+278,expression,innig und warm
+282,expression,espress.
+291,tempo,"steigernd, beschleunigend"
+294,expression,die Viertel langsamer
+294,expression,als die frühern Ächtel
+298,expression,rit
+299,expression,a tempo
+305,expression,steigernd
+306,expression,cresc
+310,expression,dolce
+310,tempo,Etwas bewegter
+311,expression,cresc
+312,expression,dolce
+313,expression,cresc
+318,expression,rit
+319,expression,dim
+320,expression,zart
+320,tempo,Etwas bewegt
+325,expression,steigernd
+330,tempo,beschleunigend
+337,expression,molto rit
+341,expression,gross
+341,expression,espress
+342,expression,sehr zart
+343,expression,pp
+343,expression,mf
+343,expression,pp
+343,expression,arpeggiando
+344,expression,ausdrucksvoll
+345,expression,espress
+359,expression,dim
+362,expression,cresc
+364,expression,"poco rit . , ."
+367,tempo,molto rit.
+367,expression,dolce
+370,tempo,Sehr ruhig
+376,expression,weich
+378,expression,espress
+386,expression,steigernd
+389,expression,molto rit
+390,tempo,Sehr gross
+393,expression,dim
+394,expression,dim
+395,expression,dim
+396,expression,dim
+397,expression,dolciss
+401,expression,dolciss
+403,expression,zart
+405,expression,dim
+406,expression,rit
+417,expression,arpegg.

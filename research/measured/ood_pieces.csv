@@ -1,0 +1,6 @@
+piece,minutes,note_starts,note_starts_per_second,mean_key_velocity,key_velocity_5th_percentile,key_velocity_95th_percentile,lowest_midi_pitch,highest_midi_pitch
+1. With Drums and Pipes,1.741,886,8.484,74.07,44,97,21,87
+2. Barcarolla,2.254,797,5.894,59.72,39,88,29,101
+3. Musettes,3.134,2089,11.11,65.03,34,95,32,95
+4. The Night's Music,5.273,1490,4.71,48.95,21,80,35,104
+5. The Chase,2.164,2713,20.89,69.04,35,99,24,101

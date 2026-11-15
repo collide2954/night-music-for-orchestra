@@ -1,0 +1,8 @@
+interval_class,name,moves,share
+0,unison or octave,68,0.06869
+1,semitone or major seventh,297,0.3
+2,whole tone or minor seventh,187,0.1889
+3,minor third or major sixth,151,0.1525
+4,major third or minor sixth,91,0.09192
+5,fourth or fifth,150,0.1515
+6,tritone,46,0.04646

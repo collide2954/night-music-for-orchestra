@@ -1,0 +1,6 @@
+section,content,first_bar,last_bar,bars,minutes,share_of_time,start_position,mean_quarter_bpm,slowest_bar_bpm,fastest_bar_bpm,note_starts_per_second,mean_midi_volume,lowest_midi_volume,highest_midi_volume
+1,Stanza 1. Narrator: the walk in the cold wood,1,28,28,2.554,0.1021,0,43.85,40,61.54,3.197,57.52,50,70
+2,Stanza 2. The woman speaks,29,187,159,8.011,0.3203,0.1021,76.33,52.4,123.1,6.83,83.24,40,125
+3,Stanza 3. Narrator,188,228,41,2.863,0.1145,0.4224,55.88,48,64.86,2.363,84.31,35,115
+4,Stanza 4. The man speaks,229,369,141,7.882,0.3151,0.5369,68.89,44.44,132.6,6.655,70.31,39,128
+5,Stanza 5. Narrator: the transfigured night,370,418,49,3.7,0.1479,0.8523,52.44,40.68,70.59,6.181,53.15,30,126
