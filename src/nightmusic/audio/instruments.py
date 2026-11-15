@@ -51,6 +51,11 @@ class Sound:
     max_shift: float = 7.0  # largest pitch shift of a sample, in semitones
     unpitched: bool = False  # the written pitch selects a sample; it is not a real pitch
     extra: dict[str, float] = field(default_factory=dict)
+    # Equalization of the instrument: ("low", Hz, dB), ("high", Hz, dB), ("peak", Hz, dB, Q).
+    eq: tuple[tuple, ...] = ()
+    # A louder note is brighter. This is the change of the high frequencies (dB)
+    # from a middle loudness to the loudest playing. None = the value of the family.
+    bright_db: float | None = None
 
 
 RR = r"(?:_rr|_RR|_)(?P<rr>\d)"
@@ -581,6 +586,24 @@ SOUNDS: dict[str, Sound] = {
         lowcut_hz=60,
         max_shift=31,
     ),
+    # The accordion: the samples are from a chromatic harmonica. The two
+    # instruments make their sound with the same type of free reed.
+    "accordion": Sound(
+        {
+            "sustain": (
+                vcsl("Aerophones/Free Aerophones/Harmonica-Hohner-Super64/Sustains/Normal"),
+            ),
+        },
+        "keyboards",
+        loud_db=-21,
+        range_db=20,
+        release=0.14,
+        lead=0.05,
+        lowcut_hz=90,
+        max_shift=6,
+        eq=(("high", 1800.0, -7.0), ("peak", 3500.0, -4.0, 1.0)),
+        bright_db=8.0,
+    ),
     "ocarina": Sound(
         {
             "sustain": (
@@ -704,7 +727,6 @@ SOUNDS.update(
 ALIASES = {
     "clarinet in E-flat": "clarinet in B-flat",
     "contrabass clarinet": "bass clarinet",
-    "accordion": "ocarina",
     "tuned gongs": "tubular bells",
 }
 

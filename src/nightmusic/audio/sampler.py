@@ -6,6 +6,7 @@ import zlib
 from collections import OrderedDict
 from dataclasses import dataclass, replace
 from fractions import Fraction
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -18,6 +19,7 @@ from .library import Sample, build_index
 
 REFERENCE_LEVEL = 0.2  # root mean square of the loudest playing of the loudest instrument
 GRACE_SECONDS = 0.085
+SOLO_GAIN = 0.56  # one player relative to the section (-5 dB)
 FILTER_TAIL = 2400  # samples of silence after a note, for the end of the filter sound
 CACHE_BYTES = 1_500_000_000
 
@@ -37,6 +39,43 @@ BUS_FILTERS = {
     "brass mute": [dsp.shelf(400.0, -9.0, high=False), dsp.peaking(2200.0, 5.0, 1.0)],
     "thin": [dsp.highpass(600.0, 2), dsp.shelf(4000.0, 3.0, high=True)],
 }
+
+
+# How much brighter the loudest playing is than a middle loudness, for each
+# family: (frequency of the high shelf in Hz, change in dB).
+BRIGHTNESS = {
+    "strings": (2500.0, 5.0),
+    "woodwinds": (2000.0, 4.0),
+    "brass": (1500.0, 9.0),
+    "percussion": (3000.0, 3.0),
+    "plucked": (2500.0, 4.0),
+    "keyboards": (2500.0, 4.0),
+}
+MIDDLE_LEVEL = 0.6  # the loudness with no change of the brightness (mezzo forte)
+
+
+@lru_cache(maxsize=256)
+def _tilt(frequency: float, gain_db: int) -> np.ndarray:
+    return dsp.shelf(frequency, float(gain_db), high=True)
+
+
+def brightness_filter(sound: Sound, level: float) -> np.ndarray | None:
+    """Return the high shelf filter for the loudness of a note (None = no change)."""
+    frequency, family_db = BRIGHTNESS.get(sound.family, (2500.0, 4.0))
+    full = family_db if sound.bright_db is None else sound.bright_db
+    gain = int(round(full * (level - MIDDLE_LEVEL) / (1.0 - MIDDLE_LEVEL)))
+    return _tilt(frequency, gain) if gain else None
+
+
+def _equalizer(sound: Sound) -> list[np.ndarray]:
+    """Return the filters of the equalization of an instrument."""
+    filters = []
+    for kind, frequency, gain, *rest in sound.eq:
+        if kind == "peak":
+            filters.append(dsp.peaking(frequency, gain, rest[0] if rest else 1.0))
+        else:
+            filters.append(dsp.shelf(frequency, gain, high=kind == "high"))
+    return filters
 
 
 class _AudioCache:
@@ -99,6 +138,7 @@ class Voicebank:
                 self.groups[key] = by_pitch
         if "sustain" not in self.groups:
             raise RuntimeError("an instrument has no sustain samples")
+        self.filters = [dsp.highpass(sound.lowcut_hz, 2), *_equalizer(sound)]
 
     def has(self, key: str) -> bool:
         return key in self.groups
@@ -278,7 +318,10 @@ def render_player(
             end = start + GRACE_SECONDS
         seconds = end - start
         key, bus = _articulation_key(note, bank, seconds)
-        note_filters = [*BUS_FILTERS.get(bus, []), dsp.highpass(sound.lowcut_hz, 2)]
+        note_filters = [*BUS_FILTERS.get(bus, []), *bank.filters]
+        tilt = brightness_filter(sound, 0.5 * (note.level + note.level_end) + note.accent)
+        if tilt is not None:
+            note_filters.append(tilt)
         held = _sounding_seconds(note, seconds)
 
         following = ordered[index + 1] if index + 1 < len(ordered) else None
@@ -292,6 +335,9 @@ def render_player(
         divisi = 1.0 / np.sqrt(note.chord_size) if sound.family == "strings" else 1.0
 
         voices = sound.ensemble if key in ("sustain", "tremolo", "short", "pizzicato") else 1
+        if note.get("desk") == "solo":
+            voices = 1  # one player of the section plays alone
+            divisi = SOLO_GAIN
         nearest = bank.pitches(key, note.midi)
         plan: list[tuple[str, int, float]] = []  # sample key, sampled pitch, weight
         for number in range(voices):

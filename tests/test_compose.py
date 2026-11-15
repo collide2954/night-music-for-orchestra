@@ -10,6 +10,7 @@ from nightmusic.compose.tools import (
     invert,
     lines,
     octave,
+    scatter,
     times,
     tr,
 )
@@ -97,3 +98,9 @@ def test_the_work_has_no_notes_out_of_range():
     from nightmusic.work import build
 
     assert [str(problem) for problem in check(build())] == []
+
+
+def test_scatter_puts_figures_between_rests():
+    text = scatter(3, 3, 2, {(1, 4): r"c'8 d'8 e'4", (3, 1.5): r"g'8"})
+    assert text == "r2 r4 c'8 d'8 e'4 r4 | R1*3/2 | r8 g'8 r4 r2 r2 |"
+    assert music.length(music.parse(text)) == 18

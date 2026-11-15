@@ -137,6 +137,13 @@ def _walk(
         elif isinstance(element, music.Group):
             if element.kind == "grace":
                 members = [e for e in element.children if isinstance(e, music.Note)]
+                # A dynamic mark on the main note is also for its grace notes.
+                following = elements[index] if index < len(elements) else None
+                if isinstance(following, music.Note):
+                    for post in following.posts:
+                        if post.kind == "dynamic" and post.value in DYNAMIC_LEVEL:
+                            _close_hairpin(voice, notes, DYNAMIC_LEVEL[post.value])
+                            voice.level = DYNAMIC_LEVEL[post.value]
                 for number, member in enumerate(members):
                     _play(
                         member,

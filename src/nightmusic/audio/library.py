@@ -57,6 +57,7 @@ LIBRARIES = {
                 "Idiophones/Friction Idiophones",
                 "Aerophones/Edge-blown Aerophones/Ocarina, Typical",
                 "Aerophones/Edge-blown Aerophones/Ocarina, Small",
+                "Aerophones/Free Aerophones/Harmonica-Hohner-Super64",
                 "Chordophones/Zithers/Psaltery, Bowed and Plucked",
                 "Chordophones/Composite Chordophones/Concert Harp",
                 "Membranophones/Struck Membranophones",
@@ -74,6 +75,8 @@ def fetch(name: str) -> Path:
     library = LIBRARIES[name]
     target = SAMPLES_DIR / name
     if (target / ".git").exists():
+        if library.paths:
+            _add_missing_paths(target, library.paths)
         return target
     SAMPLES_DIR.mkdir(parents=True, exist_ok=True)
     command = ["git", "clone", "--quiet", "--depth", "1"]
@@ -85,6 +88,16 @@ def fetch(name: str) -> Path:
             ["git", "-C", str(target), "sparse-checkout", "set", *library.paths], check=True
         )
     return target
+
+
+def _add_missing_paths(target: Path, paths: tuple[str, ...]) -> None:
+    """Get the directories of a library that came into the list after the first download."""
+    present = subprocess.run(
+        ["git", "-C", str(target), "sparse-checkout", "list"],
+        capture_output=True, text=True, check=True,
+    ).stdout.splitlines()  # fmt: skip
+    if any(path not in present for path in paths):
+        subprocess.run(["git", "-C", str(target), "sparse-checkout", "set", *paths], check=True)
 
 
 # ----------------------------------------------------------------------------

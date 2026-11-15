@@ -350,3 +350,76 @@ class Block:
             )
             self.section.write(player, text)
         self.section.close()
+
+
+_REST_NAMES = {
+    Fraction(4): "1",
+    Fraction(2): "2",
+    Fraction(1): "4",
+    Fraction(1, 2): "8",
+    Fraction(1, 4): "16",
+    Fraction(1, 8): "32",
+}
+
+
+def _rests_between(
+    start: Fraction, end: Fraction, bar: Fraction, beat: Fraction, metre: str
+) -> str:
+    """Return rests from `start` to `end` (quarter notes). Each bar ends with a bar check."""
+    parts: list[str] = []
+    position = start
+    while position < end:
+        in_bar = position % bar
+        if in_bar == 0 and end - position >= bar:
+            count = (end - position) // bar
+            parts.append(f"R1*{metre}*{count} |" if count > 1 else f"R1*{metre} |")
+            position += count * bar
+            continue
+        bar_end = position - in_bar + bar
+        limit = min(end, bar_end)
+        for value in _REST_NAMES:
+            fits = in_bar % value == 0 and position + value <= limit
+            # A rest longer than one beat starts on a beat.
+            if fits and (value <= beat or in_bar % beat == 0):
+                parts.append(f"r{_REST_NAMES[value]}")
+                position += value
+                break
+        else:
+            raise ValueError(f"no rest fits at {position} quarter notes")
+        if position == bar_end:
+            parts.append("|")
+    return " ".join(parts)
+
+
+def scatter(
+    count: int, numerator: int, denominator: int, events: dict[tuple[int, float], str]
+) -> str:
+    """Return `count` bars with short figures at the given places, and rests between them.
+
+    A key of `events` is (bar, beat). The bar is the bar number in the
+    section (the first bar is 1). The beat is in quarter notes: 1 is the
+    start of the bar, 1.5 is one eighth note later. The first note of each
+    figure must have a duration.
+    """
+    bar = Fraction(4 * numerator, denominator)
+    beat = Fraction(4, denominator)
+    metre = f"{numerator}/{denominator}"
+    total = count * bar
+    placed = sorted(
+        ((number - 1) * bar + Fraction(position - 1).limit_denominator(8), text)
+        for (number, position), text in events.items()
+    )
+    parts: list[str] = []
+    cursor = Fraction(0)
+    for start, text in placed:
+        if start < cursor:
+            raise ValueError(f"two figures at the same time ({float(start)} quarter notes)")
+        parts.append(_rests_between(cursor, start, bar, beat, metre))
+        parts.append(text.strip())
+        cursor = start + music.length(music.parse(text))
+        if cursor % bar == 0 and not text.strip().endswith("|"):
+            parts.append("|")
+    if cursor > total:
+        raise ValueError("the last figure is longer than the section")
+    parts.append(_rests_between(cursor, total, bar, beat, metre))
+    return " ".join(part for part in parts if part)

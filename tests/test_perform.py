@@ -60,3 +60,15 @@ def test_instrument_switch_and_quarter_tones():
     notes = perform(work, "fl2")
     assert [n.instrument for n in notes] == ["flute", "alto flute"]
     assert notes[1].midi == 66.5
+
+
+def test_grace_notes_take_the_dynamic_of_the_main_note():
+    from nightmusic.notation.work import Work, load_orchestra
+    from nightmusic.perform.events import DYNAMIC_LEVEL, perform
+
+    work = Work("Test", load_orchestra())
+    section = work.section(2, 4, 4)
+    section.write("fl1", r"c''1\fff | \grace { d''16 e'' } f''1\ppp |")
+    section.close()
+    notes = perform(work, "fl1")
+    assert [note.level for note in notes if note.grace] == [DYNAMIC_LEVEL["ppp"]] * 2
