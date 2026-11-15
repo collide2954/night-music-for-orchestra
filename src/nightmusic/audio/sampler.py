@@ -252,6 +252,26 @@ def _sounding_seconds(note: PerfNote, seconds: float) -> float:
     return max(0.06, seconds - min(0.05, 0.1 * seconds))
 
 
+class _Stem:
+    """A one-channel signal that becomes longer when a note needs more time."""
+
+    def __init__(self) -> None:
+        self.data = np.zeros(dsp.RATE * 20, dtype=np.float32)
+        self.length = 0
+
+    def add(self, offset: int, body: np.ndarray) -> None:
+        end = offset + len(body)
+        if end > len(self.data):
+            longer = np.zeros(max(end, 2 * len(self.data)), dtype=np.float32)
+            longer[: self.length] = self.data[: self.length]
+            self.data = longer
+        self.data[offset:end] += body
+        self.length = max(self.length, end)
+
+    def sound(self) -> np.ndarray:
+        return self.data[: self.length]
+
+
 @dataclass
 class Prepared:
     """The notes of one player, ready for the sampler."""
@@ -296,7 +316,7 @@ def render_player(
     signals can have different lengths. The result does not change if the
     work is rendered in one window or in many windows.
     """
-    pieces: dict[int, list[tuple[int, np.ndarray]]] = {}
+    stems: dict[int, _Stem] = {}
     banks = prepared.banks
     ordered = prepared.notes
     seed = zlib.crc32(prepared.player.encode())
@@ -381,6 +401,9 @@ def render_player(
                     lead = 0.02
                 if decays:
                     wanted = len(audio) if ring or held > 3.0 else int((held + 0.25) * dsp.RATE)
+                    if "roll" in note.articulations:
+                        wanted = int(ROLL_RING_SECONDS * dsp.RATE)
+                        ring = False
                     body = audio[: max(wanted, 1)].copy()
                     if not ring and len(body) < len(audio):
                         body = dsp.fade(body, 0, min(len(body), int(0.25 * dsp.RATE)))
@@ -419,18 +442,15 @@ def render_player(
                     body = body[-offset:]
                     offset = 0
                 if len(body):
-                    pieces.setdefault(voice_number, []).append((offset, body))
+                    if voice_number not in stems:
+                        stems[voice_number] = _Stem()
+                    stems[voice_number].add(offset, body)
 
-    stems = []
-    for number in sorted(pieces):
-        stem = np.zeros(max(offset + len(body) for offset, body in pieces[number]), np.float32)
-        for offset, body in pieces[number]:
-            stem[offset : offset + len(body)] += body
-        stems.append(stem)
-    return stems
+    return [stems[number].sound() for number in sorted(stems)]
 
 
 ROLL_STROKES_PER_SECOND = 13.0
+ROLL_RING_SECONDS = 1.2  # how long one stroke in a roll sounds
 
 
 def _expand_rolls(
@@ -460,6 +480,9 @@ def _expand_rolls(
                     level_end=level * wobble,
                     tremolo=False,
                     accent=note.accent if number == 0 else 0.0,
+                    # Only the last stroke of a roll rings to its end.
+                    articulations=note.articulations
+                    | (frozenset({"roll"}) if number < count - 1 else frozenset()),
                 )
             )
     return result

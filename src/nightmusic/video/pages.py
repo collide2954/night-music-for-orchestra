@@ -8,6 +8,7 @@ column, each bar line, and each staff.
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
@@ -53,6 +54,10 @@ def staff_size(staves: int) -> float:
 
 
 def _compile(path: Path, dpi: float) -> None:
+    # Remove the pages of an earlier build: the new build can have fewer pages.
+    for suffix in ("png", "svg"):
+        for old in _numbered(path.parent, path.stem, suffix):
+            old.unlink()
     for backend in ([], ["-dbackend=svg"]):
         result = subprocess.run(
             ["lilypond", *backend, "-dno-point-and-click", "--loglevel=ERROR", path.name],
@@ -143,14 +148,20 @@ def build_pages(work: Work, directory: Path, width_px: int = 1920) -> list[Page]
     directory.mkdir(parents=True, exist_ok=True)
     dpi = width_px / (lilypond.VIDEO_PAGE_MM[0] / 25.4)
     files: list[tuple[Path, Fraction]] = []
+    changed: list[Path] = []
     for index in range(lilypond.chunk_count(work)):
         first, _last = lilypond.chunk_bars(work, index)
         staves = len(lilypond.active_players(work, index))
         path = directory / f"section-{index + 1:03d}.ly"
-        path.write_text(lilypond.video_file(work, index, staff_size(staves)), encoding="utf-8")
+        text = lilypond.video_file(work, index, staff_size(staves))
+        # A file that did not change keeps its pages from the last build.
+        same = path.exists() and path.read_text(encoding="utf-8") == text
+        if not (same and _numbered(directory, path.stem, "png")):
+            path.write_text(text, encoding="utf-8")
+            changed.append(path)
         files.append((path, work.structure.bar(first).start))
-    with ThreadPoolExecutor(max_workers=6) as pool:
-        list(pool.map(lambda item: _compile(item[0], dpi), files))
+    with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
+        list(pool.map(lambda path: _compile(path, dpi), changed))
 
     pages: list[Page] = []
     for path, start in files:

@@ -15,12 +15,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-import pyloudnorm
 import soundfile
 import soxr
 from scipy import signal
 
-from . import dsp
+from . import dsp, loudness
 
 REFERENCE_DIR = Path(".cache/reference")
 BASE_URL = "https://archive.org/download/MusopenCollectionAsFlac/"
@@ -116,64 +115,56 @@ class Measurement:
     balance: np.ndarray  # level of each third-octave band relative to the total, in dB
 
 
-def short_term_loudness(audio: np.ndarray) -> np.ndarray:
-    """Return the short-term loudness (3 s window, 1 s step) in LUFS (ITU-R BS.1770)."""
-    # K-weighting: a high shelf and a high-pass filter.
-    shelf = signal.lfilter(*_k_shelf(), audio.astype(np.float64), axis=0)
-    weighted = signal.lfilter(*_k_highpass(), shelf, axis=0)
-    power = np.square(weighted)
-    window, step = 3 * dsp.RATE, dsp.RATE
-    sums = np.concatenate((np.zeros((1, power.shape[1])), np.cumsum(power, axis=0)))
-    starts = np.arange(0, len(audio) - window + 1, step)
-    mean = (sums[starts + window] - sums[starts]) / window
-    return -0.691 + 10.0 * np.log10(np.maximum(mean.sum(axis=1), 1e-12))
+def _sums(audio: np.ndarray) -> tuple[float, float, float, float]:
+    """Return the largest sample, and the sums of left*left, right*right, and left*right."""
+    peak, left_left, right_right, left_right = 0.0, 0.0, 0.0, 0.0
+    for start in range(0, len(audio), loudness.CHUNK):
+        part = audio[start : start + loudness.CHUNK].astype(np.float64)
+        peak = max(peak, float(np.max(np.abs(part)))) if len(part) else peak
+        left_left += float(np.dot(part[:, 0], part[:, 0]))
+        right_right += float(np.dot(part[:, 1], part[:, 1]))
+        left_right += float(np.dot(part[:, 0], part[:, 1]))
+    return peak, left_left, right_right, left_right
 
 
-def _k_shelf() -> tuple[np.ndarray, np.ndarray]:
-    frequency, gain_db, q = 1681.974450955533, 3.999843853973347, 0.7071752369554196
-    k = np.tan(np.pi * frequency / dsp.RATE)
-    vh = 10.0 ** (gain_db / 20.0)
-    vb = vh**0.4996667741545416
-    a0 = 1.0 + k / q + k * k
-    b = np.array([(vh + vb * k / q + k * k) / a0, 2.0 * (k * k - vh) / a0,
-                  (vh - vb * k / q + k * k) / a0])  # fmt: skip
-    a = np.array([1.0, 2.0 * (k * k - 1.0) / a0, (1.0 - k / q + k * k) / a0])
-    return b, a
+def tone_balance(audio: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Return the centres of the third-octave bands and the level of each band (dB re total).
 
-
-def _k_highpass() -> tuple[np.ndarray, np.ndarray]:
-    frequency, q = 38.13547087602444, 0.5003270373238773
-    k = np.tan(np.pi * frequency / dsp.RATE)
-    a0 = 1.0 + k / q + k * k
-    b = np.array([1.0, -2.0, 1.0])
-    a = np.array([1.0, 2.0 * (k * k - 1.0) / a0, (1.0 - k / q + k * k) / a0])
-    return b, a
-
-
-def loudness_range(short_term: np.ndarray) -> tuple[float, np.ndarray]:
-    """Return the loudness range (EBU Tech 3342) and the gated short-term values."""
-    gated = short_term[short_term > -70.0]
-    if len(gated) == 0:
-        return 0.0, gated
-    mean = 10.0 * np.log10(np.mean(10.0 ** (gated / 10.0)))
-    gated = gated[gated > mean - 20.0]
-    if len(gated) == 0:
-        return 0.0, gated
-    return float(np.percentile(gated, 95) - np.percentile(gated, 10)), gated
+    The levels are those of the sum of the two channels, for the full time.
+    """
+    total = None
+    for start in range(0, len(audio), 2 * loudness.CHUNK):
+        part = audio[start : start + 2 * loudness.CHUNK]
+        if len(part) < 16384:
+            continue
+        mid = 0.5 * (part[:, 0].astype(np.float64) + part[:, 1])
+        frequencies, power = signal.welch(mid, fs=dsp.RATE, nperseg=16384)
+        total = power * len(part) if total is None else total + power * len(part)
+    if total is None:
+        raise ValueError("the recording is too short")
+    centres = 1000.0 * 2.0 ** (np.arange(-17, 13) / 3.0)  # 20 Hz to 16 kHz
+    levels = []
+    for centre in centres:
+        low, high = centre / 2 ** (1 / 6), centre * 2 ** (1 / 6)
+        band = total[(frequencies >= low) & (frequencies < high)]
+        levels.append(10.0 * np.log10(band.sum() + 1e-20))
+    levels = np.array(levels)
+    return centres, levels - 10.0 * np.log10(np.sum(10.0 ** (levels / 10.0)))
 
 
 def measure(audio: np.ndarray) -> Measurement:
     """Measure a two-channel recording."""
-    meter = pyloudnorm.Meter(dsp.RATE)
-    integrated = float(meter.integrated_loudness(audio.astype(np.float64)))
-    short_term = short_term_loudness(audio)
-    spread, gated = loudness_range(short_term)
+    power = loudness.block_power(audio)
+    integrated = loudness.integrated(power)
+    short_term = loudness.short_term(power)
+    spread, gated = loudness.loudness_range(short_term)
     relative = gated - integrated if len(gated) else np.zeros(1)
-    peak = float(np.max(np.abs(audio)))
-    left, right = audio[:, 0].astype(np.float64), audio[:, 1].astype(np.float64)
-    mid, side = 0.5 * (left + right), 0.5 * (left - right)
-    centres, levels = dsp.third_octave_levels(mid.astype(np.float32))
-    total = 10.0 * np.log10(np.sum(10.0 ** (levels / 10.0)))
+    peak, left_left, right_right, left_right = _sums(audio)
+    count = max(len(audio), 1)
+    mid = (left_left + right_right + 2.0 * left_right) / 4.0
+    side = (left_left + right_right - 2.0 * left_right) / 4.0
+    rms = np.sqrt((left_left + right_right) / (2.0 * count))
+    centres, balance = tone_balance(audio)
     return Measurement(
         seconds=len(audio) / dsp.RATE,
         loudness_lufs=integrated,
@@ -182,11 +173,11 @@ def measure(audio: np.ndarray) -> Measurement:
         short_term_p50=float(np.percentile(relative, 50)),
         short_term_p95=float(np.percentile(relative, 95)),
         peak_db=dsp.to_db(peak),
-        crest_db=dsp.to_db(peak / max(dsp.rms(audio), 1e-12)),
-        correlation=float(np.corrcoef(left, right)[0, 1]),
-        side_db=dsp.to_db(dsp.rms(side) / max(dsp.rms(mid), 1e-12)),
+        crest_db=dsp.to_db(peak / max(rms, 1e-12)),
+        correlation=float(left_right / max(np.sqrt(left_left * right_right), 1e-20)),
+        side_db=float(10.0 * np.log10(max(side, 1e-20) / max(mid, 1e-20))),
         centres=centres,
-        balance=levels - total,
+        balance=balance,
     )
 
 
@@ -251,15 +242,18 @@ def target_balance() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     return tuple(np.array([float(row[c]) for row in rows]) for c in columns)  # type: ignore[return-value]
 
 
-def matching_filter(audio: np.ndarray, strength: float = 0.8, limit_db: float = 6.0) -> np.ndarray:
+def matching_filter(
+    audio: np.ndarray, strength: float = 0.8, limit_db: float = 6.0
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Return a linear-phase filter that moves the tone balance of a mix to the target.
 
     The filter changes only the bands from 50 Hz to 8 kHz: the references are
     not reliable outside these bands. The change in one band is not more than
-    `limit_db`.
+    `limit_db`. The function also returns the centres of the bands and the
+    change of each band in dB.
     """
     centres, mean, _low, _high = target_balance()
-    measured = measure(audio).balance
+    _centres, measured = tone_balance(audio)
     difference = np.clip((mean - measured) * strength, -limit_db, limit_db)
     # A smooth curve: mean of each band and its two adjacent bands.
     smooth = np.convolve(np.pad(difference, 1, mode="edge"), np.ones(3) / 3, mode="valid")
@@ -270,11 +264,17 @@ def matching_filter(audio: np.ndarray, strength: float = 0.8, limit_db: float = 
     log_grid = np.log10(np.maximum(grid, 1.0))
     log_frequencies = np.log10(np.maximum(frequencies, 1.0))
     response = 10.0 ** (np.interp(log_grid, log_frequencies, gains) / 20.0)
-    return signal.firwin2(4097, grid, response, fs=dsp.RATE)
+    return signal.firwin2(4097, grid, response, fs=dsp.RATE), centres, smooth
 
 
-def match_tone_balance(audio: np.ndarray) -> np.ndarray:
-    """Return the mix with the tone balance of the reference recordings."""
-    taps = matching_filter(audio)
-    channels = [signal.oaconvolve(audio[:, c], taps, mode="same") for c in range(audio.shape[1])]
-    return np.stack(channels, axis=1).astype(np.float32)
+def match_tone_balance(audio: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Give the mix the tone balance of the reference recordings.
+
+    The function changes `audio` in place. It returns the audio, the centres
+    of the bands, and the change of each band in dB.
+    """
+    taps, centres, change = matching_filter(audio)
+    for channel in range(audio.shape[1]):
+        filtered = signal.oaconvolve(audio[:, channel], taps, mode="same")
+        audio[:, channel] = filtered.astype(np.float32)
+    return audio, centres, change

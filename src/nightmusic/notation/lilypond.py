@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import bisect
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from . import music, techniques
@@ -234,12 +235,30 @@ def best_clef(base: str, instrument: Instrument | None, written: list[float]) ->
     return base
 
 
+def best_ottava(clef: str, instrument: Instrument | None, written: list[float]) -> int:
+    """Return the octave sign for a passage: 1 = one octave higher, -1 = lower, 0 = none.
+
+    A passage that is all very high is easier to read with an octave sign.
+    The low octaves of a keyboard instrument get the sign for the lower octave.
+    """
+    if not written or instrument is None:
+        return 0
+    ordered = sorted(written)
+    low_part = ordered[len(ordered) // 10]
+    if clef == "treble" and ordered[-1] >= 93 and low_part >= 81:
+        return 1
+    if clef == "bass" and instrument.clef == "grand" and ordered[0] < 31 and ordered[-1] <= 55:
+        return -1
+    return 0
+
+
 def _with_clefs(
     work: Work, player: Player, chunks: list[music.Group], emitter: _Emitter, instrument
 ) -> list[music.Element]:
     """Return the music of the chunks with a clef command where the best clef changes."""
     elements: list[music.Element] = []
     current = ""
+    ottava = 0
     for chunk in chunks:
         shift = emitter.interval.semitones if emitter.interval else 0
         written = [midi + shift for midi in _pitches(chunk.children)]
@@ -247,6 +266,10 @@ def _with_clefs(
         if clef != current:
             elements.append(music.Command("clef", [clef]))
             current = clef
+        octave = best_ottava(clef, instrument, written)
+        if octave != ottava:
+            elements.append(music.Command("ottava", [f"#{octave}"]))
+            ottava = octave
         elements.extend(chunk.children)
         # A change of instrument in the chunk changes the usual clef.
         for command in _walk_commands(chunk.children):
@@ -279,10 +302,13 @@ def _header(work: Work, instrument_line: str = "") -> str:
     return "\n".join(line for line in lines if line)
 
 
-def _definitions(work: Work, players: list[Player], *, for_part: bool) -> str:
+def _definitions(
+    work: Work, players: list[Player], *, for_part: bool, breaks: set[int] | None = None
+) -> str:
+    structure = work.structure if breaks is None else replace(work.structure, breaks=breaks)
     blocks = [
         "global = {\n\\accidentalStyle Score.modern\n\\numericTimeSignature\n"
-        + global_to_lilypond(work.structure)
+        + global_to_lilypond(structure)
         + "\n}"
     ]
     for player in players:
@@ -332,8 +358,36 @@ def _score_staves(work: Work) -> str:
     return "\n".join(blocks)
 
 
+def score_breaks(work: Work, capacity: float = 56.0, most_bars: int = 10) -> set[int]:
+    """Return the bars after which the conductor score starts a new system.
+
+    The width of a bar depends on the number of different moments at which
+    a note starts. A system gets bars until it is full.
+    """
+    from ..perform.events import perform
+
+    structure = work.structure
+    starts = [float(bar.start) for bar in structure.bars]
+    moments: list[set[float]] = [set() for _ in structure.bars]
+    for player in work.orchestra.players:
+        for note in perform(work, player.id):
+            position = float(note.start)
+            moments[bisect.bisect_right(starts, position) - 1].add(position)
+    breaks: set[int] = set()
+    load, count = 0.0, 0
+    for bar, columns in zip(structure.bars, moments, strict=True):
+        width = max(len(columns), 2) + 1.5
+        if count and (load + width > capacity or count >= most_bars):
+            breaks.add(bar.number - 1)
+            load, count = 0.0, 0
+        load += width
+        count += 1
+    return breaks
+
+
 def score_file(work: Work) -> str:
     """Return the LilyPond text of the conductor score."""
+    breaks = score_breaks(work)
     return (
         "\n\n".join(
             [
@@ -343,7 +397,7 @@ def score_file(work: Work) -> str:
                 "#(set-global-staff-size 13)",
                 SCORE_PAPER.strip(),
                 _header(work, "Score in C"),
-                _definitions(work, work.orchestra.players, for_part=False),
+                _definitions(work, work.orchestra.players, for_part=False, breaks=breaks),
                 "\\score {\n<<\n" + _score_staves(work) + "\n>>\n" + SCORE_LAYOUT.strip() + "\n}",
             ]
         )

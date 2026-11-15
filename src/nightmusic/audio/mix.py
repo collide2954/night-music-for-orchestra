@@ -9,22 +9,22 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-import pyloudnorm
 import soundfile
 
 from ..notation.work import Work
 from ..perform.events import perform
-from . import dsp, sampler, space
+from . import dsp, loudness, reference, sampler, space
 
 TAIL_SECONDS = 6.0  # time after the last bar for the reverberation
 SEGMENT_SECONDS = 40.0  # the render divides the work into segments of this length
 SHORTEST_SEGMENT_SECONDS = 6.0
 SEGMENT_LEAD = 1.0  # time before a segment, for notes that start early (grace notes)
 MAX_WORKERS = 8  # largest number of parallel processes
-CACHE_BYTES = 4_000_000_000  # memory for samples, for all processes together
+CACHE_BYTES = 2_400_000_000  # memory for samples, for all processes together
 REVERB_GAIN_DB = -9.0  # level of the hall reverberation relative to the direct sound
 TARGET_LUFS = -20.0  # integrated loudness of the master
 PEAK_LIMIT_DB = -1.0  # largest permitted sample peak
+TARGET_RANGE = 20.0  # loudness range of the master in LU (the references: 14 to 24)
 
 
 @dataclass
@@ -33,9 +33,13 @@ class MixReport:
 
     seconds: float
     loudness_lufs: float
+    loudness_range: float
     peak_db: float
     gain_db: float
     players: int
+    tone_change_db: tuple[float, float]  # smallest and largest change of the equalization
+    riding_ratio: float  # 1 = no gain riding
+    riding_gain_db: float  # largest gain of the gain riding
 
 
 # The data of the present render. The worker processes get it when they start.
@@ -116,26 +120,55 @@ def render(
                     add(first, sound)
     finally:
         _JOB.clear()
-    return master(mix, len(prepared))
+    return master(mix, len(prepared), full=bars is None)
 
 
-def master(mix: np.ndarray, players: int = 0) -> tuple[np.ndarray, MixReport]:
-    """Set the loudness of the mix and make sure that the peak is not too high."""
-    meter = pyloudnorm.Meter(dsp.RATE)
-    loudness = float(meter.integrated_loudness(mix.astype(np.float64)))
-    gain_db = TARGET_LUFS - loudness if np.isfinite(loudness) else 0.0
-    peak_db = dsp.to_db(float(np.max(np.abs(mix)))) + gain_db
+def master(mix: np.ndarray, players: int = 0, *, full: bool = True) -> tuple[np.ndarray, MixReport]:
+    """Make the master from the mix. The function changes `mix` in place.
+
+    The steps are:
+
+    1. Equalization: the tone balance of the mix goes to the tone balance of
+       the reference recordings (see `reference.py`).
+    2. Gain riding: the soft passages go up slowly, until the loudness range
+       is in the range of the reference recordings (see `loudness.py`).
+    3. Level: the integrated loudness goes to the target, and the largest
+       sample stays below the limit.
+
+    For an excerpt (`full` is false), steps 1 and 2 use the values of the
+    last full master, if they are known. Thus an excerpt sounds almost the
+    same as in the full work.
+    """
+    change = np.zeros(1)
+    if len(mix) >= 16384:
+        mix, _centres, change = reference.match_tone_balance(mix)
+    ratio, largest = 1.0, 0.0
+    if full:
+        mix, ratio, largest = loudness.ride(mix, TARGET_RANGE)
+    power = loudness.block_power(mix)
+    measured = loudness.integrated(power)
+    gain_db = TARGET_LUFS - measured if np.isfinite(measured) else 0.0
+    peak = max(
+        float(np.max(np.abs(mix[start : start + loudness.CHUNK])))
+        for start in range(0, max(len(mix), 1), loudness.CHUNK)
+    )
+    peak_db = dsp.to_db(peak) + gain_db
     if peak_db > PEAK_LIMIT_DB:
         gain_db -= peak_db - PEAK_LIMIT_DB
-    result = (mix * np.float32(dsp.db(gain_db))).astype(np.float32)
+    mix *= np.float32(dsp.db(gain_db))
+    spread, _gated = loudness.loudness_range(loudness.short_term(power))
     report = MixReport(
-        seconds=len(result) / dsp.RATE,
-        loudness_lufs=float(meter.integrated_loudness(result.astype(np.float64))),
-        peak_db=dsp.to_db(float(np.max(np.abs(result)))),
+        seconds=len(mix) / dsp.RATE,
+        loudness_lufs=measured + gain_db,
+        loudness_range=spread,
+        peak_db=dsp.to_db(peak) + gain_db,
         gain_db=gain_db,
         players=players,
+        tone_change_db=(float(change.min()), float(change.max())),
+        riding_ratio=ratio,
+        riding_gain_db=largest,
     )
-    return result, report
+    return mix, report
 
 
 def write(audio: np.ndarray, directory: Path, name: str = "night-music") -> list[Path]:

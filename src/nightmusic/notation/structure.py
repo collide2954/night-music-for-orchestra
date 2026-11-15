@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import bisect
 import math
 from dataclasses import dataclass, field
 from fractions import Fraction
@@ -43,6 +44,19 @@ class TempoPoint:
     italic: bool = False
 
 
+def _segment_seconds(start_bpm: float, end_bpm: float, span: float, quarters: float) -> float:
+    """Return the seconds for `quarters` quarter notes from the start of a tempo segment.
+
+    The tempo goes in a straight line from `start_bpm` to `end_bpm` in `span` quarter notes.
+    """
+    if quarters <= 0.0:
+        return 0.0
+    if end_bpm == start_bpm or span <= 0.0:
+        return 60.0 * quarters / start_bpm
+    now_bpm = start_bpm + (end_bpm - start_bpm) * quarters / span
+    return 60.0 * span / (end_bpm - start_bpm) * math.log(now_bpm / start_bpm)
+
+
 @dataclass
 class Structure:
     """Bars, tempo plan, rehearsal marks, and double bar lines."""
@@ -53,6 +67,8 @@ class Structure:
     double_bars: set[int] = field(default_factory=set)  # double bar line at the END of these bars
     breaks: set[int] = field(default_factory=set)  # line break at the END of these bars
     final_bar: bool = True
+    _table: tuple | None = field(default=None, repr=False, compare=False)
+    _table_key: tuple = field(default=(), repr=False, compare=False)
 
     # ------------------------------------------------------------ bars
 
@@ -147,25 +163,40 @@ class Structure:
             return current.bpm + (target.bpm - current.bpm) * share
         return current.bpm
 
-    def seconds(self, position: Fraction) -> float:
-        """Return the time in seconds from the start of the work to a position."""
+    def _time_table(self) -> tuple[list[float], list[tuple[float, float, float, float]]]:
+        """Return the tempo plan as a table, for fast calculations.
+
+        The first list has the start of each segment (quarter notes). Each
+        row of the second list has: the seconds at the start of the
+        segment, the tempo at its start, the tempo at its end, and its
+        length (quarter notes; 0 = the segment has no end).
+        """
+        key = tuple((p.position, p.bpm, p.glide) for p in self.tempo_points)
+        if self._table_key == key and self._table is not None:
+            return self._table
         points = self.tempo_points or [TempoPoint(Fraction(0), 60.0)]
         if points[0].position > 0:
             points = [TempoPoint(Fraction(0), points[0].bpm), *points]
+        starts: list[float] = []
+        rows: list[tuple[float, float, float, float]] = []
         total = 0.0
         for index, point in enumerate(points):
-            if point.position >= position:
-                break
             following = points[index + 1] if index + 1 < len(points) else None
-            end = min(position, following.position) if following else position
-            quarters = float(end - point.position)
-            if point.glide and following and following.bpm != point.bpm:
-                span = float(following.position - point.position)
-                end_bpm = point.bpm + (following.bpm - point.bpm) * quarters / span
-                total += 60.0 * span / (following.bpm - point.bpm) * math.log(end_bpm / point.bpm)
-            else:
-                total += 60.0 * quarters / point.bpm
-        return total
+            span = float(following.position - point.position) if following else 0.0
+            end_bpm = following.bpm if (point.glide and following) else point.bpm
+            starts.append(float(point.position))
+            rows.append((total, point.bpm, end_bpm, span))
+            total += _segment_seconds(point.bpm, end_bpm, span, span)
+        self._table, self._table_key = (starts, rows), key
+        return self._table
+
+    def seconds(self, position: Fraction | float) -> float:
+        """Return the time in seconds from the start of the work to a position."""
+        starts, rows = self._time_table()
+        quarters = float(position)
+        index = max(0, bisect.bisect_right(starts, quarters) - 1)
+        start_seconds, start_bpm, end_bpm, span = rows[index]
+        return start_seconds + _segment_seconds(start_bpm, end_bpm, span, quarters - starts[index])
 
     @property
     def duration_seconds(self) -> float:

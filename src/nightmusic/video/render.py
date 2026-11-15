@@ -8,6 +8,8 @@ plays. Thus the viewer can follow each part.
 
 from __future__ import annotations
 
+import multiprocessing
+import os
 import subprocess
 from dataclasses import dataclass
 from fractions import Fraction
@@ -36,6 +38,14 @@ FAMILY_COLOURS = {
 TOP_BAND = 64  # pixels at 1080p
 BOTTOM_BAND = 128
 RING_SECONDS = 0.5  # shortest time that an instrument is lit
+MAX_WORKERS = 8  # largest number of parallel processes
+
+# The data of the present render. The worker processes get it when they start.
+_JOB: dict = {}
+
+
+def _draw_part(job: tuple[int, int, Path]) -> None:
+    _JOB["draw"](*job)
 
 
 def _font(bold: bool, size: int) -> ImageFont.FreeTypeFont:
@@ -216,15 +226,6 @@ def render(
     starts = np.array([page.start for page in pages])
 
     output.parent.mkdir(parents=True, exist_ok=True)
-    encoder = subprocess.Popen(
-        ["ffmpeg", "-y", "-loglevel", "error",
-         "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{width}x{height}", "-r", str(fps),
-         "-i", "-", "-i", str(audio),
-         "-c:v", "libopenh264", "-b:v", "6M", "-pix_fmt", "yuv420p",
-         "-c:a", "aac", "-b:a", "256k", "-shortest", "-movflags", "+faststart", str(output)],
-        stdin=subprocess.PIPE,
-    )  # fmt: skip
-    assert encoder.stdin is not None
 
     @lru_cache(maxsize=24)
     def tinted(index: int, sounding: tuple[str, ...]) -> np.ndarray:
@@ -244,7 +245,22 @@ def render(
             marker += 0.9 * (colour - marker)
         return np.clip(picture, 0, 255).astype(np.uint8)
 
-    for number in range(frames):
+    def draw(first: int, last: int, path: Path) -> None:
+        """Draw the frames `first` to `last` (not included) and encode them (no sound)."""
+        encoder = subprocess.Popen(
+            ["ffmpeg", "-y", "-loglevel", "error",
+             "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{width}x{height}", "-r", str(fps),
+             "-i", "-", "-c:v", "libopenh264", "-b:v", "6M", "-pix_fmt", "yuv420p", str(path)],
+            stdin=subprocess.PIPE,
+        )  # fmt: skip
+        assert encoder.stdin is not None
+        for number in range(first, last):
+            encoder.stdin.write(frame_of(number).tobytes())
+        encoder.stdin.close()
+        if encoder.wait() != 0:
+            raise RuntimeError("the video encoder failed")
+
+    def frame_of(number: int) -> np.ndarray:
         position = float(positions[number])
         index = max(0, int(np.searchsorted(starts, position, side="right")) - 1)
         current = screen(index)
@@ -273,8 +289,32 @@ def render(
         frame[band_bottom:] = lower
         done = int(width * number / max(frames - 1, 1))
         frame[height - int(5 * scale) :, :done] = CURSOR.astype(np.uint8)
-        encoder.stdin.write(frame.tobytes())
-    encoder.stdin.close()
-    if encoder.wait() != 0:
-        raise RuntimeError("the video encoder failed")
+        return frame
+
+    # Each process draws one part of the video. Then the parts are joined, with the sound.
+    workers = max(1, min(os.cpu_count() or 1, MAX_WORKERS, frames // (fps * 20) + 1))
+    edges = [frames * number // workers for number in range(workers + 1)]
+    parts = [output.with_name(f"{output.stem}-part{number:02d}.mp4") for number in range(workers)]
+    jobs = list(zip(edges[:-1], edges[1:], parts, strict=True))
+    _JOB["draw"] = draw
+    try:
+        if workers == 1:
+            draw(*jobs[0])
+        else:
+            # The worker processes are copies of this process: they have the job data.
+            with multiprocessing.get_context("fork").Pool(workers) as pool:
+                pool.map(_draw_part, jobs, chunksize=1)
+    finally:
+        _JOB.clear()
+    listing = output.with_name(f"{output.stem}-parts.txt")
+    listing.write_text("".join(f"file '{part.name}'\n" for part in parts), encoding="utf-8")
+    subprocess.run(
+        ["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", listing.name,
+         "-i", str(audio.resolve()), "-c:v", "copy", "-c:a", "aac", "-b:a", "256k", "-shortest",
+         "-movflags", "+faststart", output.name],
+        cwd=output.parent,
+        check=True,
+    )  # fmt: skip
+    for path in [*parts, listing]:
+        path.unlink()
     return output
