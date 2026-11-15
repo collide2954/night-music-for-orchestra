@@ -178,7 +178,7 @@ def _engine(work: Work) -> None:
     call = r"d'8-> e'8-> a'4.-> r4 |"
     peal = r"d'4 e'4 a'4. |"
     run = r"d''8-> e'' fis''-> gis'' a''-> gis'' fis'' |"
-    levels = [r"\mf", r"\f", r"\ff", r"\ff"]
+    levels = [r"\f", r"\f", r"\ff", r"\ff"]
     low_shifts = [0, 4, 8, 0]  # the riff: D, F-sharp, B-flat, D
     high_shifts = [0, 4, 8, 12]  # the chords of the strings go up
     brass_shifts = [0, 4, -4, 0]  # the calls stay in the range of the instruments
@@ -189,7 +189,13 @@ def _engine(work: Work) -> None:
         level = levels[phrase - 1]
         low = times(tr(riff, low_shifts[phrase - 1]), 4)
         block.add("cb tuba btbn bn3 cbcl cl3 vc bn1:1 bn2:1 cimb.lh:1", phrase, low, level)
+        if phrase <= 2:
+            # The trombones make the riff heavier, until they get the calls.
+            block.add("tbn1:1 tbn2:1", phrase, low, level)
         block.add("pno.lh", phrase, double(low, -1), level)
+        # Two horns play in the gaps of the riff, with the high strings.
+        horns = times(fill(tr(r"<a d'>1", low_shifts[phrase - 1]), gaps), 4)
+        block.spread("hn6 hn5", phrase, horns, level)
         shift = high_shifts[phrase - 1]
         for player, chord in [("va", r"<d' a'>1"), ("vn2", r"<a' e''>1"), ("vn1", r"<e'' a''>1")]:
             block.add(player, phrase, times(fill(tr(chord, shift), gaps), 4), level)
@@ -231,7 +237,7 @@ def _engine(work: Work) -> None:
     def calls(numbers: tuple[int, ...], shift: int) -> str:
         return bars(8, one, {number: tr(call, shift) for number in numbers})
 
-    block.add("hn1 hn3", 1, calls((3, 7), 0), r"\mf")
+    block.add("hn1 hn3", 1, calls((3, 7), 0), r"\f")
     block.add("hn1 hn2 hn3 hn4", 2, calls((3, 7), brass_shifts[1]), r"\f")
     block.add("tpt1 tpt2", 2, calls((1, 5), brass_shifts[1]), r"\f")
     block.add("hn1 hn2 hn3 hn4 tbn1:-1 tbn2:-1", 3, calls((2, 4, 6, 8), brass_shifts[2]), r"\ff")

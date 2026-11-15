@@ -617,6 +617,9 @@ def _chase_end(work: Work) -> None:
         shift = 3 * (phrase - 1)
         low = times(tr(riff, shift), 4)
         block.add("cb tuba btbn bn3 cbcl cl3 vc:1 bn1:1 bn2:1 cimb.lh:1", phrase, low, level)
+        if phrase <= 2:
+            # The trombones make the riff heavier, until they get the theme.
+            block.add("tbn1:1 tbn2:1", phrase, low, level)
         block.add("pno.lh", phrase, double(low, -1), level)
         for player, chord in [("va", r"<f b>1"), ("vn2", r"<d' gis'>1"), ("vn1", r"<b' f''>1")]:
             block.add(player, phrase, times(fill(tr(chord, shift), gaps), 4), level)
