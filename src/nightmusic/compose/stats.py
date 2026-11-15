@@ -150,11 +150,44 @@ def passages(work: Work, smallest: float = PASSAGE_SECONDS) -> list[float]:
     counts = np.stack([(windows == value).sum(axis=1) for value in range(classes)])
     smooth = counts.argmax(axis=0)
     changes = np.flatnonzero(np.diff(smooth)) + 1
-    starts = [0, *changes.tolist()]
-    # A passage that is too short becomes a part of the passage before it.
-    # Then two adjacent passages with the same mark are one passage.
-    kept = [starts[0]]
-    for start, after in zip(starts[1:], [*starts[2:], len(smooth)], strict=True):
-        if after - start >= smallest / PASSAGE_GRID and smooth[start] != smooth[kept[-1]]:
-            kept.append(start)
+    edges = [0, *changes.tolist(), len(smooth)]
+    # Each run is [first moment, moment after the last, mark].
+    runs = [
+        [first, after, int(smooth[first])] for first, after in zip(edges, edges[1:], strict=False)
+    ]
+    # A run that is too short becomes a part of the adjacent run that has the nearer
+    # mark. Then two adjacent runs with the same mark are one run.
+    shortest = smallest / PASSAGE_GRID
+    while len(runs) > 1:
+        lengths = [after - first for first, after, _mark in runs]
+        index = int(np.argmin(lengths))
+        if lengths[index] >= shortest:
+            break
+        mark = runs[index][2]
+        before = abs(runs[index - 1][2] - mark) if index > 0 else None
+        after = abs(runs[index + 1][2] - mark) if index + 1 < len(runs) else None
+        if after is None or (before is not None and before <= after):
+            runs[index - 1][1] = runs[index][1]
+        else:
+            runs[index + 1][0] = runs[index][0]
+        del runs[index]
+        merged = [runs[0]]
+        for run in runs[1:]:
+            if run[2] == merged[-1][2]:
+                merged[-1][1] = run[1]
+            else:
+                merged.append(run)
+        runs = merged
+    # Put each change between two passages at the moment where the louder music
+    # starts or stops. Thus loud notes are not in the softer passage.
+    half = width // 2
+    for index in range(1, len(runs)):
+        left, right = runs[index - 1], runs[index]
+        low = max(left[0] + 1, right[0] - half)
+        high = min(right[1] - 1, right[0] + half)
+        louder = np.flatnonzero(plan[low:high] > min(left[2], right[2]))
+        if len(louder):
+            place = low + int(louder[0]) if right[2] > left[2] else low + int(louder[-1]) + 1
+            left[1] = right[0] = place
+    kept = [first for first, _after, _mark in runs]
     return [value * PASSAGE_GRID for value in kept]

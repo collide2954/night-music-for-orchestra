@@ -154,3 +154,19 @@ def test_a_change_of_tuning_of_the_timpani_needs_time():
     assert [str(problem) for problem in check(work)] == [
         "timp, bar 2: only 4.0 s to tune a drum from d, to c"
     ]
+
+
+def test_a_short_passage_goes_to_the_adjacent_passage_with_the_nearer_mark():
+    from nightmusic.compose import stats
+    from nightmusic.notation.work import Work, load_orchestra
+
+    work = Work("Test", load_orchestra())
+    section = work.section(9, 4, 4)
+    work.structure.tempo(section.bar(1), 1, 60, "Lento")
+    # 16 s very soft, then 4 s at mf, then 16 s at ff: the 4 s are a part of the loud passage.
+    section.write(
+        "vn1",
+        r"c''1\pp ~ | c''1 ~ | c''1 ~ | c''1 | c''1\mf | c''1\ff ~ | c''1 ~ | c''1 ~ | c''1 |",
+    )
+    section.close()
+    assert stats.passages(work) == [0.0, 16.0]
