@@ -82,3 +82,4 @@ master_equalization = "The master gets the tone balance of five real orchestra r
 master_loudness_range = "Gain riding gives the master a loudness range of 20 LU. The reference recordings have 14 to 24 LU."
 master_loudness = "The integrated loudness is -20 LUFS, if the largest sample stays below -1 dBFS."
 score_layout = "The code selects the system breaks of the score from the number of notes in each bar."
+ocarinas = "Three players have an ocarina (oboe 2, clarinet 1, bassoon 2). The contrabass clarinet player has no ocarina."

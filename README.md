@@ -55,7 +55,7 @@ It also has four instruments that are not usual in an orchestra: cimbalom, accor
 | 2. Design | Form, orchestra, and material of the work | Complete |
 | 3. Composition | The music, written as code | First version complete (457 bars) |
 | 4. Engraving | Conductor score and parts | Complete. See "Limits". |
-| 5. Audio | Audio from free sample libraries | Complete. See "Limits". |
+| 5. Audio | Audio from free sample libraries | First version. The realism is not sufficient. See "Limits". |
 | 6. Video | Score video with part tracking | Complete |
 
 ## How the project makes the results
@@ -165,6 +165,10 @@ make study
 ## Limits
 
 - The audio comes from free sample libraries. It is not a recording of an orchestra.
+- The owner of the project listened to the first audio master. The samples, the balance, the
+  equalization, and the realism are not sufficient. The measured values of the master
+  (loudness, tone balance, stereo width) are in the range of real recordings, but these
+  values do not show if the sound is realistic. A better source of sound is the subsequent task.
 - Some instruments use the samples of a similar instrument:
   the accordion (chromatic harmonica), the cimbalom (Hungarian zither),
   the contrabass clarinet (bass clarinet), the clarinet in E-flat (clarinet in B-flat),

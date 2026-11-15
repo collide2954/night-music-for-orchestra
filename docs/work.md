@@ -152,6 +152,15 @@ The work uses ideas from four traditions. It does not quote melodies.
 | Japanese court music | The high chord of the mouth organ, with slow breaths. | Part 3 (accordion) |
 | Hindustani | A drone on the tonic and the fourth. A slow melody with a slow change of pitch on one note. | Part 3 (bars 253 to 262) |
 
+## The instruments that are not usual in an orchestra
+
+| Instrument | Where |
+| --- | --- |
+| Cimbalom | Part 1 (with the long song), the chase (the ostinato), part 3 (the drone), the bells in F-sharp major, part 5 |
+| Accordion | Part 3 (the high chord with slow breaths), the main climax and the calm after it, part 5 |
+| Mandolin | The chase, part 3 (the drone), the bells in F-sharp major, part 5 |
+| Ocarinas | Part 3 (the calls of the night). Three players: oboe 2, clarinet 1, and bassoon 2. |
+
 ## How the code makes the music
 
 The music is Python code in the directory [`src/nightmusic/work`](../src/nightmusic/work).
