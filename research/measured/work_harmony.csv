@@ -1,0 +1,12 @@
+measure,complete,before the turn,after the turn,part 1,part 2,part 3,part 4,part 5
+chords: share built from thirds,0.4344,0.389,0.4833,0.4842,0.5115,0.06195,0.5479,0.3424
+chords: share with a semitone clash,0.5038,0.6996,0.2928,0.5902,0.6261,0.9204,0.2645,0.3544
+chords: share with a 3-semitone cluster,0.152,0.265,0.03032,0.1329,0.05369,0.8142,0,0.09639
+chords: share in one whole-tone scale,0.01079,0.01964,0.001263,0.02848,0.02637,0,0.001843,0
+chords: mean pitch classes,4.358,4.686,4.005,4.191,4.207,6.024,3.978,4.063
+share of sounding time: major and minor triads,0.157,0.09161,0.2491,0.1316,0.1066,0.01984,0.2794,0.1961
+share of sounding time: vagrant chords,0.04688,0.07852,0.002339,0.1184,0.09568,0,0.002757,0.001608
+share of sounding time: dominant chords,0.07748,0.06377,0.09678,0.009868,0.09412,0,0.1259,0.04582
+share of sounding time: other seventh and ninth chords,0.06607,0.04175,0.1003,0.07566,0.03721,0.03571,0.1402,0.03055
+mean pitch classes that sound together,3.811,3.808,3.815,3.364,3.333,5.581,3.973,3.539
+mean distinct pitch classes in one window,4.759,4.909,4.543,4.389,5.345,3.806,4.723,4.244

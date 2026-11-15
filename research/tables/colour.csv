@@ -1,0 +1,19 @@
+type,movement,effect_or_use,example,source,evidence
+Passing tone,"Step from a chord tone, then a step in the same direction to a chord tone. Accented or not accented",Connects two chord tones. Two in sequence are double passing tones,,wiki-nct,R
+Neighbour tone,"Step away from a chord tone, then a step back to the same tone",Decorates one note. An upper form and a lower form,,wiki-nct,R
+Escape tone,"Step from a chord tone, then a leap in the opposite direction",An incomplete neighbour tone. Not accented,,wiki-nct,R
+Anticipation,A note of the subsequent chord comes early,Not accented. It makes the arrival softer,,wiki-nct,R
+Suspension,"A note stays from the chord before, then goes down one step",Accented. The dissonance is on the strong beat. A suspension that goes up is a retardation,,wiki-nct,R
+Appoggiatura,"Leap to a note outside the chord, then a step to a chord tone",Accented. The strongest type for expression: the dissonance has the accent and the chord tone comes late,,wiki-nct,R
+Changing tones,"Step to a note outside the chord, leap to a second such note, step to a chord tone",Two notes around the chord tone,,wiki-nct,R
+Pedal point,One note stays while the chords change,Usually the tonic or the dominant in the lowest voice. The chords above it become dissonant against it,,wiki-nct,R
+Bass note outside the chord,The bass has a note that is not in the chord above it,The most elementary form of pandiatonic harmony,Stravinsky; the Elektra chord of Strauss,wiki-nct; wiki-pandiatonic,R
+Chromatic note outside the chord,A note outside the key that moves by a semitone,More frequent from the Romantic period on,,wiki-nct,R
+Note that does not resolve,A note outside the chord stays to the subsequent change of harmony,"It makes a seventh chord or an extended chord. Nadeau: each such note ""became frozen into the chordal mass""; ninth, eleventh, and thirteenth chords became normal",,wiki-nct,R
+Added second or ninth,"A major second or ninth above the root of a triad, with the third in the chord","Added notes are ""more intense substitutes for traditional chords""",C D E G,wiki-addtone,R
+Added fourth,"A perfect fourth above the root of a triad, with the third in the chord",,,wiki-addtone,R
+Added sixth,A major or minor sixth above the root of a triad,"The chord with a sixth and a ninth is ""not a tense chord requiring resolution""",,wiki-addtone,R
+Mixed third,"The major third and the minor third of one root, an octave or more apart",Usually the minor third is above the major third,Many symphonies of William Schuman,wiki-addtone,R
+Pandiatonic harmony,All seven notes of a scale are free to sound together. No rules of resolution,"Triads with an added sixth, seventh, or second are the most frequent chords. A strong sense of key, ""with a distinct preference for major keys""","Stravinsky, Symphony of Psalms III. Copland, Appalachian Spring. Prokofiev, start of Piano Concerto No. 3",wiki-pandiatonic,R
+Polymodal chromaticism,Two or more modes on one tonic at the same time or in sequence. Example: the Phrygian mode and the Lydian mode on C give all twelve notes,"Each chromatic note is a member of a mode on the tonic (Bartók: a ""diatonic ingredient""). The key centre stays","Bartók, Mikrokosmos No. 80. Bartók, Harvard lectures (1943)",wiki-polymodal,R
+Chord from two interval types,A chord of many notes (to all twelve) that has only two interval types between adjacent notes,Lutosławski keeps the dense chords for climaxes. They are not clusters: each chord has its own colour,"Lutosławski, Musique funèbre (tritones and semitones); Symphony No. 2 (major seconds and fourths)",wiki-lutoslawski,R

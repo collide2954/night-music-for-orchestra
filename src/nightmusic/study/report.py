@@ -194,6 +194,113 @@ def render_sonorities(works: Sequence[str], count: int = 12) -> str:
     return "\n\n".join(parts)
 
 
+# The rows of the harmony table of the new work: the measure, and the parameter of
+# the profile "Transfigured" that gives its target range.
+WORK_HARMONY_TARGETS = {
+    "chords: share built from thirds": "Chords built from thirds",
+    "chords: share with a semitone clash": "Chords with a semitone clash",
+    "chords: share with a 3-semitone cluster": "Chords with a cluster of 3 semitones",
+    "chords: share in one whole-tone scale": "Chords in one whole-tone scale",
+    "share of sounding time: dominant chords": "Dominant chords",
+    "mean distinct pitch classes in one window": "Different pitch classes in one bar of 4/4",
+}
+WORK_COLUMNS = ["complete", "before the turn", "after the turn"]
+WORK_PARTS = ["part 1", "part 2", "part 3", "part 4", "part 5"]
+
+
+def _value(name: str, text: str) -> str:
+    if not text:
+        return "-"
+    is_share = any(word in name for word in (*SHARE_WORDS, "bar", "bars")) and not any(
+        word in name for word in NOT_SHARES
+    )
+    return percent(text) if is_share else number(2)(text)
+
+
+def render_work_repetition() -> str:
+    """Render the repetition of the reference work and of the new work in one table."""
+    reference_header, reference = read_table(MEASURED_DIR / "repetition.csv")
+    _, rows = read_table(MEASURED_DIR / "work_repetition.csv")
+    label = reference_header[1]
+    values = {row["measure"]: row[label] for row in reference}
+    columns = [*WORK_COLUMNS[:1], *WORK_PARTS]
+    body = [
+        [
+            _label(row["measure"]),
+            percent(values[row["measure"]]),
+            *[percent(row[column]) for column in columns],
+        ]
+        for row in rows
+    ]
+    header = ["Measure", "Verklärte Nacht", *[f"New work, {column}" for column in columns]]
+    return markdown_table(header, body)
+
+
+def render_work_harmony() -> str:
+    """Render the harmony of the new work with the reference work and the profile."""
+    _, rows = read_table(MEASURED_DIR / "work_harmony.csv")
+    _, prints = read_table(MEASURED_DIR / "fingerprints.csv")
+    _, profiles = read_table(TABLES_DIR / "profiles.csv")
+    reference = {row["measure"]: row["Schoenberg: Verklärte Nacht, complete"] for row in prints}
+    ranges = {
+        row["parameter"]: f"{row['low']} to {row['high']}"
+        for row in profiles
+        if row["profile"] == "Transfigured"
+    }
+    columns = [*WORK_COLUMNS, *WORK_PARTS]
+    body = []
+    for row in rows:
+        name = row["measure"]
+        target = ranges.get(WORK_HARMONY_TARGETS.get(name, ""), "-")
+        body.append(
+            [
+                _label(name),
+                target,
+                _value(name, reference.get(name, "")),
+                *[_value(name, row[column]) for column in columns],
+            ]
+        )
+    header = [
+        "Measure",
+        'Range of the profile "Transfigured"',
+        "Verklärte Nacht",
+        *[f"New work, {column}" for column in columns],
+    ]
+    return markdown_table(header, body)
+
+
+def render_work_instruments() -> str:
+    """Render the use of the players of the new work."""
+    _, rows = read_table(MEASURED_DIR / "work_instruments.csv")
+    body = [
+        [
+            row["player"],
+            percent(row["share_of_time"]),
+            percent(row["range_used"]) if row["range_used"] else "-",
+            percent(row["low_third"]) if row["low_third"] else "-",
+            percent(row["middle_third"]) if row["middle_third"] else "-",
+            percent(row["high_third"]) if row["high_third"] else "-",
+            row["techniques"] or "-",
+        ]
+        for row in rows
+    ]
+    header = [
+        "Player",
+        "Share of the time",
+        "Range in use",
+        "Notes in the low third",
+        "Notes in the middle third",
+        "Notes in the high third",
+        "Techniques",
+    ]
+    _, unused = read_table(MEASURED_DIR / "work_unused.csv")
+    names = ", ".join(row["instrument"] for row in unused) or "none"
+    return (
+        markdown_table(header, body)
+        + f"\n\nInstruments in the list of the orchestra that have no notes: {names}."
+    )
+
+
 def _measured_specs() -> list[TableSpec]:
     section_columns = [
         "section",
@@ -453,6 +560,38 @@ def _sourced_specs() -> list[TableSpec]:
             ],
         ),
         TableSpec(
+            "S12. Variation: how an idea comes again",
+            TABLES_DIR / "variation.csv",
+            [
+                "The table gives the methods of the reference composers for the return of an "
+                "idea. No row permits a return with no change.",
+            ],
+        ),
+        TableSpec(
+            "S13. Instrument techniques",
+            TABLES_DIR / "techniques.csv",
+            [
+                "The table lists ways to play that give an instrument more colours. "
+                "Table S9 gives the orchestration devices of the three composers.",
+            ],
+        ),
+        TableSpec(
+            "S14. Notes that are not in the chord",
+            TABLES_DIR / "colour.csv",
+            [
+                "The table gives the types of notes outside the chord, and the chords that "
+                "keep such notes.",
+            ],
+        ),
+        TableSpec(
+            "S15. More devices of modern orchestral writing",
+            TABLES_DIR / "devices.csv",
+            [
+                "The table gives devices of composers after 1900. "
+                "The first edition of the study did not have them."
+            ],
+        ),
+        TableSpec(
             "S11. Night music and melody from different regions of the world",
             TABLES_DIR / "world.csv",
             [
@@ -555,6 +694,44 @@ def build() -> str:
     )
     parts.append(
         "Data file: [`research/measured/sonorities.csv`](../research/measured/sonorities.csv)"
+    )
+
+    parts.append("### M15. Literal repetition: Verklärte Nacht and the new work")
+    parts.append(
+        "The table shows how frequently a bar comes again with no change. "
+        "Each value is a share of the bars that have notes. "
+        '"The same" means the same notes at the same positions with the same lengths. '
+        "A voice is one player of the new work, or one voice of the piano arrangement of "
+        "*Verklärte Nacht*. An orchestra has more voices with accompaniment figures than a "
+        "piano arrangement: thus the values for one voice are not fully comparable."
+    )
+    parts.append(render_work_repetition())
+    parts.append(
+        "Data files: [`research/measured/repetition.csv`](../research/measured/repetition.csv), "
+        "[`research/measured/work_repetition.csv`](../research/measured/work_repetition.csv)"
+    )
+    parts.append("### M16. The new work: harmony")
+    parts.append(
+        "The table measures the new work with the method of table M11. "
+        '"The turn" is the change from the dark half to the light half of the work '
+        '(the start of part 4). Part 3 is the zone of the profile "Night": '
+        'the ranges of the profile "Transfigured" do not apply to it.'
+    )
+    parts.append(render_work_harmony())
+    parts.append(
+        "Data file: [`research/measured/work_harmony.csv`](../research/measured/work_harmony.csv)"
+    )
+    parts.append("### M17. The new work: use of the instruments")
+    parts.append(
+        '"Range in use" is the distance from the lowest note to the highest note of the player, '
+        "as a part of the range of the instrument. "
+        "The three subsequent columns divide the range of the instrument into three equal parts. "
+        'The column "Techniques" lists each way to play that is not the usual way.'
+    )
+    parts.append(render_work_instruments())
+    parts.append(
+        "Data file: "
+        "[`research/measured/work_instruments.csv`](../research/measured/work_instruments.csv)"
     )
 
     parts.append("## Part 2: Sourced tables")

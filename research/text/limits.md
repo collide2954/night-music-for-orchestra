@@ -14,3 +14,6 @@
   (tables M13 and M14). These recordings are not works of the three reference composers:
   no free recordings of their works were available.
 - The rows with the code K are not checked.
+- The repetition values of *Verklärte Nacht* are for the voices of a piano arrangement. The values of the new work are for the players of an orchestra.
+- The harmony values of the new work come from all notes of the score. They do not show which notes the ear hears as melody and which as harmony.
+- The table of the instrument techniques (S13) lists what the sources name. It is not a full list, and it does not show how difficult a technique is.

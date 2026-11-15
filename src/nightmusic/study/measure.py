@@ -11,7 +11,7 @@ from pathlib import Path
 
 import mido
 
-from . import corpus, metrics, muscript, pcsets
+from . import corpus, metrics, muscript, pcsets, workcheck
 from .metrics import Tone
 
 OUTPUT_DIR = Path("research/measured")
@@ -581,3 +581,22 @@ def measure_all() -> None:
         for rank, (name, value) in enumerate(ranked[:20], 1):
             rows.append([work, rank, name, value])
     write_csv("sonorities.csv", ["work", "rank", "sonority", "share_of_sounding_time"], rows)
+    measure_repetition()
+
+
+def measure_repetition() -> None:
+    """Measure the literal repetition of Verklärte Nacht and of the new work."""
+    from ..work import build
+
+    score = load_vn()
+    starts = {bar.number: bar.start for bar in score.bars}
+    workcheck.write_reference_repetition(
+        "Schoenberg: Verklärte Nacht (piano arrangement)",
+        (
+            (note.bar, f"{note.stave}{note.voice}", note.start - starts[note.bar], note.duration,
+             note.midi)
+            for note in score.notes
+            if not note.small
+        ),
+    )  # fmt: skip
+    workcheck.write_tables(build())

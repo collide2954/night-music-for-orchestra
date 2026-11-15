@@ -1,0 +1,8 @@
+measure,complete,before the turn,after the turn,part 1,part 2,part 3,part 4,part 5
+full texture: bar is the same as the bar before,0.0119,0.02062,0,0,0.02817,0,0,0
+full texture: bar is the same as one of the 8 bars before,0.0873,0.09278,0.07981,0,0.1268,0,0,0.2048
+full texture: bar is the same at a different pitch,0.001984,0,0.004695,0,0,0,0.007692,0
+full texture: bar has the same rhythm with different notes,0.1111,0.1237,0.0939,0,0.169,0,0.1077,0.07229
+one voice: bar is the same as one of its 8 bars before,0.5076,0.5334,0.4767,0.2614,0.5432,0.5075,0.2414,0.6362
+one voice: bar is the same at a different pitch,0.1829,0.2326,0.1234,0.02273,0.2504,0,0.1251,0.1222
+bars in a block of 4 bars that is the same as an earlier block,0.05159,0.04811,0.05634,0,0.06573,0,0,0.1446

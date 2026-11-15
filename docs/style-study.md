@@ -28,6 +28,10 @@ The study measured three sets of open data:
 No open score data are available for the music of Corigliano.
 His rows come from his own program notes and from his lists of instruments.
 
+The second edition of the study (15 November 2026) has four more sourced tables (S12 to S15): variation, instrument techniques, notes that are not in the chord, and more devices of modern orchestral writing.
+It also measures the new work itself with the methods of the study (tables M15 to M17).
+The command `uv run nightmusic docs` makes the tables of the new work again after a change of the music.
+
 ## Main results
 
 1. *Verklärte Nacht* turns from D minor to D major at 54 percent of its duration.
@@ -50,6 +54,15 @@ His rows come from his own program notes and from his lists of instruments.
 10. Corigliano makes the shape of a work before its notes.
     His large works have a duration of 29 to 40 minutes and have 4 to 8 sections.
     They use space, layers in different tempos, and quotation.
+11. *Verklärte Nacht* has almost no literal repetition: 5 percent of its bars are the same as one of the 8 bars before, and no block of 4 bars comes two times.
+    Bartók said in 1937: "I never repeat one part identically".
+12. The second version of the new work repeats more than its models.
+    9 percent of its bars are the same as one of the 8 bars before (20 percent in part 5), and 5 percent are in a block of 4 bars that comes two times.
+    In one half of the bars of a player, the player repeats one of the 8 bars before.
+13. *Verklärte Nacht* has 7.6 different pitch classes in one bar. The new work has 4.8.
+    After the turn, the new work has almost no vagrant chords (0.2 percent of the time; *Verklärte Nacht*: 13 percent) and almost no whole-tone chords.
+14. The new work uses few techniques of its instruments: 1 in the woodwinds, 2 in the brass, and 10 in the strings.
+    Ten instruments of its percussion list have no notes.
 
 ## Part 1: Measured tables
 
@@ -430,6 +443,102 @@ A sonority is the set of pitch classes that sound at one moment. A name of the f
 
 Data file: [`research/measured/sonorities.csv`](../research/measured/sonorities.csv)
 
+### M15. Literal repetition: Verklärte Nacht and the new work
+
+The table shows how frequently a bar comes again with no change. Each value is a share of the bars that have notes. "The same" means the same notes at the same positions with the same lengths. A voice is one player of the new work, or one voice of the piano arrangement of *Verklärte Nacht*. An orchestra has more voices with accompaniment figures than a piano arrangement: thus the values for one voice are not fully comparable.
+
+| Measure | Verklärte Nacht | New work, complete | New work, part 1 | New work, part 2 | New work, part 3 | New work, part 4 | New work, part 5 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Full texture: bar is the same as the bar before | 2.4 % | 1.2 % | 0.0 % | 2.8 % | 0.0 % | 0.0 % | 0.0 % |
+| Full texture: bar is the same as one of the 8 bars before | 5.1 % | 8.7 % | 0.0 % | 12.7 % | 0.0 % | 0.0 % | 20.5 % |
+| Full texture: bar is the same at a different pitch | 3.9 % | 0.2 % | 0.0 % | 0.0 % | 0.0 % | 0.8 % | 0.0 % |
+| Full texture: bar has the same rhythm with different notes | 8.7 % | 11.1 % | 0.0 % | 16.9 % | 0.0 % | 10.8 % | 7.2 % |
+| One voice: bar is the same as one of its 8 bars before | 10.2 % | 50.8 % | 26.1 % | 54.3 % | 50.7 % | 24.1 % | 63.6 % |
+| One voice: bar is the same at a different pitch | 8.5 % | 18.3 % | 2.3 % | 25.0 % | 0.0 % | 12.5 % | 12.2 % |
+| Bars in a block of 4 bars that is the same as an earlier block | 0.0 % | 5.2 % | 0.0 % | 6.6 % | 0.0 % | 0.0 % | 14.5 % |
+
+Data files: [`research/measured/repetition.csv`](../research/measured/repetition.csv), [`research/measured/work_repetition.csv`](../research/measured/work_repetition.csv)
+
+### M16. The new work: harmony
+
+The table measures the new work with the method of table M11. "The turn" is the change from the dark half to the light half of the work (the start of part 4). Part 3 is the zone of the profile "Night": the ranges of the profile "Transfigured" do not apply to it.
+
+| Measure | Range of the profile "Transfigured" | Verklärte Nacht | New work, complete | New work, before the turn | New work, after the turn | New work, part 1 | New work, part 2 | New work, part 3 | New work, part 4 | New work, part 5 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Chords: share built from thirds | 0.62 to 0.72 | 68.0 % | 43.4 % | 38.9 % | 48.3 % | 48.4 % | 51.1 % | 6.2 % | 54.8 % | 34.2 % |
+| Chords: share with a semitone clash | 0.20 to 0.28 | 23.8 % | 50.4 % | 70.0 % | 29.3 % | 59.0 % | 62.6 % | 92.0 % | 26.5 % | 35.4 % |
+| Chords: share with a 3-semitone cluster | 0.00 to 0.02 | 1.0 % | 15.2 % | 26.5 % | 3.0 % | 13.3 % | 5.4 % | 81.4 % | 0.0 % | 9.6 % |
+| Chords: share in one whole-tone scale | 0.09 to 0.16 | 12.9 % | 1.1 % | 2.0 % | 0.1 % | 2.8 % | 2.6 % | 0.0 % | 0.2 % | 0.0 % |
+| Chords: mean pitch classes | - | 3.42 | 4.36 | 4.69 | 4.00 | 4.19 | 4.21 | 6.02 | 3.98 | 4.06 |
+| Share of sounding time: major and minor triads | - | 14.9 % | 15.7 % | 9.2 % | 24.9 % | 13.2 % | 10.7 % | 2.0 % | 27.9 % | 19.6 % |
+| Share of sounding time: vagrant chords | - | 17.5 % | 4.7 % | 7.9 % | 0.2 % | 11.8 % | 9.6 % | 0.0 % | 0.3 % | 0.2 % |
+| Share of sounding time: dominant chords | 0.05 to 0.07 | 5.7 % | 7.7 % | 6.4 % | 9.7 % | 1.0 % | 9.4 % | 0.0 % | 12.6 % | 4.6 % |
+| Share of sounding time: other seventh and ninth chords | - | 7.3 % | 6.6 % | 4.2 % | 10.0 % | 7.6 % | 3.7 % | 3.6 % | 14.0 % | 3.1 % |
+| Mean pitch classes that sound together | - | 2.82 | 3.81 | 3.81 | 3.81 | 3.36 | 3.33 | 5.58 | 3.97 | 3.54 |
+| Mean distinct pitch classes in one window | 7 to 8 | 7.57 | 4.76 | 4.91 | 4.54 | 4.39 | 5.34 | 3.81 | 4.72 | 4.24 |
+
+Data file: [`research/measured/work_harmony.csv`](../research/measured/work_harmony.csv)
+
+### M17. The new work: use of the instruments
+
+"Range in use" is the distance from the lowest note to the highest note of the player, as a part of the range of the instrument. The three subsequent columns divide the range of the instrument into three equal parts. The column "Techniques" lists each way to play that is not the usual way.
+
+| Player | Share of the time | Range in use | Notes in the low third | Notes in the middle third | Notes in the high third | Techniques |
+| --- | --- | --- | --- | --- | --- | --- |
+| fl1 | 39.1 % | 94.7 % | 2.6 % | 43.5 % | 53.8 % | - |
+| fl2 | 31.8 % | 76.3 % | 1.0 % | 43.8 % | 55.2 % | grace notes |
+| fl3 | 22.7 % | 70.6 % | 39.6 % | 59.9 % | 0.5 % | - |
+| ob1 | 35.0 % | 81.8 % | 20.5 % | 61.6 % | 17.9 % | - |
+| ob2 | 28.3 % | 81.8 % | 16.6 % | 63.0 % | 20.4 % | grace notes |
+| ob3 | 6.7 % | 78.1 % | 26.5 % | 65.3 % | 8.2 % | grace notes |
+| cl1 | 38.3 % | 75.0 % | 21.2 % | 63.7 % | 15.1 % | grace notes |
+| cl2 | 28.1 % | 68.2 % | 5.8 % | 69.4 % | 24.8 % | - |
+| cl3 | 26.8 % | 58.3 % | 63.8 % | 36.2 % | 0.0 % | grace notes |
+| cbcl | 25.7 % | 62.8 % | 16.7 % | 81.5 % | 1.8 % | grace notes |
+| bn1 | 43.3 % | 73.8 % | 25.5 % | 70.4 % | 4.1 % | - |
+| bn2 | 41.9 % | 64.3 % | 29.6 % | 68.5 % | 1.9 % | grace notes |
+| bn3 | 34.0 % | 81.8 % | 6.4 % | 65.0 % | 28.6 % | - |
+| hn1 | 53.5 % | 64.3 % | 0.2 % | 49.3 % | 50.5 % | desk: solo; mute: on |
+| hn2 | 47.8 % | 64.3 % | 2.2 % | 73.5 % | 24.3 % | mute: on |
+| hn3 | 49.7 % | 61.9 % | 0.2 % | 72.7 % | 27.1 % | mute: on |
+| hn4 | 46.3 % | 83.3 % | 12.7 % | 68.1 % | 19.2 % | mute: on |
+| hn5 | 15.9 % | 50.0 % | 0.0 % | 47.5 % | 52.5 % | - |
+| hn6 | 15.9 % | 50.0 % | 0.0 % | 60.2 % | 39.8 % | - |
+| tpt1 | 23.3 % | 68.8 % | 7.5 % | 76.0 % | 16.5 % | mute: on |
+| tpt2 | 21.8 % | 68.8 % | 16.2 % | 75.9 % | 8.0 % | - |
+| tpt3 | 18.2 % | 71.9 % | 29.6 % | 62.5 % | 7.9 % | - |
+| tbn1 | 27.7 % | 79.4 % | 39.2 % | 54.0 % | 6.8 % | - |
+| tbn2 | 27.5 % | 79.4 % | 46.5 % | 47.0 % | 6.5 % | - |
+| btbn | 25.0 % | 64.1 % | 50.8 % | 48.7 % | 0.5 % | - |
+| tuba | 26.3 % | 66.7 % | 55.6 % | 43.0 % | 1.5 % | - |
+| timp | 31.4 % | 81.8 % | 55.8 % | 37.2 % | 7.0 % | mallet: soft; tremolo |
+| perc1 | 9.3 % | - | - | - | - | tremolo |
+| perc2 | 42.6 % | 58.1 % | 23.5 % | 75.7 % | 0.8 % | motor: on |
+| perc3 | 13.2 % | - | - | - | - | tremolo |
+| perc4 | 18.4 % | - | - | - | - | tremolo |
+| perc5 | 7.6 % | - | - | - | - | - |
+| perc6 | 11.5 % | - | - | - | - | tremolo |
+| harp.rh | 33.5 % | 56.2 % | 0.0 % | 32.6 % | 67.3 % | - |
+| harp.lh | 5.9 % | 32.5 % | 67.1 % | 32.9 % | 0.0 % | - |
+| cimb.rh | 3.5 % | 36.8 % | 0.0 % | 46.0 % | 54.0 % | tremolo |
+| cimb.lh | 18.3 % | 42.1 % | 65.3 % | 34.7 % | 0.0 % | tremolo |
+| mand | 11.9 % | 68.4 % | 23.8 % | 57.0 % | 19.2 % | tremolo |
+| cel.rh | 13.1 % | 46.7 % | 0.0 % | 30.4 % | 69.6 % | - |
+| cel.lh | 0.0 % | - | - | - | - | no notes |
+| pno.rh | 58.5 % | 64.4 % | 3.6 % | 87.5 % | 8.9 % | - |
+| pno.lh | 35.9 % | 40.2 % | 92.0 % | 8.0 % | 0.0 % | grace notes; tremolo |
+| acc.rh | 64.2 % | 45.8 % | 0.0 % | 73.6 % | 26.4 % | - |
+| acc.lh | 0.0 % | - | - | - | - | no notes |
+| vn1 | 81.5 % | 74.0 % | 8.6 % | 83.4 % | 8.0 % | desk: solo; harmonic; mute: on; sul ponticello; tremolo |
+| vn2 | 94.0 % | 72.0 % | 58.6 % | 41.0 % | 0.3 % | mute: on; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
+| va | 133.8 % | 80.0 % | 43.9 % | 52.3 % | 3.8 % | mute: on; sul ponticello; sul tasto; tremolo; vibrato: none |
+| vc | 125.4 % | 85.4 % | 48.1 % | 48.4 % | 3.5 % | desk: solo; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
+| cb | 85.3 % | 62.8 % | 52.8 % | 46.3 % | 0.9 % | mute: on; pizzicato; sul tasto; tremolo |
+
+Instruments in the list of the orchestra that have no notes: marimba, crotales, singing bowls, temple blocks, claves, guiro, cowbells, finger cymbals, wind chimes, waterphone.
+
+Data file: [`research/measured/work_instruments.csv`](../research/measured/work_instruments.csv)
+
 ## Part 2: Sourced tables
 
 The study team wrote the tables of this part from the sources. The directory [`research/tables`](../research/tables) has the data files.
@@ -784,6 +893,124 @@ The list is from the Wikipedia article "Night music (Bartók)" (source key `wiki
 
 Data file: [`research/tables/night_list.csv`](../research/tables/night_list.csv)
 
+### S12. Variation: how an idea comes again
+
+The table gives the methods of the reference composers for the return of an idea. No row permits a return with no change.
+
+| Composer | Method | Content | Parameters | Where | Source | Evidence |
+| --- | --- | --- | --- | --- | --- | --- |
+| Schoenberg | Developing variation | New material comes from changes of the material before it. Schoenberg: "variation of the features of a basic unit produces all the thematic formulations" | The changes are in the pitch (vertical) and in the rhythm and the order (horizontal) | Essay "Bach" (1950) in Style and Idea, page 397. Schoenberg gave the method its name | wiki-devvar | R |
+| Schoenberg | All themes from the first phrase | "All main themes had to be transformations of the first phrase". The repetition of the relations between the notes holds the work together | One common factor produces forms that are more and more remote | Die Jakobsleiter. Essay "Composition with Twelve Tones" (about 1948), page 248 | wiki-devvar | R |
+| Schoenberg | Variation keeps some features | "The use of the motive requires variation". But a change of all features "produces something foreign, incoherent, illogical" | Change one or two of these: rhythm, intervals, contour, harmony. Keep the others | Fundamentals of Musical Composition, the chapter on the motive (read in a course summary) | fmc-summary | R |
+| Schoenberg | Ways to change a motive | Rhythm: different note lengths, repeated notes, a move to different beats, an added upbeat, a different metre. Intervals: a different direction or order, added or removed notes, a leap filled with steps, a larger or smaller leap. Harmony: an inversion, a different chord, added chords. Melody: a transposition, added passing harmony | A list for the composer: each repetition uses one or more items | Fundamentals of Musical Composition, the chapter on the motive | reference | K |
+| Schoenberg | Liquidation | The characteristic features of a motive go away step by step. Only notes with no character stay. Thus a section can end with no hard stop | Each repetition is shorter or has fewer characteristic intervals | Fundamentals of Musical Composition | reference | K |
+| Schoenberg | Brahms as the model | Schoenberg found developing variation in its "most advanced state" in the music of Brahms |  | Frisch (1982), page 216 | wiki-devvar | R |
+| Bartók | No idea two times in the same way | "I never present the same musical thought twice in the same way". "I never repeat one part identically - which shows my great love for variation and the transformation of themes" | A rule for each return of a theme and of a section | Interview with Denijs Dille, Brussels, 2 February 1937 | dille1937 | R |
+| Bartók | Return in retrograde | At the end of the Second Piano Concerto, "the first subject comes back in retrograde" | The notes of the theme in the opposite order | Piano Concerto No. 2. Interview with Denijs Dille (1937) | dille1937 | R |
+| Bartók | Return in inversion | The fugue ends with the second phrase of its subject, played softly above its inversion. The subject comes back "in different guises" in the later movements | The theme and its mirror form at the same time | Music for Strings, Percussion and Celesta I to IV | wiki-mspc | R |
+| Bartók | The same game with a new interval and a new colour | Five pairs of instruments play in turn. Each pair has its own interval: bassoons a minor sixth, oboes minor thirds, clarinets minor sevenths, flutes fifths, muted trumpets major seconds | 5 statements; 5 intervals; 5 colours. A short brass chorale comes before the return | Concerto for Orchestra II ("Game of Pairs") | wiki-cfo | R |
+| Corigliano | Returning material gets longer | The fast brass motives of the first section come back in the slow section for longer and longer times, until they take over | Each return is longer than the return before it | Symphony No. 1 I | wiki-corsym1 | R |
+| Corigliano | A theme comes back with a different sound | At the end, the soloist plays the opening material again "with a purer and richer sound" than at the start | Same notes; a different tone quality | Pied Piper Fantasy VII | cor-piper | R |
+| Corigliano | A pattern becomes more ornate | The repeated patterns become more and more ornate. The player decides how long a pattern repeats | Second part of the work | Fantasia on an Ostinato (1985) | cor-fantasia | R |
+| Corigliano | The chords come back with a different attack | The chords of the chaconne come back in the strings, "rendered brittle by sharp attacks with the wood of the bow" | Same harmony; a different playing technique | The Red Violin: Chaconne | cor-chaconne | R |
+| Corigliano | A theme comes back very high and very slow | The theme returns as "a stratospherically high, gravely slow melody" "against slowly shifting string sonorities". The first line of the work comes back "in determined accents this time" | Same notes; a different register, tempo, and articulation | The Red Violin: Chaconne | cor-chaconne | R |
+| Present-day view | Repetition needs surprise | "Usually composers repeat elements with some variation". The important question is which part of an idea repeats and when. Variation changes the texture more frequently than the melody | Literal repetition gives the listener a fixed point, but no surprise. Music with no repetition that the ear can find makes the listener tired | Essay by the composer Joseph Sowa | sowa-repetition | R |
+
+Data file: [`research/tables/variation.csv`](../research/tables/variation.csv)
+
+### S13. Instrument techniques
+
+The table lists ways to play that give an instrument more colours. Table S9 gives the orchestration devices of the three composers.
+
+| Family | Technique | Content | Example | Source | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| Strings | Sul ponticello | The bow is near the bridge. The sound is glassy and has much noise |  | rush-techniques | R |
+| Strings | Sul tasto | The bow is above the fingerboard. The sound is softer |  | rush-techniques | R |
+| Strings | Col legno | The wood of the bow hits the string (battuto) or moves across it (tratto) | Berlioz, Symphonie fantastique. Gubaidulina, Perception (1983) | rush-techniques; wiki-exttech | R |
+| Strings | Snap pizzicato | The string hits the fingerboard. Also called Bartók pizzicato | Bartók | wiki-exttech | R |
+| Strings | Pizzicato chords, strummed | The player strums a chord across the strings | Bartók, Music for Strings, Percussion and Celesta IV | wiki-mspc | R |
+| Strings | Harmonics | Natural harmonics (a light touch on an open string) and artificial harmonics (one firm finger and one light finger) |  | rush-techniques | R |
+| Strings | Harmonic glissando | A slide of the light finger gives a chain of harmonics ("seagull" effect) |  | wiki-exttech | R |
+| Strings | Behind the bridge | The bow is between the bridge and the tailpiece. The pitch is high and not exact |  | wiki-exttech; rush-techniques | R |
+| Strings | Different string, same note | The same note on an open string and then on stopped strings, in more and more players. The sound becomes harder | Corigliano, Symphony No. 1 I | wiki-corsym1; cor-sym1 | R |
+| Strings | Two groups, left and right | Two string orchestras on the two sides of the stage answer each other | Bartók, Music for Strings, Percussion and Celesta II and IV | wiki-mspc | R |
+| Woodwinds | Flutter-tongue | The player rolls the tongue. The sound goes from a soft cooing to a growl. It needs more air than a normal note. Notation: tremolo strokes and a word (flz., frull.) | Tchaikovsky, The Nutcracker (flutes). Corigliano, Pied Piper Fantasy (a high, shrill flutter-tongued note of the soloist) | wiki-flutter; cor-piper | R |
+| Woodwinds | Key slaps | The player hits the keys with no air. A soft percussion sound at the pitch of the fingering |  | rush-techniques | R |
+| Woodwinds | Multiphonics | Two or more notes at the same time, from special fingerings |  | wiki-exttech | R |
+| Woodwinds | Breath sounds | Air through the instrument with no tone, or with a small part of the tone |  | wiki-exttech | R |
+| Woodwinds | Pitch bend | The player moves the pitch with the lips or the fingers |  | wiki-exttech | R |
+| Woodwinds | Reed alone | The player blows the reed in a special way to get a raw sound | Corigliano, Oboe Concerto (1975): the sound of the North African rhaita | rush-techniques | R |
+| Woodwinds | A second instrument of the same player | The soloist changes to a tin whistle for the march | Corigliano, Pied Piper Fantasy | cor-piper | R |
+| Brass | Flutter-tongue | As on woodwinds. On horns it can sound like animals | Strauss, Don Quixote, variation 2 (horns: the sheep) | wiki-flutter | R |
+| Brass | Mutes and objects in the bell | Each mute type gives a different colour | Bartók, Concerto for Orchestra II (muted trumpets in major seconds) | wiki-exttech; wiki-cfo | R |
+| Brass | Glissando | Trombones slide between notes | Bartók, Concerto for Orchestra IV (trombones and woodwinds interrupt the theme). Corigliano, Clarinet Concerto I ("glissandi of jagged canons") | wiki-cfo; cor-clarinet | R |
+| Brass | Half valve, pitch bend, double buzz | Sounds between the notes and sounds with noise |  | wiki-exttech | R |
+| Brass | Players in the hall | Five horns behind the stage, two trumpets at the rear of the hall, two clarinets high at the sides. The music for them "specifically shouldn't be synchronized" | Corigliano, Clarinet Concerto III | cor-clarinet | R |
+| Percussion | Bowed metal | A bow on the edge of a vibraphone bar, a cymbal, or a gong. A long note with no attack | Thorvaldsdottir, Aura (2015) | rush-techniques; wiki-exttech | R |
+| Percussion | Timpani glissando | The player moves the pedal while the drum sounds | Bartók, Music for Strings, Percussion and Celesta III. Concerto for Orchestra IV: 10 pitches in about 20 seconds | wiki-mspc; wiki-cfo | R |
+| Percussion | Cymbal on a timpani head | The cymbal sounds through the drum. The pedal changes the colour |  | wiki-exttech | R |
+| Percussion | Water gong | The player lowers a gong into water after the stroke. The pitch slides |  | rush-techniques; wiki-exttech | R |
+| Percussion | Side drum as a frame | A side drum alone starts and ends the movement | Bartók, Concerto for Orchestra II | wiki-cfo | R |
+| Piano | Inside the piano | The player plucks the strings, hits them with a mallet, or slides a finger along a string | Cowell, The Banshee (1925) | rush-techniques | R |
+| Piano | Silent keys | The player holds keys down with no sound. The open strings ring when other notes sound |  | rush-techniques; wiki-exttech | R |
+| Piano | Clusters | The palm or the arm plays all keys of an area | Cowell | wiki-exttech | R |
+| Piano | Piano as percussion | The piano is a member of the percussion group. The celesta player also plays the piano with four hands | Bartók, Music for Strings, Percussion and Celesta | wiki-mspc | R |
+| Harp | Harmonics | A light touch at the middle of the string. The note is one octave higher and has a bell sound |  | reference | K |
+| Harp | Near the soundboard | The player plucks the string at its low end. The sound is dry, as a guitar |  | reference | K |
+| Harp | Bisbigliando | A soft tremolo of the two hands on some notes: a whisper |  | reference | K |
+| Harp | Pedal slide and glissando | A change of the pedal while the string sounds moves the pitch by a semitone. A glissando across the strings gives the scale of the pedal setting |  | reference | K |
+
+Data file: [`research/tables/techniques.csv`](../research/tables/techniques.csv)
+
+### S14. Notes that are not in the chord
+
+The table gives the types of notes outside the chord, and the chords that keep such notes.
+
+| Type | Movement | Effect or use | Example | Source | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| Passing tone | Step from a chord tone, then a step in the same direction to a chord tone. Accented or not accented | Connects two chord tones. Two in sequence are double passing tones |  | wiki-nct | R |
+| Neighbour tone | Step away from a chord tone, then a step back to the same tone | Decorates one note. An upper form and a lower form |  | wiki-nct | R |
+| Escape tone | Step from a chord tone, then a leap in the opposite direction | An incomplete neighbour tone. Not accented |  | wiki-nct | R |
+| Anticipation | A note of the subsequent chord comes early | Not accented. It makes the arrival softer |  | wiki-nct | R |
+| Suspension | A note stays from the chord before, then goes down one step | Accented. The dissonance is on the strong beat. A suspension that goes up is a retardation |  | wiki-nct | R |
+| Appoggiatura | Leap to a note outside the chord, then a step to a chord tone | Accented. The strongest type for expression: the dissonance has the accent and the chord tone comes late |  | wiki-nct | R |
+| Changing tones | Step to a note outside the chord, leap to a second such note, step to a chord tone | Two notes around the chord tone |  | wiki-nct | R |
+| Pedal point | One note stays while the chords change | Usually the tonic or the dominant in the lowest voice. The chords above it become dissonant against it |  | wiki-nct | R |
+| Bass note outside the chord | The bass has a note that is not in the chord above it | The most elementary form of pandiatonic harmony | Stravinsky; the Elektra chord of Strauss | wiki-nct; wiki-pandiatonic | R |
+| Chromatic note outside the chord | A note outside the key that moves by a semitone | More frequent from the Romantic period on |  | wiki-nct | R |
+| Note that does not resolve | A note outside the chord stays to the subsequent change of harmony | It makes a seventh chord or an extended chord. Nadeau: each such note "became frozen into the chordal mass"; ninth, eleventh, and thirteenth chords became normal |  | wiki-nct | R |
+| Added second or ninth | A major second or ninth above the root of a triad, with the third in the chord | Added notes are "more intense substitutes for traditional chords" | C D E G | wiki-addtone | R |
+| Added fourth | A perfect fourth above the root of a triad, with the third in the chord |  |  | wiki-addtone | R |
+| Added sixth | A major or minor sixth above the root of a triad | The chord with a sixth and a ninth is "not a tense chord requiring resolution" |  | wiki-addtone | R |
+| Mixed third | The major third and the minor third of one root, an octave or more apart | Usually the minor third is above the major third | Many symphonies of William Schuman | wiki-addtone | R |
+| Pandiatonic harmony | All seven notes of a scale are free to sound together. No rules of resolution | Triads with an added sixth, seventh, or second are the most frequent chords. A strong sense of key, "with a distinct preference for major keys" | Stravinsky, Symphony of Psalms III. Copland, Appalachian Spring. Prokofiev, start of Piano Concerto No. 3 | wiki-pandiatonic | R |
+| Polymodal chromaticism | Two or more modes on one tonic at the same time or in sequence. Example: the Phrygian mode and the Lydian mode on C give all twelve notes | Each chromatic note is a member of a mode on the tonic (Bartók: a "diatonic ingredient"). The key centre stays | Bartók, Mikrokosmos No. 80. Bartók, Harvard lectures (1943) | wiki-polymodal | R |
+| Chord from two interval types | A chord of many notes (to all twelve) that has only two interval types between adjacent notes | Lutosławski keeps the dense chords for climaxes. They are not clusters: each chord has its own colour | Lutosławski, Musique funèbre (tritones and semitones); Symphony No. 2 (major seconds and fourths) | wiki-lutoslawski | R |
+
+Data file: [`research/tables/colour.csv`](../research/tables/colour.csv)
+
+### S15. More devices of modern orchestral writing
+
+The table gives devices of composers after 1900. The first edition of the study did not have them.
+
+| Device | Content | Parameters | Example | Source | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| Tone-colour melody (Klangfarbenmelodie) | A change of the instruments has the effect of a melody, even on one pitch. In later use: one line goes from instrument to instrument | Webern: frequently one note for each instrument | Schoenberg, Five Pieces op. 16 no. 3 (1909). Webern, Five Pieces op. 10 (1913) | wiki-klang | R |
+| One chord in changing colours | The chord C, G-sharp, B, E, A stays. The instruments that play it change: "a kaleidoscopically rotating array of instrumental colors" | Schoenberg to the conductor: "There are no motives in this piece which have to be brought to the fore" | Schoenberg, Five Pieces op. 16 no. 3 ("Farben") | wiki-op16 | R |
+| Heterophony | "The simultaneous variation of a single melodic line": some players have the plain line, others have it with ornaments or in a different rhythm | Usual in gamelan, gagaku, and Arab classical music | Britten, Curlew River. Boulez, Rituel | wiki-hetero | R |
+| Micropolyphony | Many lines in canon at different speeds. The ear cannot follow one line: the result is a cluster that moves | Cope: it differs from a cluster "in its use of moving rather than static lines" | Ligeti, Apparitions; Atmosphères; Lontano | wiki-micro | R |
+| Limited aleatory | All notes are written. The players do not play exactly together: each player goes at his own speed until the conductor gives a sign | The composer controls the harmony and the form. Lutosławski: "I do not presuppose any improvised parts" | Lutosławski, Jeux vénitiens (1960-61). Hovhaness (1958): "Repeat and repeat ad lib, but not together" | wiki-lutoslawski; wiki-aleatoric | R |
+| Chain form | Two strands of music overlap as the links of a chain: one strand starts before the other stops | The sections do not start and stop together | Lutosławski, Chain 1 to 3 (about 1983 to 1986) | wiki-lutoslawski | R |
+| Sound mass | Texture, tone colour, and loudness are more important than the single pitches | Clusters, glissandi, extreme registers, flutter-tongue, mutes | Penderecki, Threnody (1959). Ligeti, Atmosphères (1961) | wiki-soundmass | R |
+| Tempo modulation | A new tempo comes from a note value of the old tempo: the pivot note value is the same in the two tempos | New tempo = old tempo x (number of pivot notes in the new bar / number in the old bar). Example: 84 x 3/2 = 126 | Carter, Cello Sonata (1948) | wiki-metricmod | R |
+| Written change of speed | The number of notes for each beat grows and then becomes smaller again | 1 1 2 3 5 8 5 3 2 1 1 (a Fibonacci pattern) | Bartók, Music for Strings, Percussion and Celesta III (xylophone) | wiki-mspc | R |
+| Spectral orchestration | Each instrument plays one partial of a sound. The pitches come from the harmonic series and can be microtones | "Additive instrumental synthesis" | Grisey, Partiels (1975). Murail, Gondwana (1980) | wiki-spectral | R |
+| Night that becomes sunrise | "Sunrise is represented by an orchestral tutti beginning with pointillistic night sounds". A very large crescendo breaks off. Then "a soft, warm string chord" is the risen sun | Points of sound; one crescendo; a sudden stop; one soft chord | Corigliano, Pied Piper Fantasy I | cor-piper | R |
+| Each player has a solo | The orchestra part is as difficult as the solo part: the work "approaches being a concerto for orchestra" | Each section and many single players get a display passage | Corigliano, Clarinet Concerto. Bartók, Concerto for Orchestra | cor-clarinet; wiki-cfo | R |
+| Section borders that are not sharp | The parts of the form go into each other. The listener does not hear the exact moment of the change |  | John Luther Adams, Become Ocean | sowa-repetition | R |
+
+Data file: [`research/tables/devices.csv`](../research/tables/devices.csv)
+
 ### S11. Night music and melody from different regions of the world
 
 The table lists possible material from different regions. Most rows have the code K: the study did not read a source for them. The design stage must check the selected rows with primary sources.
@@ -841,6 +1068,10 @@ The profile "All" applies to the full work. The other three profiles apply to zo
 | Tempo | Fastest bar divided by slowest bar | 2.5 | 3.5 | ratio | Verklärte Nacht: 133 and 40 quarter notes in a minute (ratio 3.3) | M |
 | Tempo | Mean tempo of a section | 39 | 76 | quarter notes in a minute | Verklärte Nacht sections: 44 to 85 in the arrangement, divided by 1.12 for real recordings | M |
 | Metre | Changes of metre | 4 | 10 | changes for each 100 bars | Verklärte Nacht: 4.3. Bartók's Bagatelle no. 12 has 5 metres in 44 bars | M |
+| Repetition | Returns of a theme or of a section with no change | 0 | 0 | returns | Bartók (1937): "I never repeat one part identically". Schoenberg: developing variation | R |
+| Repetition | Bars of the full texture that are the same as one of the 8 bars before | 0.00 | 0.06 | share of the bars | Verklärte Nacht: 0.05 | M |
+| Repetition | Bars in a block of 4 bars that is the same as an earlier block | 0.00 | 0.00 | share of the bars | Verklärte Nacht: 0.00 | M |
+| Repetition | Bars of one voice that are the same as one of its 8 bars before | 0.10 | 0.30 | share of the bars of the voices | Verklärte Nacht: 0.10 (voices of a piano arrangement). An orchestra has more voices with accompaniment figures: thus the high value is larger | M |
 
 ### P2. Profile "Transfigured": the Schoenberg zone
 
@@ -920,6 +1151,9 @@ Data file: [`research/tables/profiles.csv`](../research/tables/profiles.csv)
   (tables M13 and M14). These recordings are not works of the three reference composers:
   no free recordings of their works were available.
 - The rows with the code K are not checked.
+- The repetition values of *Verklärte Nacht* are for the voices of a piano arrangement. The values of the new work are for the players of an orchestra.
+- The harmony values of the new work come from all notes of the score. They do not show which notes the ear hears as melody and which as harmony.
+- The table of the instrument techniques (S13) lists what the sources name. It is not a full list, and it does not show how difficult a technique is.
 
 ## Sources
 
@@ -990,4 +1224,24 @@ Data file: [`research/tables/profiles.csv`](../research/tables/profiles.csv)
 | `wiki-pelog` | Wikipedia. Pelog. Read 2026-11-15. <https://en.wikipedia.org/wiki/Pelog> | read |
 | `wiki-colotomy` | Wikipedia. Colotomy. Read 2026-11-15. <https://en.wikipedia.org/wiki/Colotomy> | read |
 | `wiki-sho` | Wikipedia. Shō (instrument). Read 2026-11-15. <https://en.wikipedia.org/wiki/Sh%C5%8D_(instrument)> | read |
+| `wiki-devvar` | Wikipedia. Developing variation. Read 2026-11-15. Quotes Schoenberg, Style and Idea (1975), pages 248 and 397, and Frisch (1982). <https://en.wikipedia.org/wiki/Developing_variation> | read |
+| `fmc-summary` | Course module with quotations from Schoenberg, Fundamentals of Musical Composition (1967). Read 2026-11-15. <https://tambien.github.io/InteractiveMusic/module/fundamentals_of_music_composition> | read |
+| `dille1937` | Bartók, Béla. Interview with Denijs Dille, Brussels, 2 February 1937. In Dille, Béla Bartók. Regard sur le passé (Louvain-la-Neuve, 1990), page 28. Read on the exhibition pages of the Bartók Archives, 2026-11-15. <https://zti.hu/bartok/exhibition/en_P8.htm> | read |
+| `sowa-repetition` | Sowa, Joseph. Why don't modern composers like repetition? Essay on the web site of the composer. Read 2026-11-15. <https://josephsowa.com/why-dont-modern-composers-like-repetition/> | read |
+| `wiki-corsym1` | Wikipedia. Symphony No. 1 (Corigliano). Read 2026-11-15. <https://en.wikipedia.org/wiki/Symphony_No._1_(Corigliano)> | read |
+| `cor-fantasia` | Corigliano, John. Fantasia on an Ostinato (1985). Work page of the publisher with the program note. Read 2026-11-15. <https://www.wisemusicclassical.com/composer/work/24479> | read |
+| `wiki-nct` | Wikipedia. Nonchord tone. Read 2026-11-15. <https://en.wikipedia.org/wiki/Nonchord_tone> | read |
+| `wiki-addtone` | Wikipedia. Added tone chord. Read 2026-11-15. <https://en.wikipedia.org/wiki/Added_tone_chord> | read |
+| `wiki-pandiatonic` | Wikipedia. Pandiatonicism. Read 2026-11-15. <https://en.wikipedia.org/wiki/Pandiatonicism> | read |
+| `wiki-lutoslawski` | Wikipedia. Witold Lutosławski. Read 2026-11-15 (the first part of the article). <https://en.wikipedia.org/wiki/Witold_Lutos%C5%82awski> | read |
+| `wiki-exttech` | Wikipedia. Extended technique. Read 2026-11-15. <https://en.wikipedia.org/wiki/Extended_technique> | read |
+| `rush-techniques` | Rush, Toby. Extended Techniques. Chapter of an online text book on music of the twentieth century. Read 2026-11-15. <https://tobyrush.com/book/text/twc/twc03.html> | read |
+| `wiki-flutter` | Wikipedia. Flutter-tonguing. Read 2026-11-15. <https://en.wikipedia.org/wiki/Flutter-tonguing> | read |
+| `wiki-klang` | Wikipedia. Klangfarbenmelodie. Read 2026-11-15. <https://en.wikipedia.org/wiki/Klangfarbenmelodie> | read |
+| `wiki-hetero` | Wikipedia. Heterophony. Read 2026-11-15. <https://en.wikipedia.org/wiki/Heterophony> | read |
+| `wiki-micro` | Wikipedia. Micropolyphony. Read 2026-11-15. <https://en.wikipedia.org/wiki/Micropolyphony> | read |
+| `wiki-aleatoric` | Wikipedia. Aleatoric music. Read 2026-11-15. <https://en.wikipedia.org/wiki/Aleatoric_music> | read |
+| `wiki-soundmass` | Wikipedia. Sound mass. Read 2026-11-15. <https://en.wikipedia.org/wiki/Sound_mass> | read |
+| `wiki-metricmod` | Wikipedia. Metric modulation. Read 2026-11-15. <https://en.wikipedia.org/wiki/Metric_modulation> | read |
+| `wiki-spectral` | Wikipedia. Spectral music. Read 2026-11-15. <https://en.wikipedia.org/wiki/Spectral_music> | read |
 | `reference` | Standard reference knowledge. The study did not read a source for these rows. Check each row before critical use. | not read |

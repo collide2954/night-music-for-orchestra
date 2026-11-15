@@ -28,6 +28,10 @@ The study measured three sets of open data:
 No open score data are available for the music of Corigliano.
 His rows come from his own program notes and from his lists of instruments.
 
+The second edition of the study (15 November 2026) has four more sourced tables (S12 to S15): variation, instrument techniques, notes that are not in the chord, and more devices of modern orchestral writing.
+It also measures the new work itself with the methods of the study (tables M15 to M17).
+The command `uv run nightmusic docs` makes the tables of the new work again after a change of the music.
+
 ## Main results
 
 1. *Verklärte Nacht* turns from D minor to D major at 54 percent of its duration.
@@ -50,3 +54,12 @@ His rows come from his own program notes and from his lists of instruments.
 10. Corigliano makes the shape of a work before its notes.
     His large works have a duration of 29 to 40 minutes and have 4 to 8 sections.
     They use space, layers in different tempos, and quotation.
+11. *Verklärte Nacht* has almost no literal repetition: 5 percent of its bars are the same as one of the 8 bars before, and no block of 4 bars comes two times.
+    Bartók said in 1937: "I never repeat one part identically".
+12. The second version of the new work repeats more than its models.
+    9 percent of its bars are the same as one of the 8 bars before (20 percent in part 5), and 5 percent are in a block of 4 bars that comes two times.
+    In one half of the bars of a player, the player repeats one of the 8 bars before.
+13. *Verklärte Nacht* has 7.6 different pitch classes in one bar. The new work has 4.8.
+    After the turn, the new work has almost no vagrant chords (0.2 percent of the time; *Verklärte Nacht*: 13 percent) and almost no whole-tone chords.
+14. The new work uses few techniques of its instruments: 1 in the woodwinds, 2 in the brass, and 10 in the strings.
+    Ten instruments of its percussion list have no notes.

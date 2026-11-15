@@ -13,6 +13,8 @@ only these items:
   targets.
 - `README.md`: the length, the columns "Bars" and "Start" of the table of
   the parts, the times of the climaxes, and the number of bars.
+- The style study: the measured tables of the new work
+  (`research/measured/work_*.csv`) and the report `docs/style-study.md`.
 """
 
 from __future__ import annotations
@@ -181,6 +183,22 @@ def update(path: Path, text: str, work: Work, stats: Stats) -> str:
     return update_work_document(text, work, stats)
 
 
+def update_study(work: Work) -> list[Path]:
+    """Measure the work for the style study and write the report. Return the files that changed.
+
+    The study code uses paths from the root of the repository: start the
+    command there.
+    """
+    from .study import report, workcheck
+
+    names = ["work_repetition.csv", "work_harmony.csv", "work_instruments.csv", "work_unused.csv"]
+    paths = [workcheck.OUTPUT_DIR / name for name in names] + [report.REPORT_PATH]
+    before = {path: path.read_bytes() if path.exists() else b"" for path in paths}
+    workcheck.write_tables(work)
+    report.write()
+    return [path for path in paths if path.read_bytes() != before[path]]
+
+
 def update_files(work: Work) -> list[Path]:
     """Write the numbers of the work into the documents. Return the files that changed."""
     stats = measure(work)
@@ -191,4 +209,4 @@ def update_files(work: Work) -> list[Path]:
         if new != text:
             path.write_text(new, encoding="utf-8")
             changed.append(path)
-    return changed
+    return changed + update_study(work)

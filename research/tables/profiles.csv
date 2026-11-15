@@ -1,7 +1,7 @@
 profile,group,parameter,low,high,unit,basis,evidence
-All,Form,Position of the turn from dark to light,0.52,0.56,share of the duration,"Verklärte Nacht: D major comes at 0.54 of the time and 0.55 of the bars",M
-All,Form,Position of the far point of the key plan,0.42,0.54,share of the duration,"Music for Strings I: the subject is on E-flat at 0.50. Verklärte Nacht: section 3 (0.42 to 0.54) ends in E-flat minor",R
-All,Form,Position of the largest climax,0.62,0.81,share of the duration,"Music for Strings I: 0.63. Verklärte Nacht: 0.77 of the time and 0.81 of the bars",M
+All,Form,Position of the turn from dark to light,0.52,0.56,share of the duration,Verklärte Nacht: D major comes at 0.54 of the time and 0.55 of the bars,M
+All,Form,Position of the far point of the key plan,0.42,0.54,share of the duration,Music for Strings I: the subject is on E-flat at 0.50. Verklärte Nacht: section 3 (0.42 to 0.54) ends in E-flat minor,R
+All,Form,Position of the largest climax,0.62,0.81,share of the duration,Music for Strings I: 0.63. Verklärte Nacht: 0.77 of the time and 0.81 of the bars,M
 All,Form,Position of a second climax,0.88,0.94,share of the duration,Verklärte Nacht bar 391: 0.91 of the time,M
 All,Form,Number of sections,4,8,sections,"Verklärte Nacht 5. Bartók arch forms 5. Corigliano 4, 5, and 8",R
 All,Form,Time for each theme group,2,3,minutes,Verklärte Nacht: 11 theme groups in 28 minutes,R
@@ -11,11 +11,15 @@ All,Dynamics,Time with a level of mp or mf,0.08,0.14,share of the duration,Verkl
 All,Dynamics,Time with a level of f or louder,0.15,0.25,share of the duration,Verklärte Nacht: 0.21,M
 All,Dynamics,Time with the level fff,0.03,0.06,share of the duration,Verklärte Nacht: 0.05 (21 bars),M
 All,Dynamics,Softest and loudest level,pppp,fff,mark,Verklärte Nacht,M
-All,Dynamics,Dynamic level marks,2.5,3.5,marks for each 10 bars,"Verklärte Nacht (arrangement): 3.0. Orchestra parts need more marks",M
+All,Dynamics,Dynamic level marks,2.5,3.5,marks for each 10 bars,Verklärte Nacht (arrangement): 3.0. Orchestra parts need more marks,M
 All,Tempo,Bars for each tempo mark,5,13,bars,"Bartók, Divertimento II: 5.3. Verklärte Nacht: 12.7",M
 All,Tempo,Fastest bar divided by slowest bar,2.5,3.5,ratio,Verklärte Nacht: 133 and 40 quarter notes in a minute (ratio 3.3),M
 All,Tempo,Mean tempo of a section,39,76,quarter notes in a minute,"Verklärte Nacht sections: 44 to 85 in the arrangement, divided by 1.12 for real recordings",M
-All,Metre,Changes of metre,4,10,changes for each 100 bars,"Verklärte Nacht: 4.3. Bartók's Bagatelle no. 12 has 5 metres in 44 bars",M
+All,Metre,Changes of metre,4,10,changes for each 100 bars,Verklärte Nacht: 4.3. Bartók's Bagatelle no. 12 has 5 metres in 44 bars,M
+All,Repetition,Returns of a theme or of a section with no change,0,0,returns,"Bartók (1937): ""I never repeat one part identically"". Schoenberg: developing variation",R
+All,Repetition,Bars of the full texture that are the same as one of the 8 bars before,0.00,0.06,share of the bars,Verklärte Nacht: 0.05,M
+All,Repetition,Bars in a block of 4 bars that is the same as an earlier block,0.00,0.00,share of the bars,Verklärte Nacht: 0.00,M
+All,Repetition,Bars of one voice that are the same as one of its 8 bars before,0.10,0.30,share of the bars of the voices,Verklärte Nacht: 0.10 (voices of a piano arrangement). An orchestra has more voices with accompaniment figures: thus the high value is larger,M
 Transfigured,Harmony,Chords built from thirds,0.62,0.72,share of the chord time,Verklärte Nacht: 0.68 (parts 0.69 and 0.67),M
 Transfigured,Harmony,Chords with a semitone clash,0.20,0.28,share of the chord time,Verklärte Nacht: 0.24,M
 Transfigured,Harmony,Chords with a cluster of 3 semitones,0.00,0.02,share of the chord time,Verklärte Nacht: 0.01,M
@@ -47,7 +51,7 @@ Night,Texture,Types of nature call,6,6,types,The Night's Music,R
 Night,Texture,Full pitch range,60,69,semitones,The Night's Music: MIDI 35 to 104,M
 Night,Texture,Width of simultaneous notes (90th percentile),44,48,semitones,The Night's Music: 48 (four octaves),M
 Night,Rhythm,Note starts,4.0,5.5,starts in one second,The Night's Music: 4.7. Fast pieces of the same set: 8.5 to 20.9,M
-Night,Rhythm,Slow pulse,60,72,beats in a minute,"The Night's Music: quarter note = 72. Music for Strings III: eighth note = 66",R
+Night,Rhythm,Slow pulse,60,72,beats in a minute,The Night's Music: quarter note = 72. Music for Strings III: eighth note = 66,R
 Night,Dynamics,Mean loudness divided by the mean loudness of fast movements,0.65,0.75,ratio of key velocity,The Night's Music 49; The Chase 69; With Drums and Pipes 74,M
 Theatre,Form,Design sequence,shape,notes,sequence,Corigliano: the shape of the work comes before the notes,R
 Theatre,Tempo,Ratio of two tempos that sound together,1.2,1.33,ratio,"String Quartet, Fugue: 72 and 60. Chiaroscuro: 4 to 3",R
@@ -59,5 +63,5 @@ Theatre,Orchestra,Trumpets,3,5,players,Corigliano's scores for large orchestra,R
 Theatre,Orchestra,Percussion players (without timpani),3,5,players,Corigliano's scores for large orchestra,R
 Theatre,Pitch,Pitch centres of a full work,4,4,notes,"String Quartet: C, C-sharp, G, G-sharp",R
 Theatre,Pitch,Pitches of the chaconne sequence,12,12,pitches,Symphony No. 1 III,R
-Theatre,Material,Quotations of other music,1,1,for each work,"Symphony No. 1: a tango. Three Hallucinations: a hymn. Chiaroscuro: a Bach chorale",R
+Theatre,Material,Quotations of other music,1,1,for each work,Symphony No. 1: a tango. Three Hallucinations: a hymn. Chiaroscuro: a Bach chorale,R
 Theatre,Tuning,Smallest interval,50,50,cents,"Quarter-tones in Chiaroscuro, Pied Piper Fantasy, and Altered States",R

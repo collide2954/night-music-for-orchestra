@@ -1,0 +1,8 @@
+measure,Schoenberg: Verklärte Nacht (piano arrangement)
+full texture: bar is the same as the bar before,0.02427
+full texture: bar is the same as one of the 8 bars before,0.05097
+full texture: bar is the same at a different pitch,0.03883
+full texture: bar has the same rhythm with different notes,0.08738
+one voice: bar is the same as one of its 8 bars before,0.1022
+one voice: bar is the same at a different pitch,0.08458
+bars in a block of 4 bars that is the same as an earlier block,0

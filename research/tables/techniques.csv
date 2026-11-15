@@ -1,0 +1,36 @@
+family,technique,content,example,source,evidence
+Strings,Sul ponticello,The bow is near the bridge. The sound is glassy and has much noise,,rush-techniques,R
+Strings,Sul tasto,The bow is above the fingerboard. The sound is softer,,rush-techniques,R
+Strings,Col legno,The wood of the bow hits the string (battuto) or moves across it (tratto),"Berlioz, Symphonie fantastique. Gubaidulina, Perception (1983)",rush-techniques; wiki-exttech,R
+Strings,Snap pizzicato,The string hits the fingerboard. Also called Bartók pizzicato,Bartók,wiki-exttech,R
+Strings,"Pizzicato chords, strummed",The player strums a chord across the strings,"Bartók, Music for Strings, Percussion and Celesta IV",wiki-mspc,R
+Strings,Harmonics,Natural harmonics (a light touch on an open string) and artificial harmonics (one firm finger and one light finger),,rush-techniques,R
+Strings,Harmonic glissando,"A slide of the light finger gives a chain of harmonics (""seagull"" effect)",,wiki-exttech,R
+Strings,Behind the bridge,The bow is between the bridge and the tailpiece. The pitch is high and not exact,,wiki-exttech; rush-techniques,R
+Strings,"Different string, same note","The same note on an open string and then on stopped strings, in more and more players. The sound becomes harder","Corigliano, Symphony No. 1 I",wiki-corsym1; cor-sym1,R
+Strings,"Two groups, left and right",Two string orchestras on the two sides of the stage answer each other,"Bartók, Music for Strings, Percussion and Celesta II and IV",wiki-mspc,R
+Woodwinds,Flutter-tongue,"The player rolls the tongue. The sound goes from a soft cooing to a growl. It needs more air than a normal note. Notation: tremolo strokes and a word (flz., frull.)","Tchaikovsky, The Nutcracker (flutes). Corigliano, Pied Piper Fantasy (a high, shrill flutter-tongued note of the soloist)",wiki-flutter; cor-piper,R
+Woodwinds,Key slaps,The player hits the keys with no air. A soft percussion sound at the pitch of the fingering,,rush-techniques,R
+Woodwinds,Multiphonics,"Two or more notes at the same time, from special fingerings",,wiki-exttech,R
+Woodwinds,Breath sounds,"Air through the instrument with no tone, or with a small part of the tone",,wiki-exttech,R
+Woodwinds,Pitch bend,The player moves the pitch with the lips or the fingers,,wiki-exttech,R
+Woodwinds,Reed alone,The player blows the reed in a special way to get a raw sound,"Corigliano, Oboe Concerto (1975): the sound of the North African rhaita",rush-techniques,R
+Woodwinds,A second instrument of the same player,The soloist changes to a tin whistle for the march,"Corigliano, Pied Piper Fantasy",cor-piper,R
+Brass,Flutter-tongue,As on woodwinds. On horns it can sound like animals,"Strauss, Don Quixote, variation 2 (horns: the sheep)",wiki-flutter,R
+Brass,Mutes and objects in the bell,Each mute type gives a different colour,"Bartók, Concerto for Orchestra II (muted trumpets in major seconds)",wiki-exttech; wiki-cfo,R
+Brass,Glissando,Trombones slide between notes,"Bartók, Concerto for Orchestra IV (trombones and woodwinds interrupt the theme). Corigliano, Clarinet Concerto I (""glissandi of jagged canons"")",wiki-cfo; cor-clarinet,R
+Brass,"Half valve, pitch bend, double buzz",Sounds between the notes and sounds with noise,,wiki-exttech,R
+Brass,Players in the hall,"Five horns behind the stage, two trumpets at the rear of the hall, two clarinets high at the sides. The music for them ""specifically shouldn't be synchronized""","Corigliano, Clarinet Concerto III",cor-clarinet,R
+Percussion,Bowed metal,"A bow on the edge of a vibraphone bar, a cymbal, or a gong. A long note with no attack","Thorvaldsdottir, Aura (2015)",rush-techniques; wiki-exttech,R
+Percussion,Timpani glissando,The player moves the pedal while the drum sounds,"Bartók, Music for Strings, Percussion and Celesta III. Concerto for Orchestra IV: 10 pitches in about 20 seconds",wiki-mspc; wiki-cfo,R
+Percussion,Cymbal on a timpani head,The cymbal sounds through the drum. The pedal changes the colour,,wiki-exttech,R
+Percussion,Water gong,The player lowers a gong into water after the stroke. The pitch slides,,rush-techniques; wiki-exttech,R
+Percussion,Side drum as a frame,A side drum alone starts and ends the movement,"Bartók, Concerto for Orchestra II",wiki-cfo,R
+Piano,Inside the piano,"The player plucks the strings, hits them with a mallet, or slides a finger along a string","Cowell, The Banshee (1925)",rush-techniques,R
+Piano,Silent keys,The player holds keys down with no sound. The open strings ring when other notes sound,,rush-techniques; wiki-exttech,R
+Piano,Clusters,The palm or the arm plays all keys of an area,Cowell,wiki-exttech,R
+Piano,Piano as percussion,The piano is a member of the percussion group. The celesta player also plays the piano with four hands,"Bartók, Music for Strings, Percussion and Celesta",wiki-mspc,R
+Harp,Harmonics,A light touch at the middle of the string. The note is one octave higher and has a bell sound,,reference,K
+Harp,Near the soundboard,"The player plucks the string at its low end. The sound is dry, as a guitar",,reference,K
+Harp,Bisbigliando,A soft tremolo of the two hands on some notes: a whisper,,reference,K
+Harp,Pedal slide and glissando,A change of the pedal while the string sounds moves the pitch by a semitone. A glissando across the strings gives the scale of the pedal setting,,reference,K

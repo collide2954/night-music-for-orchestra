@@ -10,9 +10,10 @@ The full report is [`docs/style-study.md`](../docs/style-study.md).
 
 | Path | Contents | How it is made |
 | --- | --- | --- |
-| [`tables/`](tables) | Sourced tables: works, orchestra sizes, form, tempo, harmony, scales, themes, rhythm, texture, world sources | Written by the study team from the sources |
+| [`tables/`](tables) | Sourced tables: works, orchestra sizes, form, tempo, harmony, scales, themes, rhythm, texture, world sources, variation, instrument techniques, notes that are not in the chord, more devices | Written by the study team from the sources |
 | [`tables/profiles.csv`](tables/profiles.csv) | Style profiles: target ranges for the new work | Written by the study team from the measured and sourced values |
 | [`measured/`](measured) | Measured tables | Made by the study code |
+| [`measured/work_*.csv`](measured) | Measured tables of the new work: repetition, harmony, use of the instruments | Made by the command `uv run nightmusic docs` |
 | [`sources.csv`](sources.csv) | List of all sources | Written by the study team |
 | [`corpus.sha256`](corpus.sha256) | Checksums of the open data files | Made with `sha256sum` |
 | [`text/`](text) | Text sections of the report | Written by the study team |
