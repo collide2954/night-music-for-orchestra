@@ -15,9 +15,10 @@ on:
 permissions:
   contents: write
 
+# A build is long. A new change does not stop the build that is in progress.
 concurrency:
   group: build-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   assets:
@@ -40,7 +41,8 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Restore the sample libraries
-        uses: actions/cache@v6
+        id: samples
+        uses: actions/cache/restore@v6
         with:
           path: .cache/samples
           key: samples-v1-${{ hashFiles('src/nightmusic/audio/library.py', 'src/nightmusic/audio/instruments.py') }}
@@ -54,6 +56,13 @@ jobs:
 
       - name: Build the audio
         run: uv run nightmusic audio
+
+      - name: Save the sample libraries
+        if: always() && steps.samples.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: .cache/samples
+          key: ${{ steps.samples.outputs.cache-primary-key }}
 
       - name: Build the video
         run: uv run nightmusic video
