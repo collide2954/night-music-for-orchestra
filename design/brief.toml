@@ -66,6 +66,19 @@ natural_sound = "The instruments must have more natural attacks and decays."
 heavy_section = "A heavy rhythmic section. The owner selected: in part 2, at the end of the chase; its rhythm comes back in part 5 in D major."
 climax_percussion = "More percussion in the climax sections. The owner selected: six percussion players, with snare drum, tom-toms, and taiko."
 
+# Decisions of the owner for the third version of the work (2026-11-15).
+# The owner: the piece "has good bones", but "it is missing aspects of modern writing".
+# The second edition of the style study gives the research and the measured values.
+[third_version]
+repetition = "Do not repeat the same idea two times with almost no change."
+instruments = "Explore the instruments more."
+non_chord_tones = "Use more notes outside the chords, where they give character and do not distract from a phrase."
+harmony = "Strong colour: notes outside the chord, added notes, and passing chords in the bright half; polychords and chords of twelve notes from two interval types at the two climaxes; the last chord keeps added notes."
+techniques = "Score first: write the techniques that serve the music. The audio uses the nearest sound that it has. A table lists each approximation."
+free_rhythm = "Exact notation: each player has a written figure with its own length. No boxes."
+devices = ["colour processes (one chord or line in changing instruments; heterophony)", "living textures (micropolyphony; climax chords from two interval types)", "time devices (tempo modulation; phrases of unequal length; sections that overlap; written accelerations)"]
+not_selected = ["space (antiphonal violins; distant players)"]
+
 # Decisions that the composer's assistant made while the owner was not available
 # (night of 2026-11-15). The owner must examine each decision. Each decision is
 # easy to change.
