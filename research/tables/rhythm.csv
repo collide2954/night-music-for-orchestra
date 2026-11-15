@@ -1,0 +1,23 @@
+composer,item,content,parameters,where,source,evidence
+Schoenberg,Phrases across the bar line,"Phrases do not agree with the metre. Each phrase lies differently against the bar line","In the first bars of Erwartung, each of three phrases starts at a different point of the bar",Verklärte Nacht; Erwartung op. 2 no. 1,frisch1993; wiki-vn,R
+Schoenberg,Metre that expands and contracts,"The written 4/4 sounds as 3/2 (phrases of six quarter notes). Then it goes back to 4/4 through one bar of 2/4",Bars 331-336,Verklärte Nacht,frisch1993,R
+Schoenberg,Walking rhythm,"Dotted eighth and sixteenth on beats 2 and 4",Present in the full theme 1 family,Verklärte Nacht bars 1-28,frisch1993,R
+Schoenberg,Tempo in constant change,Many marks to go faster or slower in a short time,"Marks: steigernd, beschleunigend, drängend, zurückhaltend, breiter. See the measured table of tempo marks",Verklärte Nacht,billam2013,R
+Bartók,Bulgarian (aksak) metres,Fast metres made of groups of 2 and 3,"2+3; 3+2; 2+2+3; 2+3+2; 3+2+2; 2+2+2+3",Turkish and Balkan folk music,wiki-aksak,R
+Bartók,Bulgarian metres in a scherzo,Scherzo: 4+2+3 eighths. Trio: 3+2+2+3 eighths,9/8 and 10/8,String Quartet No. 5 III,wiki-sq5,R
+Bartók,Six Dances in Bulgarian Rhythm,"4+2+3; 2+2+3; 2+3; 3+2+3; 2+2+2+3; 3+3+2 (eighths)",Mikrokosmos nos. 148 to 153,Mikrokosmos,reference,K
+Bartók,Fibonacci rhythm,"One note repeated: 1, 1, 2, 3, 5, 8, 5, 3, 2, 1, 1 notes for each beat","A written acceleration and deceleration. Xylophone. Adagio, eighth = 66",Music for Strings III,wiki-mspc; roberts2021,R
+Bartók,Change of metre at each bar,The fugue has a time signature that changes constantly,,Music for Strings I,wiki-mspc,R
+Bartók,Slow pulse with free events,"A soft dissonant sound on each beat of a slow tempo. Short motives at irregular times above it",The pulse becomes background,Night music style,wiki-nightmusic,R
+Bartók,Two tempos together,"Chorale and flute melody together, with different characters, tempos, and key centres",Bars 61-66,The Night's Music,wiki-ood; schneider2006,R
+Bartók,Fast section in a slow movement,A presto in the centre of the slow movement,Adagio - Presto - Adagio,Piano Concerto No. 2 II,wiki-pc2,R
+Bartók,Clash of 2 against 3,Chords in groups of two against a 6/8 metre,Returns between the episodes,The Chase,wiki-ood,R
+Bartók,Parlando rubato and tempo giusto,"Two types of folk rhythm: free speech rhythm, and strict dance rhythm",Slow lonely melodies use the first type,Bartók's folk music classes,reference,K
+Corigliano,Layered accelerations,"A slow steady drum beat starts a series of accelerations that overlap","Final stage: a slow steady melody against a drum that accelerates",Symphony No. 1 I,cor-sym1,R
+Corigliano,Machine that stops,"The full orchestra repeats one dissonant chord. The pattern slows down and stops, but stays loud",No decrease of loudness during the slow-down,Symphony No. 1 I,cor-sym1,R
+Corigliano,Voices in different tempos,"Each voice has even notes with no rhythm profile. Each voice has its own tempo. The parts are written in one common metre","Example: 60 against 72 beats in a minute (ratio 5 : 6)",String Quartet IV (Fugue),cor-quartet,R
+Corigliano,Out of phase,One player's quarter note = the other player's dotted eighth note,Tempo ratio 4 : 3,Chiaroscuro III,cor-chiaroscuro,R
+Corigliano,Space-time notation,"No beats to count. The players align at given points and are free between them","Three of five movements of the quartet. Rewritten for 50 strings in the symphony",String Quartet; Symphony No. 2,cor-sym2,R
+Corigliano,Small delay between players,Each player is a very small time out of step with the others,"Result: threads of sound with no clear focus",String Quartet I (Prelude),cor-quartet,R
+Corigliano,Two groups in two tempos,A march group and the orchestra play in very different tempos,The march group goes out through the hall,Pied Piper Fantasy,cor-piper,R
+Corigliano,Acceleration to madness,A dance that goes faster and faster,Tarantella in 6/8; the end is a scream,Symphony No. 1 II,cor-sym1,R

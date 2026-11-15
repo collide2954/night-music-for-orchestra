@@ -1,0 +1,42 @@
+composer,device,content,parameters,where,source,evidence
+Bartók,Night music: layer 1,A soft dissonant sound that repeats on each slow beat,"Cluster of adjacent semitones; arpeggiated; the listener hears it as background",The Night's Music,wiki-nightmusic; wiki-ood,R
+Bartók,Night music: layer 2,Short imitations of animal sounds at irregular times,"Repeated notes, trills, grace notes; high register; they ignore the metre and the key",The Night's Music (frog from bar 6 to bar 70),wiki-nightmusic; wiki-ood,R
+Bartók,Night music: layer 3,A lonely melody that seems to come from the place,"One line; no chords; sometimes doubled at one or two octaves",The Night's Music; Melody in the Mist,wiki-nightmusic,R
+Bartók,Night music: space,"Very wide distances: glissandi, leaps, and doublings across many octaves, against clusters of adjacent notes",The contrast gives the effect of space and of a person alone,Night music style,wiki-nightmusic; schneider2006,R
+Bartók,Night music: layers that do not agree,Different materials overlap. One material can cut into a different material,"Each layer keeps its own tempo, key centre, and character",The Night's Music bars 61-66,wiki-nightmusic; wiki-ood,R
+Bartók,Night music: mood,"Hushed, still, full of expectation. In the last works: calm, bright",Bartók got the idea on summer nights on the Great Hungarian Plain (from 1921),Night music style,wiki-nightmusic,R
+Bartók,Night music for orchestra,"Low strings with a theme of fourths; string tremolo; flutes that flutter; soft trumpets with a short chorale",,Concerto for Orchestra I (introduction),wiki-nightmusic,R
+Bartók,Percussion colour,"Timpani glissandi; xylophone solo; celesta arpeggios; harp; piano",The timpani glissando was unusual in 1936,Music for Strings III,wiki-mspc,R
+Bartók,Exact percussion directions,"The score tells which part of the cymbal to hit and with which stick. It gives the stage plan for the players","Snare drum with snares on and off; cymbal played with the fingernail; thin sticks on the edge of the drum",Sonata for Two Pianos and Percussion,wiki-son2p; lendvai-web,R
+Bartók,Two groups in space,Two string orchestras on opposite sides of the stage,Antiphonal effects in the fast movements,Music for Strings II and IV,wiki-mspc,R
+Bartók,String techniques,"Mutes for a full movement; pizzicato for a full movement; snap (Bartók) pizzicato; glissandi; held notes with no vibrato",Movement II all muted; movement IV all pizzicato; movement III with the non-vibrato notes,String Quartet No. 4,wiki-sq4,R
+Bartók,Fugue that grows,"Muted strings. Each new voice adds sound. The texture and the loudness grow together to the climax",pp to fff in 55 bars; then fast decrease as instruments stop,Music for Strings I,wiki-mspc; solomon1973,R
+Bartók,Solo group against the full group,"A small group of soloists against the full string orchestra",As in the Baroque concerto grosso,Divertimento,wiki-div,R
+Bartók,Piano as percussion,The piano gets its real character when it is used as a percussion instrument,Bartók's statement of 1927,Works of 1926,wiki-ood,R
+Schoenberg,Mutes for a new region,The mutes go on at the start of a new theme group and key,"Bar 50 (""mit Dämpfer""), B-flat minor",Verklärte Nacht,billam2013; frisch1993,R
+Schoenberg,Low start,Each of the first three theme groups starts in the low register and goes up,"Bars 1, 29, and 50",Verklärte Nacht,frisch1993,R
+Schoenberg,Collapse to one note,The texture falls to octaves and then to one low unison note. The development starts here,Octave D at bar 132; then the low E,Verklärte Nacht,frisch1993,R
+Schoenberg,Web of motives,"A web of theme and motive relations covers the simple five-part plan. The web becomes tighter as the work continues",Statement by Carl Dahlhaus,Verklärte Nacht,frisch1993,R
+Schoenberg,Voice in the web,"The solo line is doubled or followed closely by one line of the accompaniment",,Erhebung op. 2 no. 3; Jesus bettelt,frisch1993,R
+Schoenberg,Colour chord,"A chord of five notes made from the tonic and four neighbour notes. It comes back in changed forms as a ""colour""",,Erwartung op. 2 no. 1,frisch1993,R
+Schoenberg,Tone colour as melody,The same chord goes from one group of instruments to the next,,"Five Pieces op. 16 no. 3, ""Farben""",reference,K
+Corigliano,Brass around the orchestra,"5 trumpets behind the orchestra, first trumpet in the centre. 6 horns (3 on each side), 4 trombones (2 on each side), 1 tuba at each end","A chord starts as one high trumpet note and goes out to the two sides: a ""wave""",Symphony No. 1,cor-sym1,R
+Corigliano,Offstage instrument as memory,A piano far away plays a known piece through the orchestra sound,The orchestra holds a quiet high violin note,Symphony No. 1 I and IV,cor-sym1,R
+Corigliano,Change of string tone on one note,"Open-string A (""nasal""); then the same note on stopped strings in more and more instruments",The sound becomes harder and more intense,Symphony No. 1 I,cor-sym1,R
+Corigliano,Violins at the top of their range,The peak of the accelerations is a violin line in the highest register,It then becomes quiet and starts the memory section,Symphony No. 1 I,cor-sym1,R
+Corigliano,Low strings alone,"Violas, cellos, and basses only, for the first minutes of the movement",The chaconne chords dissolve into each other,Symphony No. 1 III,cor-sym1,R
+Corigliano,Two types of mute,"A practice mute (the sound is a whisper) for the outer parts. A normal mute for the centre",,String Quartet I; Symphony No. 2 I,cor-quartet,R
+Corigliano,Divided string sections,"Sections divided to make thicker chords. Fast passages divided between players. Many solo players for calls",50 players in place of 4,Symphony No. 2,cor-sym2,R
+Corigliano,Strength from effort,"Strings have a small loudness range. A string fortissimo comes from intensity, not from volume",His reason to keep the symphony for strings only,Symphony No. 2,cor-sym2,R
+Corigliano,Players around the audience,"Trumpets and percussion around the hall; a saxophone quartet and a double bass in the boxes; a band that marches down the aisles",The audience is in the centre of the sound,Circus Maximus,cor-circus,R
+Corigliano,Night music of nature,"Calm. Sounds of the forest stop time. Animals call to each other",Section IV,Circus Maximus,cor-circus,R
+Corigliano,Night music of the city,"A pulse with hidden energy and sudden flashes. Sirens. Distant battles",Section V,Circus Maximus,cor-circus,R
+Corigliano,Solo as a light that comes and goes,"The soloist plays as fast as possible and very softly. Parts of the line stay in the orchestra as held notes","Subtitle: ""Ignis fatuus"" (will-o'-the-wisp)",Concerto for Clarinet I,cor-clarinet,R
+Corigliano,Glissando contest,"Solo clarinet and trombones in canons of glissandi with sharp edges",,Concerto for Clarinet I,cor-clarinet,R
+Corigliano,Orchestra glissando,All the materials together end in one very large glissando of the full orchestra,,Three Hallucinations I,cor-halluc,R
+Corigliano,Wood of the bow,String chords made brittle by hard attacks with the wood of the bow,Used for the chaconne chords before the last climax,The Red Violin: Chaconne,cor-chaconne,R
+Corigliano,Very high slow melody,"A solo line in the highest register, very slow, above string sounds that change slowly",After the fast climax,The Red Violin: Chaconne,cor-chaconne,R
+Corigliano,Percussion families,"Wood: xylophone, marimba, and a row of wood instruments with no pitch. Metal: chimes, tam-tams, cymbals, bowed vibraphone. Skin: talking drum, kick drum, timpani played with the hands",One family for each movement,Conjurer,cor-conjurer,R
+Corigliano,Amplified and looped sound,"The singer goes to a microphone when the orchestra becomes too loud. At the peak, the electronics repeat a phrase again and again",Loudspeakers around the hall,Vocalise,cor-vocalise,R
+Corigliano,Folk and toy instruments,"Tin whistle for the soloist; flutes and drums played by children",The children go out through the hall with the soloist,Pied Piper Fantasy,cor-piper,R
+Corigliano,Light as part of the score,"Stage lights go down; a spotlight follows the players; a start in the dark",Added in performances after the premiere,Pied Piper Fantasy,cor-piper,R

@@ -2,9 +2,9 @@ measure,value
 bars,418
 note starts in the arrangement,8698
 duration with the timing of the arrangement (minutes),25.01
-slowest bar (quarter bpm),40
-median bar (quarter bpm),64.86
-fastest bar (quarter bpm),132.6
+slowest bar (quarter notes in a minute),40
+median bar (quarter notes in a minute),64.86
+fastest bar (quarter notes in a minute),132.6
 tempo marks,33
 bars for each tempo mark,12.67
 dynamic level marks,127

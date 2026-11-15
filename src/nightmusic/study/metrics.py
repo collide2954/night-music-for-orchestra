@@ -206,6 +206,14 @@ def fingerprint(
             }
         )
 
+    families: dict[str, float] = dict.fromkeys(pcsets.CHORD_FAMILIES, 0.0)
+    for duration, pitches in sounding:
+        family = pcsets.chord_family(pcsets.chord_name(pitches))
+        if family:
+            families[family] += duration
+    for family, value in families.items():
+        result[f"share of sounding time: {family}"] = value / sounding_time
+
     weights = pitch_class_weights(tones)
     result["pitch-class entropy (bits, maximum 3.585)"] = entropy_bits(weights)
 

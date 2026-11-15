@@ -1,0 +1,35 @@
+work,parameter,value,note,source,evidence
+Schoenberg: Verklärte Nacht,Length,418 bars in one movement,The parsed source has the same count,frisch1993; billam2013,R
+Schoenberg: Verklärte Nacht,Plan,"Five sections: A B A' C A''","One section for each stanza of the poem. A sections: narrator. B: the woman. C: the man",wellesz1925; frisch1993,R
+Schoenberg: Verklärte Nacht,Section bars,"1-28; 29-187; 188-228; 229-369; 370-418","Part 1 = bars 1-228 (minor). Part 2 = bars 229-418 (major)",pfannkuch1963; frisch1993,R
+Schoenberg: Verklärte Nacht,Sub-sections of section 2,"29-49; 50-104; 105-131; 132-180; 181-187","Themes 2; themes 3 and 4; theme 5; development; climax return of theme 2a",pfannkuch1963; frisch1993,R
+Schoenberg: Verklärte Nacht,Key plan,"D minor (1); B-flat minor (50); E major (105); E-flat minor (to 228); D major (229); F-sharp major (249-265); D-flat major (dominant pedal from 270); F major (291); D-flat major (320); D major (343 and 370 to the end)",The key signatures of the parsed source change at the same bars,frisch1993; billam2013,R
+Schoenberg: Verklärte Nacht,Approach to the tonic,"By semitone from above (E-flat minor) and from below (D-flat major)","Schoenberg wrote that he knew of this plan. The dominant is not a large key area",schoenberg1932; swift1977; frisch1993,R
+Schoenberg: Verklärte Nacht,Number of themes,"11 theme groups; 5 groups in part 1","Many short themes, in pairs (a and b). Later themes come from earlier themes",frisch1993,R
+Schoenberg: Verklärte Nacht,Theme unit,1 bar,"Pattern: unit, unit again at the same pitch, then a longer continuation (1 + 1 + 2)",frisch1993,R
+Schoenberg: Verklärte Nacht,Section breaks,"Ritardando (28); fermata (49); change of metre (74-75); dominant preparation (100-104)",Each new theme group has a clear signal,frisch1993,R
+Schoenberg: Verklärte Nacht,Climax points,"Bars 175-181; 338-340 (largest, fff); 391-393 (""Sehr gross"")","The two late climaxes are almost the same music. Each leads to different music",frisch1993; billam2013,R
+Schoenberg: Verklärte Nacht,Reprise,Bar 370,"Themes 1a, 7a, and 10 sound together in D major. Coda from bar 401",frisch1993,R
+Schoenberg: Verklärte Nacht,Cut that the composer refused,54 bars (13 percent),Bruno Walter asked for the cut in 1943. Schoenberg kept all bars,frisch1993,R
+"Bartók: Music for Strings, Percussion and Celesta, I",Length,88 bars,Lendvai counts 89 (he adds one silent bar),roberts2021; howat1983,R
+"Bartók: Music for Strings, Percussion and Celesta, I",Fugue entries,"A, then E (fifth up), D (fifth down), B, G, and so on","Entries go out in fifths in two directions. They meet at E-flat, a tritone from A",solomon1973,R
+"Bartók: Music for Strings, Percussion and Celesta, I",Events by bar,"End of exposition 20 or 21; canon 26; mutes off 33 to 35; percussion in 34; subject on E-flat 44; fff climax 55 to 56; inverted stretto 65; mutes on 68 to 69; subject with its inversion and celesta 78; coda 82","Authors count some bars differently",solomon1973; roberts2021; howat1983; lendvai1971,R
+"Bartók: Music for Strings, Percussion and Celesta, I",Climax position,0.63 (bar 55.5 of 88),"Golden section = 0.618. The subject comes to E-flat at 0.50",roberts2021; howat1983,R
+"Bartók: Music for Strings, Percussion and Celesta, I",Shape,pp to fff to ppp,"After the climax the subject is inverted and the entry order goes backward",solomon1973; roberts2021,R
+"Bartók: Music for Strings, Percussion and Celesta, III",Shape,Arch: A B C B' A',Climax and inversion in the centre,roberts2021; howat1983,R
+"Bartók: Music for Strings, Percussion and Celesta",Tonal plan,"I: A, E-flat, A. II: C, F-sharp, C","The middle of a movement is a tritone from its start",wiki-axis; wiki-mspc,R
+Bartók: The Night's Music,Length,71 bars,,wiki-ood,R
+Bartók: The Night's Music,Materials,"A (night noises): bars 1-17, 34-37, 48, 67-71. B (chorale in G): 17-34, 58-66. C (flute melody, Dorian on C-sharp): 37-58, 61-67, 70-71","Form: loose rondo or three parts. B and C sound together in bars 61-66, with different tempos and key centres",wiki-ood; schneider2006,R
+Bartók: The Night's Music,Key centres,G and C-sharp,A tritone apart,wiki-ood,R
+Bartók: String Quartet No. 4,Plan,"Five movements in arch form: I and V related; II and IV related; III alone","Lengths about 6, 3, 6, 3, 6 minutes. III is night music",wiki-sq4,R
+Bartók: String Quartet No. 5,Plan,Five movements in arch form,"I: keys go up by whole tones: B-flat, C, D; E; F-sharp, A-flat, B-flat. The reprise gives the themes in reverse order and inverted",wiki-sq5,R
+Bartók: Piano Concerto No. 2,Plan,Fast - slow - fast - slow - fast,"II = Adagio - Presto - Adagio. Night music with a fast centre",wiki-pc2; wiki-ood,R
+Bartók: Sonata for Two Pianos and Percussion,Plan,"Three movements. I takes half of the full duration","I starts in F-sharp and ends in C major (a tritone). II is night music in three parts (A B A)",wiki-son2p,R
+"Bartók: Sonata for Two Pianos and Percussion, I",Reprise position,Bar 274 of 443 (0.618),Claim by Lendvai. Not checked in this study,reference,K
+Corigliano: method,First step,"The shape (""architecture"") of the work, before all notes","His statement: he has worked in this sequence for three decades",cor-circus,R
+Corigliano: method,Second step,"A problem to solve, taken from the occasion, the player, or the hall","Examples: full orchestra with a solo wind instrument; a percussion soloist who carries the melodies",cor-clarinet; cor-conjurer; cor-piper,R
+Corigliano: Symphony No. 1,Plan,"Four parts. I: A B A (rage, memory, rage). II: tarantella. III: chaconne. IV: epilogue",40 minutes. The A to G-sharp motive from the start comes back in III,cor-sym1,R
+Corigliano: String Quartet and Symphony No. 2,Plan,"Five movements in arch form: Prelude, Scherzo, Nocturne, Fugue, Postlude","33 to 35 minutes. I and V related; II and IV related; III is night music",cor-quartet; cor-sym2,R
+Corigliano: Circus Maximus,Plan,"Eight sections with no pause: Introitus; Screen/Siren; Channel Surfing; Night Music I; Night Music II; Circus Maximus; Prayer; Coda: Veritas","35 minutes. The peak (VI) uses the material of all earlier sections",cor-circus,R
+Corigliano: The Red Violin: Chaconne,Plan,One movement on a repeated chord pattern,"17 minutes. Slow start; solo studies that go faster; high slow melody; cadenza; large final statement; fast coda",cor-chaconne,R
+Corigliano: Vocalise,Plan,"One arc: voice alone; voice and orchestra; amplified voice; loops at the peak; echoes at the end","20 minutes. The end is the opening melody, now through the loudspeakers",cor-vocalise,R

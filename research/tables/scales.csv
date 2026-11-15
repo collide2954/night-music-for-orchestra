@@ -1,0 +1,28 @@
+name,family,steps_from_tonic,unit,size,use,source,evidence
+Chromatic segment (x cell),Bartók,0 1 2 3,semitones,4,"Small chromatic cells. The fugue subject of Music for Strings uses all semitones from A to E",solomon1973,R
+Whole-tone scale,Schoenberg and Bartók,0 2 4 6 8 10,semitones,6,"Vagrant chords in Schoenberg. First movement of Bartók's String Quartet No. 4",frisch1993; wiki-sq4,R
+Octatonic scale (semitone first),Bartók,0 1 3 4 6 7 9 10,semitones,8,"A subset scale of the chromatic scale in the quartets. One octatonic scale = two axes of the axis system",wiki-sq4,R
+Octatonic scale (whole tone first),Bartók,0 2 3 5 6 8 9 11,semitones,8,Same scale from its second note,wiki-sq4,R
+Acoustic scale (Lydian with minor seventh),Bartók,0 2 4 6 7 9 10,semitones,7,"From the overtone series. Finale of the Concerto for Orchestra. Mode 4 of the melodic minor scale",wiki-acoustic,R
+Dorian mode,Folk and Bartók,0 2 3 5 7 9 10,semitones,7,The flute melody of The Night's Music (on C-sharp),wiki-ood,R
+Phrygian mode,Folk and Bartók,0 1 3 5 7 8 10,semitones,7,"Half of the Phrygian-Lydian polymode. Also the cadence mode of Andalusian music",wiki-polymodal,R
+Lydian mode,Folk and Bartók,0 2 4 6 7 9 11,semitones,7,Half of the Phrygian-Lydian polymode,wiki-polymodal,R
+Phrygian-Lydian polymode,Bartók,0 1 2 3 4 5 6 7 8 9 10 11,semitones,12,"Two modes on one tonic. All 12 notes, but with a tonic",wiki-polymodal,R
+Model 1:3,Bartók,0 3 4 7 8 11,semitones,6,"Minor third and semitone in alternation. It has the major and minor third and the major and minor sixth",wiki-polymodal,R
+Pentatonic scale without semitones (minor form),Hungarian old style,0 3 5 7 10,semitones,5,"Old-style Hungarian peasant song. Melody in the Mist: G A C D F",wiki-nightmusic,R
+Pentatonic scale without semitones (major form),General,0 2 4 7 9,semitones,5,"End of the slow movement of Bartók's Piano Concerto No. 3",wiki-pc3,R
+Fourths stack,Schoenberg,0 5 10 3 8 1,semitones,6,Motto theme and chords of the Chamber Symphony No. 1,wiki-op9,R
+Minor scale with raised 4 and 7 (Hungarian minor),Central Europe,0 2 3 6 7 8 11,semitones,7,Verbunkos style. Two augmented seconds,reference,K
+Phrygian with major third (Hijaz type),"Balkan, Arab, Jewish, Andalusian",0 1 4 5 7 8 10,semitones,7,"One augmented second between steps 2 and 3",reference,K
+Maqam Rast,Arab,0 200 350 500 700 900 1050,cents,7,"Neutral third and neutral seventh (between major and minor). Values are the 24-tone approximation",reference,K
+Maqam Bayati,Arab,0 150 300 500 700 800 1000,cents,7,"Neutral second. A common maqam for song and for the call to prayer",reference,K
+Maqam Saba,Arab,0 150 300 400 700 800 1000 1100,cents,8,"Neutral second and lowered fourth. The top note is lower than the octave. Mood: grief. In the Turkish tradition, the maqam of the dawn call to prayer",reference,K
+Maqam Hijaz,Arab,0 100 400 500 700 800 1000,cents,7,"Augmented second in the lower part. Real tuning makes the step smaller than 300 cents",reference,K
+Raga Yaman,Hindustani,0 2 4 6 7 9 11,semitones,7,"Night raga, first part of the night. Same notes as the Lydian mode",reference,K
+Raga Bageshri,Hindustani,0 2 3 5 7 9 10,semitones,7,"Night raga, later in the night. Step 5 is weak; steps 4 and 6 are strong",reference,K
+Raga Malkauns,Hindustani,0 3 5 8 10,semitones,5,"Night raga, near midnight and after. Five notes; no step 2 and no step 5. Slow and serious",reference,K
+Raga Darbari Kanada,Hindustani,0 2 3 5 7 8 10,semitones,7,"Night raga, late night. Slow oscillation (andolan) on the low third and the low sixth. Low register",reference,K
+Slendro,Javanese gamelan,0 240 480 720 960,cents,5,"Five steps of almost equal size. Each gamelan has its own tuning. Values are the equal-step model",reference,K
+Pelog,Javanese gamelan,0 120 270 540 670 785 950,cents,7,"Seven steps of unequal size; music uses five of them at a time. Each gamelan has its own tuning. Values are approximate",reference,K
+In scale (miyako-bushi),Japanese,0 1 5 7 8,semitones,5,Koto and shamisen music. Semitones above steps 1 and 5,reference,K
+Yo scale,Japanese,0 2 5 7 9,semitones,5,Folk song and shakuhachi music. No semitones,reference,K

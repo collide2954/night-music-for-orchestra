@@ -167,6 +167,18 @@ def measure_vn() -> dict[str, dict[str, float]]:
             mark_rows.append([bar.number, kind, mark.text.replace(" . . .", "").strip()])
     write_csv("vn_marks.csv", ["bar", "kind", "text"], mark_rows)
 
+    # Table: how frequently each tempo or expression word occurs.
+    word_counts: Counter[tuple[str, str]] = Counter()
+    for _bar, kind, text in mark_rows:
+        word = text.lower().strip("., ()")
+        if word not in DYNAMIC_LEVELS:
+            word_counts[(kind, word)] += 1
+    write_csv(
+        "vn_mark_counts.csv",
+        ["kind", "text", "count"],
+        [[kind, text, count] for (kind, text), count in word_counts.most_common()],
+    )
+
     # Table: dynamic marks.
     bars_at_level = Counter(level_by_bar.values())
     seconds_at_level: Counter[str] = Counter()
@@ -261,9 +273,9 @@ def measure_vn() -> dict[str, dict[str, float]]:
         ["bars", len(bars)],
         ["note starts in the arrangement", len(score.notes)],
         ["duration with the timing of the arrangement (minutes)", total_seconds / 60],
-        ["slowest bar (quarter bpm)", min(b.quarter_bpm for b in bars)],
-        ["median bar (quarter bpm)", statistics.median(b.quarter_bpm for b in bars)],
-        ["fastest bar (quarter bpm)", max(b.quarter_bpm for b in bars)],
+        ["slowest bar (quarter notes in a minute)", min(b.quarter_bpm for b in bars)],
+        ["median bar (quarter notes in a minute)", statistics.median(b.quarter_bpm for b in bars)],
+        ["fastest bar (quarter notes in a minute)", max(b.quarter_bpm for b in bars)],
         ["tempo marks", sum(1 for row in mark_rows if row[1] == "tempo")],
         ["bars for each tempo mark", len(bars) / sum(1 for row in mark_rows if row[1] == "tempo")],
         ["dynamic level marks", sum(dynamic_counts[d] for d in DYNAMIC_LEVELS)],

@@ -1,0 +1,38 @@
+composer,item,content,set_type,where,source,evidence
+Schoenberg,Half-diminished seventh on scale step 2,"E G B-flat D in D minor. The most important chord that is not the tonic in section 1",0 2 5 8,"Verklärte Nacht bars 5-6, 11-12, 18-20, 24-27, 34-38",frisch1993,R
+Schoenberg,"""Vagrant"" chords","Augmented triad, diminished seventh, half-diminished seventh, French sixth, whole-tone chords. Schoenberg's name for chords that can go to many keys",,Dehmel songs of 1899 and Verklärte Nacht,frisch1993,R
+Schoenberg,First note from outside the key,"C-sharp in the bass, as part of an augmented triad (C-sharp F A). It is not part of a dominant chord",0 4 8,Verklärte Nacht bar 9,frisch1993,R
+Schoenberg,Inverted ninth chord,"Ninth chord on A-flat (A-flat C E-flat G-flat B-flat) with the ninth, B-flat, in the bass. A Vienna society refused the work because of this chord",0 2 4 6 9,Verklärte Nacht bar 42,frisch1993; schoenberg1978; wiki-vn,R
+Schoenberg,Strong bass below vagrant chords,"The bass moves by step or by fifth on the notes of the key. The chords above it are vagrant chords. This gives direction to chromatic harmony",,"Jesus bettelt; Verklärte Nacht bars 17-28",frisch1993,R
+Schoenberg,Cadence plan with a weak dominant,"Root motion 1 - 2 - 5, stop; 2 - 5, stop; 2 - 5 - 1. Step 2 has more weight than step 5. In bar 28 the dominant is only the bare note A",,Verklärte Nacht bars 1-29,frisch1993,R
+Schoenberg,Deceptive resolution by semitone,"The bass of the dominant goes up one semitone (A to B-flat). The new bass note later becomes a key (B-flat minor)",,Verklärte Nacht bars 41-50,frisch1993,R
+Schoenberg,Cadence with no dominant,"The tonic comes directly from a chord that normally comes before the dominant (French sixth, German sixth, or the dominant of the dominant)",,"Mannesbangen; Jesus bettelt; Erhebung; Verklärte Nacht bars 319-320",frisch1993,R
+Schoenberg,German sixth as a link between keys,"The chord A C-sharp E G is the dominant seventh of D. It is also the German sixth of D-flat. It goes directly to D-flat major",0 2 5 8,"Verklärte Nacht bars 316-320, 322, 324, 332-336",frisch1993,R
+Schoenberg,Plagal cadences after the climax,Soft cadences from the subdominant to the tonic release the tension,,Verklärte Nacht bars 342-343 and 349-352,frisch1993,R
+Schoenberg,Keys a major third apart,"D, F-sharp, B-flat: the octave in three equal parts",0 4 8,Verklärte Nacht part 2,frisch1993,R
+Schoenberg,Whole-tone chord,"Five of the six notes of a whole-tone scale in one chord, on a strong bass note",0 2 4 6 8,Jesus bettelt bar 16,frisch1993,R
+Schoenberg,Chords of fourths,"Harmony and a motto theme built from fourths",0 2 4 5 7 9 (six fourths),Chamber Symphony No. 1,wiki-op9,R
+Schoenberg,One chord in changing colours,"The chord C G-sharp B E A stays. The instruments that play it change",0 1 3 4 8,"Five Pieces op. 16 no. 3, ""Farben""",reference,K
+Bartók,Cluster as background,"E-sharp F-sharp G G-sharp A, arpeggiated, on each slow beat. Five adjacent semitones",0 1 2 3 4,The Night's Music,wiki-ood,R
+Bartók,Cluster with the palm of the hand,E F F-sharp G G-sharp A B-flat C-flat. Eight adjacent semitones,0 1 2 3 4 5 6 7,"The Night's Music (footnote 4 of the score)",wiki-ood,R
+Bartók,Two clusters a semitone apart,"The chord G A C D and the same chord one semitone higher sound together at the end",0 2 5 7,"Mikrokosmos no. 107, Melody in the Mist",wiki-nightmusic,R
+Bartók,Tritone poles,"The middle or the contrast section is a tritone from the start. Examples: A and E-flat; C and F-sharp; G and C-sharp; F-sharp and C",,"Music for Strings I and II; The Night's Music; Sonata for Two Pianos I",wiki-axis; wiki-ood; wiki-son2p,R
+Bartók,Axis system (Lendvai),"Tonic axis: C E-flat F-sharp A. Subdominant axis: F A-flat B D. Dominant axis: G B-flat D-flat E. Notes of one axis can replace each other. Later authors do not all accept this theory",0 3 6 9 for each axis,Analysis of many works,wiki-axis; lendvai1971,R
+Bartók,Polymodal chromaticism,"Different modes on the same tonic, together or one after the other. Phrygian and Lydian together give all 12 notes",All 12,Bartók's Harvard lectures of 1943,wiki-polymodal,R
+Bartók,Acoustic scale chord,"Major triad with raised fourth and minor seventh: C E G B-flat F-sharp",0 1 3 4 6 8 10 (full scale),Concerto for Orchestra finale,wiki-acoustic,R
+Bartók,Tritone and major seventh chord,"Root, tritone, major seventh: F B E",0 1 6,The Miraculous Mandarin; The Chase,wiki-ood,R
+Bartók,Parallel pairs at fixed intervals,"Bassoons in minor sixths; oboes in minor thirds; clarinets in minor sevenths; flutes in fifths; muted trumpets in major seconds",,Concerto for Orchestra II,wiki-cfo,R
+Bartók,Tristan chord that resolves to a pentatonic set,"A chord related to the Tristan chord resolves to a pentatonic mode on C",0 2 5 8 to 0 2 4 7 9,Piano Concerto No. 3 II,wiki-pc3,R
+Bartók,Interval cells x y z,"x: four adjacent semitones. y: four adjacent whole tones. z: two tritones a semitone apart",0 1 2 3; 0 2 4 6; 0 1 6 7,String Quartet No. 4 and other works. Names from Perle and Treitler,reference,K
+Bartók,Major-minor chord,A triad with its major third and its minor third together,0 3 4 7,Many works,reference,K
+Corigliano,Chord that functions as a tonic,"E-flat D A E, held by the strings below fast solo passages. The chord comes from the solo melody",0 1 2 7,Concerto for Clarinet I,cor-clarinet,R
+Corigliano,Four pitch centres,"C, C-sharp, G, G-sharp come back through the full work",0 1 5 6,String Quartet; Symphony No. 2,cor-quartet,R
+Corigliano,Semitone motive on one note,"The open-string note A in unison, held, then pulled down to G-sharp",,Symphony No. 1 I and III,cor-sym1,R
+Corigliano,Chaconne on 12 pitches,"A chord sequence made from 12 pitches goes through the full movement. The chords dissolve into each other",All 12,Symphony No. 1 III,cor-sym1,R
+Corigliano,Chaconne as the form of a long work,A repeated chord pattern below a lyric theme and fast solo studies,,The Red Violin: Chaconne,cor-chaconne,R
+Corigliano,Plagal cadences through all keys,"Cadences from chord 4 to chord 1 go through all keys below a long rising melody",,"Circus Maximus VII, Prayer",cor-circus,R
+Corigliano,Blurred cadences,"""Amen"" cadences (4 to 1) float around a hymn fragment",,Three Hallucinations II,cor-halluc,R
+Corigliano,Accidental major chord,"Many independent calls hold one note each at the same time. The result is a major chord",0 4 7,String Quartet III; Symphony No. 2 III (Nocturne),cor-quartet,R
+Corigliano,Chord waves,"Four chords in a slow pattern. Each chord grows from one high trumpet note that goes out through the brass",,Symphony No. 1 IV (Epilogue),cor-sym1,R
+Corigliano,Quarter-tones,"Semitone sighs divided into quarter-tones; two tunings that fight to be the tonic",24 notes in the octave,"Chiaroscuro; Pied Piper Fantasy (star music); Altered States",cor-chiaroscuro,R
+Corigliano,One interval for a full work,The fifth is in all three movements,0 7,Conjurer,cor-conjurer,R

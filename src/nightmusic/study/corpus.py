@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 CACHE_DIR = Path(".cache/corpus")
+CHECKSUM_FILE = Path("research/corpus.sha256")
 USER_AGENT = "nightmusic-study/0.1 (style study script)"
 
 
@@ -31,7 +32,11 @@ class CorpusFile:
         return CACHE_DIR / self.filename
 
 
-_BAGATELLES_BASE = "https://raw.githubusercontent.com/DCMLab/bartok_bagatelles/main/notes/"
+# The address has a fixed commit, thus the data cannot change.
+_BAGATELLES_COMMIT = "c6221f6ecb4dbcd476e827f6bf8705bdcb15c8a9"
+_BAGATELLES_BASE = (
+    f"https://raw.githubusercontent.com/DCMLab/bartok_bagatelles/{_BAGATELLES_COMMIT}/notes/"
+)
 
 CORPUS: dict[str, CorpusFile] = {
     entry.key: entry
@@ -81,16 +86,33 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def expected_checksums() -> dict[str, str]:
+    """Read the recorded SHA-256 digest of each corpus file."""
+    digests = {}
+    for line in CHECKSUM_FILE.read_text(encoding="utf-8").splitlines():
+        digest, _, filename = line.strip().partition("  ")
+        if filename:
+            digests[filename] = digest
+    return digests
+
+
 def fetch(key: str, *, force: bool = False) -> Path:
-    """Download one corpus file into the cache and return its path."""
+    """Download one corpus file into the cache, verify it, and return its path."""
     entry = CORPUS[key]
-    if entry.path.exists() and not force:
-        return entry.path
-    entry.path.parent.mkdir(parents=True, exist_ok=True)
-    request = urllib.request.Request(entry.url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=120) as response:
-        data = response.read()
-    entry.path.write_bytes(data)
+    if force or not entry.path.exists():
+        entry.path.parent.mkdir(parents=True, exist_ok=True)
+        request = urllib.request.Request(entry.url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(request, timeout=120) as response:
+            data = response.read()
+        entry.path.write_bytes(data)
+    expected = expected_checksums().get(entry.filename)
+    actual = sha256(entry.path)
+    if expected != actual:
+        raise RuntimeError(
+            f"{entry.filename}: the file is different from the file that the study measured. "
+            f"Expected SHA-256 {expected}, found {actual}. "
+            f"Examine the new file. Then update {CHECKSUM_FILE} if the new file is correct."
+        )
     return entry.path
 
 

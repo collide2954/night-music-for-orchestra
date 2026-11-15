@@ -148,6 +148,51 @@ TERTIAN = {
 }
 
 
+# Chord families for the style comparison. "Vagrant" is Schoenberg's word for
+# chords that do not belong to one key.
+CHORD_FAMILIES: dict[str, set[str]] = {
+    "major and minor triads": {"major triad", "minor triad"},
+    "vagrant chords": {
+        "diminished triad",
+        "augmented triad",
+        "diminished seventh",
+        "half-diminished seventh",
+        "half-diminished ninth",
+        "French sixth (dominant seventh, lowered fifth)",
+        "dominant seventh, raised fifth",
+        "whole-tone trichord (0 2 4)",
+        "whole-tone tetrachord (0 2 4 6)",
+        "whole-tone pentachord",
+        "whole-tone scale",
+    },
+    "dominant chords": {
+        "dominant seventh",
+        "incomplete dominant seventh",
+        "dominant ninth",
+        "dominant minor ninth",
+        "dominant seventh, raised ninth",
+    },
+    "other seventh and ninth chords": {
+        "minor seventh",
+        "major seventh",
+        "minor-major seventh",
+        "augmented major seventh",
+        "incomplete minor seventh",
+        "incomplete major seventh",
+        "minor ninth",
+        "major ninth",
+    },
+}
+
+
+def chord_family(name: str) -> str | None:
+    """Return the chord family of a chord name, or None."""
+    for family, members in CHORD_FAMILIES.items():
+        if name in members:
+            return family
+    return None
+
+
 def chord_name(pcs: Iterable[int]) -> str:
     """Return a name for a pitch-class set.
 

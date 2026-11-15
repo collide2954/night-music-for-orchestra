@@ -1,0 +1,28 @@
+composer,item,shape,parameters,where,source,evidence
+Schoenberg,Walking theme (theme 1a),"Step by step down from scale step 6 to step 1, above a held tonic note","Notes B-flat A G F E D. Upbeat. Dotted rhythm on beats 2 and 4. Low register",Verklärte Nacht bars 1-4,frisch1993,R
+Schoenberg,Semitone and tritone,"A semitone down, then a leap of a tritone","Intervals -1, then 6. It is the start of themes 2b, 4a, and 5a",Verklärte Nacht bars 34; 75; 105,frisch1993; schoenberg1932,R
+Schoenberg,Paired semitones,Two semitone steps a fourth apart,"Example: the semitone above step 5 and the semitone below step 1",Verklärte Nacht themes 2a; 2b; 3a,frisch1993; schoenberg1932,R
+Schoenberg,Short theme unit,"A unit of 1 bar, said two times at the same pitch, then a longer continuation","Proportion 1 : 1 : 2. The second statement is not on the dominant",Verklärte Nacht themes 2a; 3a; 5a,frisch1993,R
+Schoenberg,Register that rises,The first theme of a group starts low. The range goes up as the section continues,Themes 1a; 2a; 3a start in the low register,Verklärte Nacht part 1,frisch1993,R
+Schoenberg,Developing variation,"Each new theme is a changed form of an earlier theme: same contour, new intervals or new rhythm",Rhythm of the upbeat: present (1a); empty (2a; 4a); present again (5a),Verklärte Nacht,frisch1993,R
+Schoenberg,Theme transformation,The same theme with a new character,"Same contour; intervals adjusted; arpeggio inverted",Warnung bars 1 and 17,frisch1993,R
+Schoenberg,Linkage,The last motive of a phrase starts the next phrase,The new phrase starts before the cadence is complete,Im Reich der Liebe bars 6-7,frisch1993,R
+Schoenberg,Themes that sound together,Three earlier themes at the same time in the tonic major,"Themes 1a, 7a, and 10",Verklärte Nacht bar 370,frisch1993,R
+Schoenberg,Diatonic theme with a chromatic inner voice,"A melody that goes up by diatonic steps, with an inner voice that goes down by semitones",Contrary motion,Verklärte Nacht themes 6 and 7a (bars 230; 255),frisch1993,R
+Bartók,Fugue subject in a narrow range,"Four phrases. Each phrase fills a block of adjacent semitones. The line goes up to the centre and back","Range A to E-flat in the first statement; all semitones from A to E in the subject",Music for Strings I,solomon1973,R
+Bartók,Interval expansion,"The same theme later with larger intervals: chromatic steps become diatonic steps",Example: I bars 1-5 and IV bars 204-209,Music for Strings I and IV,wiki-mspc,R
+Bartók,Inversion as a goal,"After the climax, the subject is always inverted. At the end, the subject and its inversion sound together",Both lines start on A and end on A,Music for Strings I bars 56-88,solomon1973; roberts2021,R
+Bartók,Nature call,Short motive at an irregular time in the bar,"Six different imitations: birds, cicadas, frog. Bartók: the player can put them at any point and play as many as he likes",The Night's Music,wiki-ood,R
+Bartók,Repeated note that becomes a melody,"Repeated notes that start as noise and change into the shepherd's melody","The note G-sharp, from bar 37",The Night's Music,wiki-nightmusic; schneider2006,R
+Bartók,Call with built-in acceleration,"A A A C A A: five notes in the time of four, then one more","Latent rhythm 3 + 2 + 1. It sounds like an acceleration that stops suddenly",Sonata for Two Pianos II,wiki-nightmusic,R
+Bartók,Lonely melody,"One line, no accompaniment, sometimes doubled one or two octaves apart","Pentatonic (G A C D F), old Hungarian style",Mikrokosmos no. 107,wiki-nightmusic,R
+Bartók,Peasant flute melody,"A melody ""shown"" as a sound of the place, not as the voice of the composer",Strict Dorian mode on C-sharp,The Night's Music bars 37-58,wiki-ood; wiki-nightmusic,R
+Bartók,Real bird calls,The calls of real birds that the composer wrote down,"Tufted titmouse and wood thrush, heard in North Carolina in 1945",Piano Concerto No. 3 II,wiki-nightmusic,R
+Bartók,Fourths theme,A theme of rising fourths in the low strings,"Cellos and basses; answered by string tremolo and flutes",Concerto for Orchestra I (introduction),wiki-nightmusic,R
+Bartók,Folk motive,A short part of a real folk song as the main motive,"Three notes: E F-sharp G",With Drums and Pipes,wiki-ood,R
+Corigliano,Motto of the string quartet,"One note repeated in even values, and a chain of minor thirds that are not adjacent",The thirds go up in the Prelude and down in the Fugue,String Quartet; Symphony No. 2,cor-quartet,R
+Corigliano,Decorated single note,One repeated note with ornaments,"The note C, played by oboes ""in a highly primitive manner""",Three Hallucinations I and III,cor-halluc,R
+Corigliano,Quotation as memory,A known piece of music that comes from far away,"Offstage piano: the Albéniz-Godowsky Tango. Hymn: Rock of Ages. Bach chorale",Symphony No. 1; Three Hallucinations; Chiaroscuro,cor-sym1; cor-halluc; cor-chiaroscuro,R
+Corigliano,Words changed into melody,"Short sentences about friends, set as melodies for solo instruments. Then the words are removed",Melodies above the chaconne chords,Symphony No. 1 III,cor-sym1,R
+Corigliano,All material from the first solo,The full movement comes from the first solo passage,Also the chord that functions as the tonic,Concerto for Clarinet I,cor-clarinet,R
+Corigliano,Calls that answer,"Many solo players echo the calls of the others",Calls made from repeated notes and minor thirds,Symphony No. 2 III,cor-sym2,R

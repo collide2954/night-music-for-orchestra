@@ -1,0 +1,26 @@
+id,composer,work,year,forces,minutes,use_in_this_study,source,evidence
+vn,Schoenberg,Verklärte Nacht op. 4,1899 (string orchestra 1917; revised 1943),String sextet; later string orchestra,27.1 to 29.3 (five recordings),"Primary model: harmony, theme work, form in one movement",frisch1993; imslp-vn; ia-vn1924,R
+pelleas,Schoenberg,Pelleas und Melisande op. 5,1902 to 1903,Very large orchestra,,Model for a very large late-Romantic orchestra,wiki-pelleas,R
+gurre,Schoenberg,Gurre-Lieder,1900 to 1911,"Soloists, choruses, about 150 players",,Upper limit of orchestra size; unusual percussion (iron chains),wiki-gurre,R
+op9,Schoenberg,Chamber Symphony No. 1 op. 9,1906,15 solo players,,Harmony built from fourths; motto theme of fourths,wiki-op9,R
+op16,Schoenberg,Five Pieces for Orchestra op. 16,1909 (revised 1949),Very large orchestra,,"No. 3 ""Farben"": change of tone colour as the musical event",wiki-op16,R
+bag12,Bartók,Bagatelle op. 6 no. 12,1908,Piano,,Early form of the night music style,wiki-nightmusic; dcml-bagatelles,R
+ood4,Bartók,"Out of Doors, no. 4: The Night's Music",1926,Piano,4.7 (from the metronome marks); 5.3 (measured performance),First complete night music piece; it gave the style its name,wiki-ood; bednarek2026,R
+sq4,Bartók,String Quartet No. 4,1928,String quartet,About 24 (movements about 6-3-6-3-6),Arch form in five movements; night music in the centre,wiki-sq4,R
+sq5,Bartók,String Quartet No. 5,1934,String quartet,,Arch form; two night music movements; Bulgarian metres,wiki-sq5,R
+mspc,Bartók,"Music for Strings, Percussion and Celesta",1936,"Two string groups, percussion, celesta, harp, piano",,Fugue with proportion plan (I); night music with percussion colour (III),wiki-mspc; solomon1973; roberts2021,R
+son2p,Bartók,Sonata for Two Pianos and Percussion,1937,"2 pianos, 2 percussion players (7 instruments)",,Night music (II); exact percussion directions,wiki-son2p,R
+div,Bartók,Divertimento for String Orchestra,1939,String orchestra with solo group,,Slow movement with very flexible tempo,wiki-div,R
+cfo,Bartók,Concerto for Orchestra,1943 (revised 1945),Large orchestra,About 38,Night music for full orchestra (I introduction and III Elegia),wiki-cfo; wiki-nightmusic,R
+pc3,Bartók,Piano Concerto No. 3,1945,Piano and orchestra,,Night music with real bird calls (II),wiki-pc3; wiki-nightmusic,R
+cor-clar,Corigliano,Concerto for Clarinet and Orchestra,1977,Clarinet and large orchestra,29,Full orchestra as a group of soloists; players around the hall,cor-clarinet,R
+cor-hal,Corigliano,Three Hallucinations,1981,Large orchestra,13,"Trance music: quotation, tritone, blurred cadences, orchestra glissando",cor-halluc,R
+cor-piper,Corigliano,Pied Piper Fantasy,1982,"Flute, large orchestra, children's group",38,"Theatre in the concert hall; two groups in different tempos",cor-piper,R
+cor-s1,Corigliano,Symphony No. 1,1988,Very large orchestra,40,"Rage and memory: offstage piano, brass around the orchestra, layered accelerations",cor-sym1,R
+cor-sq,Corigliano,String Quartet,1995,String quartet,33,Arch form after Bartók; Nocturne from the night calls of Fez,cor-quartet,R
+cor-chac,Corigliano,The Red Violin: Chaconne,1997,Violin and orchestra,17,Chaconne chords and one lyric theme hold a long form together,cor-chaconne,R
+cor-voc,Corigliano,Vocalise,1999,"Soprano, orchestra, electronics",20,"Acoustic sound that changes into amplified, looped sound",cor-vocalise,R
+cor-s2,Corigliano,Symphony No. 2,2000,String orchestra (minimum 6-5-4-4-2),35,The quartet as string symphony; divided sections; solo calls,cor-sym2,R
+cor-circ,Corigliano,Circus Maximus (Symphony No. 3),2004,"Three wind bands: stage, surround, marching",35,"Space as form; ""Night Music I"" (nature) and ""Night Music II"" (city)",cor-circus; wiki-circus,R
+cor-conj,Corigliano,Conjurer,2007,Percussion solo and string orchestra,35,"Percussion in three families: wood, metal, skin",cor-conjurer,R
+cor-chia,Corigliano,Chiaroscuro,1997,Two pianos tuned a quarter-tone apart,12,Quarter-tones as expression,cor-chiaroscuro,R

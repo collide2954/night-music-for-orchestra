@@ -1,0 +1,53 @@
+key,citation,url,access
+frisch1993,"Frisch, Walter. The Early Works of Arnold Schoenberg, 1893-1908. University of California Press, 1993. Chapters 4 and 5.",http://publishing.cdlib.org/ucpressebooks/view?docId=ft5t1nb3gn,read
+wellesz1925,"Wellesz, Egon. Arnold Schönberg. 1925. Five-part plan of Verklärte Nacht.",,through frisch1993
+pfannkuch1963,"Pfannkuch, Wilhelm. Zu Thematik und Form in Schönbergs Streichsextett. 1963. Bar numbers added by Frisch.",,through frisch1993
+swift1977,"Swift, Richard. 1/XII/99: Tonal Relations in Schoenberg's Verklärte Nacht. 19th-Century Music 1 (1), 1977.",https://doi.org/10.2307/746766,through frisch1993
+schoenberg1932,"Schoenberg, Arnold. Konstruktives in der Verklärten Nacht. Manuscript, 1932.",,through frisch1993
+schoenberg1978,"Schoenberg, Arnold. Theory of Harmony. Translated by Roy E. Carter. 1978. Page 346: the inverted ninth chord.",,through frisch1993
+billam2013,"Billam, Peter. Verklärte Nacht by Arnold Schoenberg, arranged for piano. 2013, edition of 15 February 2014. Score and muscript text source. Licence CC BY 4.0.",https://peterbillam.gitlab.io/pjb_arrangements/,read and measured
+muscript,"Billam, Peter. Muscript: format manual.",https://peterbillam.gitlab.io/muscript/,read
+imslp-vn,"IMSLP. Verklärte Nacht, Op.4 (Schoenberg, Arnold). List of scores and recordings with durations.","https://imslp.org/wiki/Verkl%C3%A4rte_Nacht,_Op.4_(Schoenberg,_Arnold)",read
+ia-vn1924,"Internet Archive. Schoenberg, Verklärte Nacht. Spencer Dyke Sextet, National Gramophonic Society, 1924. Item data.",https://archive.org/details/ngs-h-l-schoenberg-verklarte-nacht,read
+wiki-vn,"Wikipedia. Verklärte Nacht. Read 2026-11-14.",https://en.wikipedia.org/wiki/Verkl%C3%A4rte_Nacht,read
+wiki-pelleas,"Wikipedia. Pelleas und Melisande (Schoenberg). Read 2026-11-14.",https://en.wikipedia.org/wiki/Pelleas_und_Melisande_(Schoenberg),read
+wiki-op16,"Wikipedia. Five Pieces for Orchestra. Read 2026-11-14.",https://en.wikipedia.org/wiki/Five_Pieces_for_Orchestra,read
+wiki-gurre,"Wikipedia. Gurre-Lieder. Read 2026-11-14.",https://en.wikipedia.org/wiki/Gurre-Lieder,read
+wiki-op9,"Wikipedia. Chamber Symphony No. 1 (Schoenberg). Read 2026-11-14.",https://en.wikipedia.org/wiki/Chamber_Symphony_No._1_(Schoenberg),read
+wiki-nightmusic,"Wikipedia. Night music (Bartók). Read 2026-11-14.",https://en.wikipedia.org/wiki/Night_music_(Bart%C3%B3k),read
+schneider2006,"Schneider, David E. Bartók, Hungary, and the Renewal of Tradition. University of California Press, 2006. Pages 81-116.",,through wiki-nightmusic and wiki-ood
+danchenka1987,"Danchenka, Gary. Diatonic Pitch-Class Sets in Bartók's Night Music. Indiana Theory Review 8 (1), 1987.",,through wiki-nightmusic
+wiki-ood,"Wikipedia. Out of Doors (Bartók). Read 2026-11-14.",https://en.wikipedia.org/wiki/Out_of_Doors_(Bart%C3%B3k),read
+wiki-mspc,"Wikipedia. Music for Strings, Percussion and Celesta. Read 2026-11-14.","https://en.wikipedia.org/wiki/Music_for_Strings,_Percussion_and_Celesta",read
+solomon1973,"Solomon, Larry J. Symmetry as a Compositional Determinant. 1973, revised 2002. Chapter VII.",https://web.archive.org/web/20060827021555/http://solomonsmusic.net/diss7.htm,read
+roberts2021,"Roberts, Gareth E. Bartók, Fibonacci, and the Golden Ratio: Fact or Fiction. Handout, Joint Mathematics Meetings 2021.",https://meetings.ams.org/math/jmm2021/mediafile/Handout/Paper3109/Bartok_JMM2021_Roberts.pdf,read
+lendvai1971,"Lendvai, Ernő. Béla Bartók: An Analysis of His Music. Kahn and Averill, 1971.",,through roberts2021 and solomon1973
+lendvai-web,"Lendvai, Ernő. Text on the Sonata for Two Pianos and Percussion (dimensions and overall form). Web edition.",https://www.mi.sanu.ac.rs/vismath/lend/b12.htm,read
+howat1983,"Howat, Roy. Bartók, Lendvai and the Principles of Proportional Analysis. Music Analysis 2 (1), 1983.",,through roberts2021
+wiki-cfo,"Wikipedia. Concerto for Orchestra (Bartók). Read 2026-11-14.",https://en.wikipedia.org/wiki/Concerto_for_Orchestra_(Bart%C3%B3k),read
+wiki-sq4,"Wikipedia. String Quartet No. 4 (Bartók). Read 2026-11-14.",https://en.wikipedia.org/wiki/String_Quartet_No._4_(Bart%C3%B3k),read
+wiki-sq5,"Wikipedia. String Quartet No. 5 (Bartók). Read 2026-11-14.",https://en.wikipedia.org/wiki/String_Quartet_No._5_(Bart%C3%B3k),read
+wiki-son2p,"Wikipedia. Sonata for Two Pianos and Percussion. Read 2026-11-14.",https://en.wikipedia.org/wiki/Sonata_for_Two_Pianos_and_Percussion,read
+wiki-pc2,"Wikipedia. Piano Concerto No. 2 (Bartók). Read 2026-11-14.",https://en.wikipedia.org/wiki/Piano_Concerto_No._2_(Bart%C3%B3k),read
+wiki-pc3,"Wikipedia. Piano Concerto No. 3 (Bartók). Read 2026-11-14.",https://en.wikipedia.org/wiki/Piano_Concerto_No._3_(Bart%C3%B3k),read
+wiki-div,"Wikipedia. Divertimento for String Orchestra (Bartók). Read 2026-11-14.",https://en.wikipedia.org/wiki/Divertimento_for_String_Orchestra_(Bart%C3%B3k),read
+wiki-axis,"Wikipedia. Axis system. Read 2026-11-14.",https://en.wikipedia.org/wiki/Axis_system,read
+wiki-acoustic,"Wikipedia. Acoustic scale. Read 2026-11-14.",https://en.wikipedia.org/wiki/Acoustic_scale,read
+wiki-polymodal,"Wikipedia. Polymodal chromaticism. Read 2026-11-14.",https://en.wikipedia.org/wiki/Polymodal_chromaticism,read
+wiki-aksak,"Wikipedia. Aksak. Read 2026-11-14.",https://en.wikipedia.org/wiki/Aksak,read
+wiki-circus,"Wikipedia. Symphony No. 3 (Corigliano). Read 2026-11-14.",https://en.wikipedia.org/wiki/Symphony_No._3_(Corigliano),read
+cor-sym1,"Corigliano, John. Symphony No. 1 (1988). Work page with forces, duration, and program note.",https://johncorigliano.com/works/symphony-no-1-1988,read
+cor-circus,"Corigliano, John. Circus Maximus (2004). Work page with program note.",https://johncorigliano.com/works/circus-maximus-2004,read
+cor-sym2,"Corigliano, John. Symphony No. 2 (2000). Work page with forces, duration, and program note.",https://johncorigliano.com/works/symphony-no-2-2000,read
+cor-quartet,"Corigliano, John. String Quartet (1995). Work page with program note.",https://johncorigliano.com/works/string-quartet-1995,read
+cor-clarinet,"Corigliano, John. Concerto for Clarinet and Orchestra (1977). Work page with forces and program note.",https://johncorigliano.com/works/concerto-for-clarinet-and-orchestra-1977,read
+cor-piper,"Corigliano, John. Pied Piper Fantasy (1982). Work page with forces and program note.",https://johncorigliano.com/works/pied-piper-fantasy-1982,read
+cor-conjurer,"Corigliano, John. Conjurer (2007). Work page with program note.",https://johncorigliano.com/works/conjurer-concerto-for-percussionist-and-string-orchestra-2007,read
+cor-chaconne,"Corigliano, John. The Red Violin: Chaconne for Violin and Orchestra (1997). Work page with forces and program note.",https://johncorigliano.com/works/the-red-violin-chaconne-for-violin-and-orchestra-1997,read
+cor-halluc,"Corigliano, John. Three Hallucinations (1981). Work page with forces and program note.",https://johncorigliano.com/works/three-hallucinations-1981,read
+cor-vocalise,"Corigliano, John. Vocalise (1999). Work page with forces and program note.",https://johncorigliano.com/works/vocalise-1999,read
+cor-chiaroscuro,"Corigliano, John. Chiaroscuro. Work page with program note.",https://johncorigliano.com/works/chiaroscuro,read
+cor-site,"Corigliano, John. Other work pages: forces and durations.",https://johncorigliano.com/work/works-by-category,read
+bednarek2026,"Bednarek, Michael. Béla Bartók, Out of Doors Suite, Sz 81. MIDI capture of a piano performance. Wikimedia Commons, 2026. Licence CC0 1.0.","https://commons.wikimedia.org/wiki/File:B%C3%A9la_Bart%C3%B3k,_Out_of_Doors_Suite,_Sz_81.mid",measured
+dcml-bagatelles,"Digital and Cognitive Musicology Lab. bartok_bagatelles: Béla Bartók, Fourteen Bagatelles op. 6. Annotated score corpus. Licence CC BY-NC-SA 4.0.",https://github.com/DCMLab/bartok_bagatelles,measured
+reference,"Standard reference knowledge. The study did not read a source for these rows. Check each row before critical use.",,not read
