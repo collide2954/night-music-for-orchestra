@@ -265,3 +265,88 @@ def spread(section: Section, players: str, chords: str, marks: str = "") -> None
         raise ValueError(f"{len(voices)} voices for {len(names)} players")
     for entry, voice in zip(names, voices, strict=True):
         put(section, entry, voice, marks)
+
+
+def _doubled(elements: list[music.Element], shift: int) -> list[music.Element]:
+    result: list[music.Element] = []
+    for element in elements:
+        if isinstance(element, music.Note):
+            extra = [
+                replace(p, pitch=replace(p.pitch, octave=p.pitch.octave + shift), posts=[])
+                for p in element.pitches
+            ]
+            pitches = extra + element.pitches if shift < 0 else element.pitches + extra
+            result.append(replace(element, pitches=pitches, chord=True))
+        elif isinstance(element, music.Group):
+            result.append(replace(element, children=_doubled(element.children, shift)))
+        else:
+            result.append(element)
+    return result
+
+
+def double(text: str, shift: int = -1) -> str:
+    """Return the music in octaves: each note gets a second note `shift` octaves from it."""
+    parsed = music.parse(text)
+    return music.body_to_lilypond(music.Group("sequence", _doubled(parsed.children, shift)))
+
+
+def bars(count: int, rest: str, entries: dict[int, str]) -> str:
+    """Return `count` bars: the music of `entries` (bar number: music), and rests.
+
+    `rest` is the full-bar rest of the metre, for example "R1*7/8 |".
+    """
+    return " ".join(entries.get(number, rest) for number in range(1, count + 1))
+
+
+class Block:
+    """Collect the music of a section phrase by phrase, then write it.
+
+    A section has one or more phrases. For each phrase, the composer gives
+    the music of some players. A player with no music in a phrase gets the
+    rest of that phrase.
+    """
+
+    def __init__(self, section: Section, *phrase_rests: str) -> None:
+        self.section = section
+        self.phrase_rests = phrase_rests
+        self.music: dict[str, dict[int, str]] = {}
+
+    def add(self, players: str, phrase: int, text: str, marks: str = "") -> None:
+        """Give the music of some players for one phrase (the first phrase is 1).
+
+        `players` and `marks` are the same as for `put()`.
+        """
+        if not 1 <= phrase <= len(self.phrase_rests):
+            raise ValueError(f"the section has no phrase {phrase}")
+        for entry in players.split():
+            player, _, shift = entry.partition(":")
+            music_text = octave(text, int(shift)) if shift else text
+            if marks:
+                music_text = first(music_text, marks, note=True)
+            phrases = self.music.setdefault(player, {})
+            if phrase in phrases:
+                raise ValueError(f"{player}: music written two times for phrase {phrase}")
+            phrases[phrase] = music_text
+
+    def spread(self, players: str, phrase: int, chords: str, marks: str = "") -> None:
+        """Divide a chord progression between players: the first player gets the lowest voice."""
+        names = players.split()
+        voices = lines(chords)
+        if len(voices) != len(names):
+            raise ValueError(f"{len(voices)} voices for {len(names)} players")
+        for entry, voice in zip(names, voices, strict=True):
+            self.add(entry, phrase, voice, marks)
+
+    def start(self, player: str, prefix: str) -> None:
+        """Put a command (for example a change of instrument) before the music of a player."""
+        phrases = self.music.setdefault(player, {})
+        phrases[1] = prefix + " " + phrases.get(1, self.phrase_rests[0])
+
+    def close(self) -> None:
+        """Write the music of all players and close the section."""
+        for player, phrases in self.music.items():
+            text = " ".join(
+                phrases.get(number, rest) for number, rest in enumerate(self.phrase_rests, start=1)
+            )
+            self.section.write(player, text)
+        self.section.close()

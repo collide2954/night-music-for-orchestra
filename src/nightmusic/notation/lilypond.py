@@ -31,6 +31,12 @@ STYLE = r"""
    "A change of instrument for one player."
    (interpret-markup layout props
      (markup #:box #:pad-markup 0.3 #:fontsize -1 text)))
+
+% Dynamic marks that LilyPond does not have.
+sffz = #(make-dynamic-script "sffz")
+sfpp = #(make-dynamic-script "sfpp")
+ffp = #(make-dynamic-script "ffp")
+pf = #(make-dynamic-script "pf")
 """
 
 SCORE_LAYOUT = r"""

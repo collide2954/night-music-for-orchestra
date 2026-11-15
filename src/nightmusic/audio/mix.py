@@ -18,6 +18,7 @@ from . import dsp, sampler, space
 
 TAIL_SECONDS = 6.0  # time after the last bar for the reverberation
 SEGMENT_SECONDS = 40.0  # the render divides the work into segments of this length
+SHORTEST_SEGMENT_SECONDS = 6.0
 SEGMENT_LEAD = 1.0  # time before a segment, for notes that start early (grace notes)
 MAX_WORKERS = 8  # largest number of parallel processes
 CACHE_BYTES = 4_000_000_000  # memory for samples, for all processes together
@@ -80,11 +81,17 @@ def render(
         if entry is not None and np.any((entry.starts >= begin) & (entry.starts < end)):
             prepared.append((player.id, entry))
 
-    count = max(1, int(np.ceil((end - begin) / SEGMENT_SECONDS)))
+    workers = max(1, min(workers or os.cpu_count() or 1, MAX_WORKERS))
+    # A short excerpt gets shorter segments: thus all processes have work.
+    count = max(
+        int(np.ceil((end - begin) / SEGMENT_SECONDS)),
+        min(workers, int(np.ceil((end - begin) / SHORTEST_SEGMENT_SECONDS))),
+        1,
+    )
     edges = np.linspace(begin, end, count + 1)
     edges[-1] = end + 1.0  # a note at the last moment is in the last segment
     windows = [(float(a), float(b)) for a, b in zip(edges[:-1], edges[1:], strict=True)]
-    workers = max(1, min(workers or os.cpu_count() or 1, MAX_WORKERS, len(windows)))
+    workers = min(workers, len(windows))
 
     first_sample = max(0, int(round((begin - SEGMENT_LEAD) * dsp.RATE))) if bars else 0
     length = int(np.ceil((end + TAIL_SECONDS) * dsp.RATE)) - first_sample

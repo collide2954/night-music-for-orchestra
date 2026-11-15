@@ -166,6 +166,7 @@ class Section:
             self._check(parsed)
         except (music.MusicSyntaxError, WorkError) as problem:
             raise WorkError(f"{player_id}, bars {self.label}: {problem}") from None
+        _drop_repeated_dynamics(parsed.children, _DynamicState())
         self.work.chunks.setdefault(player_id, []).append((self.first_bar, parsed))
         self.written.add(player_id)
 
@@ -193,6 +194,50 @@ class Section:
             raise WorkError(
                 f"the music has {position} quarter notes; the section has {self.end - self.start}"
             )
+
+
+@dataclass
+class _DynamicState:
+    """The dynamic mark in effect while the code reads the music of a player."""
+
+    mark: str = ""
+    changed: bool = False  # a hairpin came after the mark
+    silence: Fraction = Fraction(0)  # rests after the last note, in quarter notes
+
+
+REPEAT_AFTER_SILENCE = Fraction(8)  # after this silence, a dynamic mark is given again
+
+
+def _drop_repeated_dynamics(elements: list[music.Element], state: _DynamicState) -> None:
+    """Remove a dynamic mark that is the same as the mark in effect.
+
+    The composer makes music from repeated patterns. Each pattern has its
+    dynamic mark. In the score, the mark must show only one time.
+    """
+    for element in elements:
+        if isinstance(element, music.Command) and element.name == "switch":
+            state.mark = ""
+        elif isinstance(element, music.Rest):
+            state.silence += element.duration
+        elif isinstance(element, music.Note):
+            kept = []
+            for post in element.posts:
+                if post.kind == "dynamic" and post.value in music.DYNAMICS:
+                    repeated = (
+                        post.value == state.mark
+                        and not state.changed
+                        and state.silence < REPEAT_AFTER_SILENCE
+                    )
+                    state.mark, state.changed = post.value, False
+                    if repeated:
+                        continue
+                elif post.kind == "hairpin":
+                    state.changed = True
+                kept.append(post)
+            element.posts[:] = kept
+            state.silence = Fraction(0)
+        elif isinstance(element, music.Group):
+            _drop_repeated_dynamics(element.children, state)
 
 
 def _check_bar_lines(
