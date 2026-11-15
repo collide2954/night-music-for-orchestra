@@ -24,6 +24,7 @@ import os
 import re
 import shutil
 import subprocess
+import zipfile
 from pathlib import Path
 
 import numpy as np
@@ -33,6 +34,7 @@ from ..notation.work import Work
 from . import dsp, reference
 
 PROFILE = "Muse Sounds"
+MASTER_VOLUME_DB = -18.0  # level of the master control of MuseScore for the render
 SAMPLER_HOME = Path.home() / ".local/share/MuseSampler"
 # The Muse Sounds libraries play only in the official build of MuseScore Studio.
 OFFICIAL_PROGRAM = Path.home() / ".local/opt/musescore-studio/squashfs-root/AppRun"
@@ -120,18 +122,48 @@ def render(
     text, names = musicxml.score(work, bars, instruments)
     source = directory / "score.musicxml"
     source.write_text(text, encoding="utf-8")
-    native = directory / "score.mscx"
-    _run(["-o", str(native), str(source)], log)
-    changed, count = play_techniques(native.read_text(encoding="utf-8"))
-    native.write_text(changed, encoding="utf-8")
-    sound = directory / "score.flac"
+    packed = directory / "score.mscz"
+    packed.unlink(missing_ok=True)
+    _run(["-o", str(packed), str(source)], log)
+    count = prepare_file(packed, profile)
+    sound = directory / "score.wav"
     sound.unlink(missing_ok=True)
-    # The official build plays Muse Sounds with no option, if they are installed.
-    # The option is necessary only for the basic sounds.
-    option = [] if profile == PROFILE else ["--sound-profile", profile]
-    _run([*option, "-o", str(sound), str(native)], log)
+    _run(["-o", str(sound), str(packed)], log)
     print(f"musescore: {len(names)} parts, {count} playing technique marks, profile {profile}")
-    return reference.load_stereo(sound), names
+    audio = reference.load_stereo(sound)
+    # Give the sound the level that it has with the master control at 0 dB.
+    audio *= np.float32(dsp.db(-MASTER_VOLUME_DB))
+    return audio, names
+
+
+def prepare_file(packed: Path, profile: str) -> int:
+    """Change the MuseScore file for the render. Return the number of technique marks.
+
+    The file is a ZIP archive. The function changes two files in it:
+
+    - The score: the words of the playing techniques become technique marks.
+    - The audio settings: the sound profile, and a lower level of the master
+      control. With the control at 0 dB, a loud passage of the full
+      orchestra is too loud for the output of MuseScore and has distortion.
+    """
+    count = 0
+    contents: dict[str, bytes] = {}
+    with zipfile.ZipFile(packed) as archive:
+        for name in archive.namelist():
+            contents[name] = archive.read(name)
+    for name, data in contents.items():
+        if name.endswith(".mscx"):
+            changed, count = play_techniques(data.decode("utf-8"))
+            contents[name] = changed.encode("utf-8")
+        elif name == "audiosettings.json":
+            settings = json.loads(data.decode("utf-8"))
+            settings["activeSoundProfile"] = profile
+            settings.setdefault("master", {})["volumeDb"] = MASTER_VOLUME_DB
+            contents[name] = json.dumps(settings, indent=4).encode("utf-8")
+    with zipfile.ZipFile(packed, "w", zipfile.ZIP_DEFLATED) as archive:
+        for name, data in contents.items():
+            archive.writestr(name, data)
+    return count
 
 
 def other_instruments(work: Work) -> set[str]:
