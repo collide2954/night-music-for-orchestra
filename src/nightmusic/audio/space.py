@@ -75,7 +75,7 @@ SEATS: dict[str, Seat] = {
     "tbn1": Seat(3.8, 9.8), "tbn2": Seat(4.8, 9.8), "btbn": Seat(5.8, 9.8), "tuba": Seat(6.8, 9.8),
     "timp": Seat(0.0, 11.6),
     "perc1": Seat(-7.5, 11.4), "perc2": Seat(-5.5, 11.8), "perc3": Seat(-3.5, 12.0),
-    "perc4": Seat(3.0, 12.0),
+    "perc4": Seat(3.0, 12.0), "perc5": Seat(-1.5, 12.2), "perc6": Seat(5.0, 11.8),
     "harp": Seat(-8.2, 5.6), "pno": Seat(-8.8, 8.2), "cel": Seat(-7.6, 9.4),
     "cimb": Seat(7.8, 5.6), "mand": Seat(6.6, 4.2), "acc": Seat(7.8, 7.6),
 }  # fmt: skip

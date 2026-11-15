@@ -13,11 +13,11 @@
 [summary]
 woodwind_players = 13
 brass_players = 13
-percussion_players = 5   # 1 timpani player and 4 percussion players
+percussion_players = 7   # 1 timpani player and 6 percussion players
 keyboard_and_plucked_players = 6
 strings = [16, 14, 12, 10, 8]
 minimum_strings = [14, 12, 10, 8, 6]
-total_players = 97
+total_players = 99
 
 # ---------------------------------------------------------------- woodwinds
 
@@ -166,12 +166,12 @@ id = "perc"
 name = "Percussion"
 short = "Perc."
 family = "percussion"
-count = 4
+count = 6
 instruments = [
     "vibraphone", "marimba", "glockenspiel", "crotales", "xylophone", "tubular bells",
     "tuned gongs", "singing bowls", "tam-tams", "suspended cymbals", "crash cymbals", "bass drum",
     "triangle",
-    "snare drum", "tom-toms", "frame drum", "wood blocks", "temple blocks", "claves",
+    "snare drum", "tom-toms", "taiko", "frame drum", "wood blocks", "temple blocks", "claves",
     "guiro", "cowbells", "finger cymbals", "wind chimes", "waterphone",
 ]
 

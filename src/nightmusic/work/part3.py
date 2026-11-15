@@ -94,7 +94,7 @@ def write(work: Work) -> None:
 
 
 def _night_begins(work: Work) -> None:
-    """Bars 221 to 230: the cluster grows from the note A-flat. The first calls."""
+    """Mark S: the cluster grows from the note A-flat. The first calls."""
     structure = work.structure
     s = work.section(10, 3, 2)
     structure.mark(s.bar(1), "S")
@@ -108,6 +108,7 @@ def _night_begins(work: Work) -> None:
     block.add("vc", 1, rest(2) + times(fill(r"<ges g>1", SWELL_2), 4), muted)
     _add_cycle(block, 1, 10)
     block.start("perc3", r'\switch "tuned gongs"')
+    block.start("perc1", r'\switch "tam-tams"')
 
     def calls(player: str, events: dict[tuple[int, float], str], marks: str = "") -> None:
         block.add(player, 1, scatter(10, 3, 2, events), marks)
@@ -134,7 +135,7 @@ def _night_begins(work: Work) -> None:
 
 
 def _lonely_melody(work: Work) -> None:
-    """Bars 231 to 242: a melody for the alto flute, in the manner of a night call."""
+    """Mark T: a melody for the alto flute, in the manner of a night call."""
     structure = work.structure
     s = work.section(12, 3, 2)
     structure.mark(s.bar(1), "T")
@@ -169,7 +170,7 @@ def _lonely_melody(work: Work) -> None:
 
 
 def _distant_chorale(work: Work) -> None:
-    """Bars 243 to 252: the motto as a chorale in four octaves, from far away.
+    """Mark U: the motto as a chorale in four octaves, from far away.
 
     This is the point of the work that is the most distant from the tonic.
     """
@@ -198,7 +199,7 @@ def _distant_chorale(work: Work) -> None:
 
 
 def _drone_and_song(work: Work) -> None:
-    """Bars 253 to 262: one cello sings above a drone. The harmony goes to E-flat minor."""
+    """Mark V: one cello sings above a drone. The harmony goes to E-flat minor."""
     structure = work.structure
     s = work.section(10, 3, 2)
     structure.mark(s.bar(1), "V")

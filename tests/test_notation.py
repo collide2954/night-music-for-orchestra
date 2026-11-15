@@ -1,5 +1,6 @@
 """Tests for the music language, the structure, and the LilyPond writer."""
 
+import re
 import shutil
 import subprocess
 from fractions import Fraction
@@ -140,8 +141,27 @@ def test_lilypond_compiles_the_files(tmp_path):
             check=False,
         )
         assert result.returncode == 0, result.stderr
-    assert len(paths) == 43
+    assert len(paths) == 45
     assert (tmp_path / "score.pdf").exists()
+
+
+def test_the_notes_of_the_score_have_the_bar_numbers_of_the_music():
+    from nightmusic.work import build
+
+    work = build()
+    marks = {label: number for number, label in work.structure.marks.items()}
+    notes = " ".join(lilypond.score_notes(work))
+    # The harmonic series on D is the section at the mark DD.
+    assert f"the woodwinds (bars {marks['DD']} to {marks['EE'] - 1})" in notes
+    # The ocarinas play in part 3 only: between the mark S and the mark W.
+    found = re.search(r"an ocarina in C \(bars (\d+) to (\d+)\)", notes)
+    assert found is not None
+    assert marks["S"] <= int(found[1]) < int(found[2]) < marks["W"]
+    assert f"Duration: {round(work.structure.duration_seconds / 60)} minutes." in notes
+    # A work with no quarter-tones and no ocarinas has no notes about them.
+    small = " ".join(lilypond.score_notes(_small_work()))
+    assert "Quarter-tones" not in small
+    assert "ocarina" not in small
 
 
 def test_three_quarter_flat_names_are_valid_in_lilypond():

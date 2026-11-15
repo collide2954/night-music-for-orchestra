@@ -92,7 +92,7 @@ def write(work: Work) -> None:
 
 
 def _turn(work: Work) -> None:
-    """Bars 263 to 266: D major, very soft. The bells play the motto in its shimmer form."""
+    """Mark W: D major, very soft. The bells play the motto in its shimmer form."""
     structure = work.structure
     s = work.section(4, 4, 4)
     structure.mark(s.bar(1), "W")
@@ -117,7 +117,7 @@ def _turn(work: Work) -> None:
 
 
 def _warm_theme(work: Work) -> None:
-    """Bars 267 to 282: the warm theme, two times."""
+    """Mark X: the warm theme, two times."""
     structure = work.structure
     s = work.section(16, 4, 4)
     structure.mark(s.bar(1), "X")
@@ -166,7 +166,7 @@ def _warm_theme(work: Work) -> None:
 
 
 def _shimmer(work: Work) -> None:
-    """Bars 283 to 306: the song theme in F-sharp major, with interlocking bells."""
+    """Mark Y: the song theme in F-sharp major, with interlocking bells."""
     structure = work.structure
     s = work.section(24, 4, 4)
     structure.mark(s.bar(1), "Y")
@@ -296,7 +296,7 @@ def _shimmer(work: Work) -> None:
 
 
 def _broad(work: Work) -> None:
-    """Bars 307 to 330: the warm theme in B-flat major, then the way to D-flat."""
+    """Mark Z: the warm theme in B-flat major, then the way to D-flat."""
     structure = work.structure
     s = work.section(24, 4, 4)
     structure.mark(s.bar(1), "Z")
@@ -363,7 +363,7 @@ def _broad(work: Work) -> None:
 
 
 def _approach(work: Work) -> None:
-    """Bars 331 to 358: the way up to the main climax, above the bass note D-flat.
+    """Mark AA: the way up to the main climax, above the bass note D-flat.
 
     The walking theme of part 1 is now in a major key and goes up. The calls
     of the brass have the motto in its light form (D-flat, E-flat, A-flat).
@@ -453,6 +453,7 @@ def _approach(work: Work) -> None:
     block.add("tpt1 tpt2 tpt3", 6, bars(4, "R1 |", {1: tr(call, 5), 3: tr(call, 9)}), r"\ff")
     block.add("tbn1 tbn2 hn5 hn6", 6, bars(4, "R1 |", {2: tr(call, -7), 4: tr(call, -3)}), r"\ff")
     block.add("perc3", 6, r"""\switch "bass drum" R1*2 | c'1:32\p\< ~ | c'1:32\f |""")
+    block.add("perc5", 6, r"""\switch "crash cymbals" c'4\ff\lv r4 r2 | R1 | c'4\lv r4 r2 | R1 |""")
 
     # Unit 7: the dominant of D-flat, then all voices one semitone up: the dominant of D.
     lift = r"X1:32 ~ | X1:32 |"
@@ -479,6 +480,12 @@ def _approach(work: Work) -> None:
         r"a''16( b'' cis''' d''' e''' fis''' g''' a''') |",
     )  # fmt: skip
     block.add("perc3", 7, r"c'1:32\f\< ~ | c'1:32 ~ | c'1:32 ~ | c'1:32\fff |")
+    block.add("perc5", 7, r"R1*2 | c'4\fff\lv r4 r2 | R1 |")
+    # The roll of the snare drum stops at the lift. Then the player goes to the tam-tam.
+    block.add(
+        "perc6", 7,
+        r"""\switch "snare drum" c'1:32\mp\< ~ | c'1:32 | c'4->\fff r4 r2 | R1 |""",
+    )  # fmt: skip
     block.add(
         "perc1", 7,
         r"""\switch "suspended cymbals" c'1:32\p\< ~ | c'1:32 ~ | c'1:32 ~ | c'1:32\fff |""",
@@ -487,7 +494,7 @@ def _approach(work: Work) -> None:
 
 
 def _main_climax(work: Work) -> None:
-    """Bars 359 to 370: the warm theme in D major with the full orchestra, fff."""
+    """Mark BB: the warm theme in D major with the full orchestra, fff."""
     structure = work.structure
     s = work.section(12, 4, 4)
     structure.mark(s.bar(1), "BB")
@@ -511,14 +518,25 @@ def _main_climax(work: Work) -> None:
     block.add("acc.rh", 1, fill(dyn(WARM_CHORDS, r"\ff"), full))
     block.add(
         "timp", 1,
-        r"d,1:32\fff | d,1:32 | g,1:32 | a,1:32 | d,1:32 | a,1:32 | g,1:32 | a,1:32 |",
+        fill(r"<d,>1\fff <d,>1 <g,>1 <a,>1 <d,>1 <a,>1 <g,>1 <a,>1", r"A4-> A2.:32 |"),
     )  # fmt: skip
     block.add(
         "perc2", 1,
         r"""\switch "tubular bells" d'1\fff | gis'1 | b'1 | e'1 | """
         r"d'1 | gis'2 d''2 | cis''1 | fis'1 |",
     )  # fmt: skip
-    block.add("perc1", 1, r"""\switch "tam-tams" c'1\fff\lv | R1*7 |""")
+    # The tam-tam at the start. Then a roll on the triangle, above the second half of the theme.
+    block.add(
+        "perc6", 1,
+        r"""\switch "tam-tams" c'1\fff\lv | R1*3 | """
+        r"""\switch "triangle" c'1:32\f ~ | c'1:32 ~ | c'1:32 | R1 |""",
+    )  # fmt: skip
+    # Hand cymbals at the start of each second bar. The suspended cymbal grows into them.
+    block.add("perc5", 1, r"c'4\fff\lv r4 r2 | R1 | " * 4)
+    block.add(
+        "perc1", 1,
+        r"c'4\fff\lv r4 r2 | c'1:32\mf\< | " + r"c'4\ff\lv r4 r2 | c'1:32\mf\< | " * 3,
+    )  # fmt: skip
     block.add("perc3", 1, r"c'4\fff r r2 | R1 | c'4 r r2 | R1 | c'4 r r2 | R1 | c'4 r r2 | R1 |")
     block.start("perc4", r'\switch "glockenspiel"')
 
@@ -539,7 +557,8 @@ def _main_climax(work: Work) -> None:
     block.add("fl1:1 fl2:1 fl3:1 ob1 ob2 cl1 cl2", 2, r"d''1\fff ~ | d''1\> ~ | d''1 ~ | d''1\mf |")
     block.add("perc2", 2, r"d'1\fff | e'1 | a'1 | R1 |")
     block.add("perc4", 2, r"d'''1\ff | e'''1 | a'''1 | R1 |")
-    block.add("perc1", 2, r"c'1\ff\lv | R1*3 |")
+    block.add("perc6", 2, r"""\switch "tam-tams" c'1\ff\lv | R1*3 |""")
+    block.add("perc5 perc1", 2, r"c'4\fff\lv r4 r2 | R1*3 |")
     block.add("perc3", 2, r"c'4\fff r r2 | R1*3 |")
     block.add("pno.lh", 2, r"<d,, d,>1\fff | R1*3 |")
     block.add("harp.rh", 2, r"<d' fis' a' d'' fis'' a''>1\ff\arpeggio | R1*3 |")
@@ -547,7 +566,7 @@ def _main_climax(work: Work) -> None:
 
 
 def _calm(work: Work) -> None:
-    """Bars 371 to 398: calm after the climax. The themes come back as soft solos."""
+    """Mark CC: calm after the climax. The themes come back as soft solos."""
     structure = work.structure
     s = work.section(28, 4, 4)
     structure.mark(s.bar(1), "CC")

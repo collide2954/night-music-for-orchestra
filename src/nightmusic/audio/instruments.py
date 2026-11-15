@@ -713,6 +713,26 @@ SOUNDS.update(
             loud_db=-10,
             lowcut_hz=60,
         ),
+        "snare drum": _unpitched(
+            vcsl(
+                "Membranophones/Struck Membranophones/Snare Drum, Modern 1",
+                r"Snare2_HitSN_(?P<layer>v\d)_rr(?P<rr>\d)_Mid",
+                (("v3", 0.3), ("v5", 0.5), ("v6", 0.65), ("v7", 0.8), ("v9", 0.95)),
+                **_HIT,
+            ),
+            loud_db=-6,
+            lowcut_hz=120,
+        ),
+        "tom-toms": _unpitched(
+            vcsl(
+                "Membranophones/Struck Membranophones/Tom 2/Stick",
+                r"TomL_HitS_(?P<layer>v\d)_rr(?P<rr>\d)_Mid",
+                (("v2", 0.4), ("v3", 0.65), ("v4", 0.9)),
+                **_HIT,
+            ),
+            loud_db=-4,
+            lowcut_hz=50,
+        ),
         "triangle": _unpitched(
             vcsl(
                 VCSL_STRUCK + "Triangles",
@@ -731,6 +751,7 @@ ALIASES = {
     "clarinet in E-flat": "clarinet in B-flat",
     "contrabass clarinet": "bass clarinet",
     "tuned gongs": "tubular bells",
+    "taiko": "bass drum",
 }
 
 

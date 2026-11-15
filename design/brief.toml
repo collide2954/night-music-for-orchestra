@@ -26,7 +26,7 @@ size = "large plus colours"
 winds = "triple, with auxiliary instruments"
 auxiliaries = ["piccolo", "alto flute", "English horn", "E-flat clarinet", "bass clarinet", "contrabass clarinet", "contrabassoon"]
 horns = "4 to 6"
-percussion_players = "4 to 5"
+percussion_players = "6"  # Decision of 2026-11-15 (second version). Before: "4 to 5".
 percussion_colours = ["tuned gongs", "singing bowls"]
 keyboards_and_harp = ["harp", "celesta", "piano"]
 colours = ["cimbalom", "accordion", "mandolin", "ocarinas"]
@@ -59,6 +59,13 @@ build = "CI builds all assets"
 equalization = "excellent, at three levels: each instrument, each section, and the full mix"
 reference = "Measure the tone balance of real orchestra recordings. Use it as the target for the mix."
 
+# Decisions of the owner for the second version of the work (2026-11-15).
+# The owner listened to the first Muse Sounds master and gave these three items.
+[second_version]
+natural_sound = "The instruments must have more natural attacks and decays."
+heavy_section = "A heavy rhythmic section. The owner selected: in part 2, at the end of the chase; its rhythm comes back in part 5 in D major."
+climax_percussion = "More percussion in the climax sections. The owner selected: six percussion players, with snare drum, tom-toms, and taiko."
+
 # Decisions that the composer's assistant made while the owner was not available
 # (night of 2026-11-15). The owner must examine each decision. Each decision is
 # easy to change.
@@ -75,7 +82,10 @@ accordion_audio = "No free accordion samples are known. The audio uses harmonica
 contrabass_clarinet_audio = "The audio uses bass clarinet samples at a lower pitch."
 e_flat_clarinet_audio = "The audio uses the samples of the clarinet in B-flat."
 tuned_gongs_audio = "The audio uses tubular bell samples."
-length = "The work has 457 bars and 29.9 minutes."
+length = "The work has 513 bars and 30.9 minutes."
+heavy_section_place = "The heavy section is at the mark M (32 bars in 7/8, then the hammer strokes). In part 5 it is at the mark FF, in place of the calls of the brass."
+percussion_changes = "Each percussion player has 4 seconds or more for a change of instrument. The check of the work makes sure of this."
+note_shapes = "For the audio only: a note of an instrument that rings continues for its ring time, and a soft long note before a rest becomes softer at its end."
 rehearsal_marks = "Letters A to Z without I, then AA to GG."
 quarter_tones = "Part 3 (alto flute, one cello) and part 5 (partials 11 and 13) have quarter-tones."
 master_equalization = "The master gets the tone balance of five real orchestra recordings (not more than 6 dB of change in one band)."

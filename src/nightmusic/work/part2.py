@@ -136,7 +136,7 @@ def write(work: Work) -> None:
 def _agitation(work: Work) -> None:
     structure = work.structure
 
-    # ------------------------------------------------- bars 39 to 50: three waves
+    # ------------------------------------------------- mark D: three waves
     s = work.section(12, 4, 4)
     structure.mark(s.bar(1), "D")
     structure.tempo(s.bar(1), 1, 66, "Poco più mosso, inquieto")
@@ -198,10 +198,10 @@ def _agitation(work: Work) -> None:
     s.write("tpt1", r"""R1*11 | r2 a'2\mf\< |""")
     s.write("tpt2", r"""R1*11 | r2 f'2\mf\< |""")
     s.write("tpt3", r"""R1*11 | r2 cis'2\mf\< |""")
-    s.write("perc2", r"""\switch "suspended cymbals" R1*11 | c'1:32\p\< |""")
+    s.write("perc4", r"""\switch "suspended cymbals" R1*11 | c'1:32\p\< |""")
     s.close()
 
-    # ---------------------------------------------- bars 51 to 56: the first crest
+    # ---------------------------------------------- mark E, bars 1 to 6: the first crest
     s = work.section(6, 4, 4)
     structure.mark(s.bar(1), "E")
 
@@ -253,7 +253,7 @@ def _agitation(work: Work) -> None:
     s.write("perc3", r"""\switch "bass drum" c'4\ff r4 r2 | R1 | c'4\f r4 r2 | R1*3 |""")
     s.close()
 
-    # -------------------------------------------- bars 57 to 62: the way to the song
+    # -------------------------------------------- mark E, bars 7 to 12: the way to the song
     s = work.section(6, 4, 4)
     structure.change(s.bar(1), 1, "poco rit.")
 
@@ -284,7 +284,7 @@ def _agitation(work: Work) -> None:
 def _song(work: Work) -> None:
     structure = work.structure
 
-    # --------------------------------------------- bars 63 to 70: the song theme
+    # --------------------------------------------- mark F, bars 1 to 8: the song theme
     s = work.section(8, 4, 4)
     structure.mark(s.bar(1), "F")
     structure.tempo(s.bar(1), 1, 60, "Un poco più tranquillo")
@@ -321,7 +321,7 @@ def _song(work: Work) -> None:
     s.write("harp.rh", harp)
     s.close()
 
-    # ------------------------------------- bars 71 to 78: the song again, then unrest
+    # ------------------------------------- mark F, bars 9 to 16: the song again, then unrest
     s = work.section(8, 4, 4)
     structure.change(s.bar(5), 1, "stringendo molto")
 
@@ -401,7 +401,7 @@ def _chase_start(work: Work) -> None:
     structure = work.structure
     seven = (7, 8, (2, 2, 3))
 
-    # ------------------------------------------- bars 79 to 82: the ostinato alone
+    # ------------------------------------------- mark G, bars 1 to 4: the ostinato alone
     s = work.section(4, *seven)
     structure.mark(s.bar(1), "G")
     structure.tempo(s.bar(1), 1, 276, "Presto, alla bulgarese", unit="8")
@@ -420,7 +420,7 @@ def _chase_start(work: Work) -> None:
     s.write("fl3", r"""\switch "piccolo" """ + rests(7, 8, 4))
     s.close()
 
-    # ------------------------------------- bars 83 to 90: the theme and its answer, on B
+    # ------------------------------------- mark G, bars 5 to 12: the theme and its answer, on B
     s = work.section(8, *seven)
     put(s, "cl1 va", dyn(CHASE, r"\mf") + rests(7, 8, 4))
     put(s, "ob1 ob2", rests(7, 8, 4) + dyn(ANSWER, r"\mf"))
@@ -434,7 +434,7 @@ def _chase_start(work: Work) -> None:
         s.write(player, first(line, r"\stopped", note=True))
     s.close()
 
-    # ---------------------------------------- bars 91 to 98: a minor third higher, on D
+    # ---------------------------------------- mark H, bars 1 to 8: a minor third higher, on D
     s = work.section(8, *seven)
     structure.mark(s.bar(1), "H")
     theme, answer = tr(CHASE, 3), tr(ANSWER, 3)
@@ -458,7 +458,7 @@ def _chase_episode(work: Work) -> None:
     seven = (7, 8, (2, 2, 3))
     rest = rests(7, 8)
 
-    # -------------------------------------- bars 99 to 106: the full statement, on F
+    # -------------------------------------- mark H, bars 9 to 16: the full statement, on F
     s = work.section(8, *seven)
     theme, answer = tr(CHASE, 6), tr(ANSWER, 6)
     high_ostinato = dyn(times(tr(OSTINATO, 18), 4), r"\mf")
@@ -481,7 +481,7 @@ def _chase_episode(work: Work) -> None:
         s.write(player, line + rests(7, 8, 4))
     s.close()
 
-    # ------------------------------ bars 107 to 122: sudden silence; calls in the dark, on E
+    # ------------------------------ mark J: sudden silence; calls in the dark, on E
     s = work.section(16, *seven)
     structure.mark(s.bar(1), "J")
     call = tr(CALL, 5)
@@ -542,7 +542,7 @@ def _chase_end(work: Work) -> None:
     seven = (7, 8, (2, 2, 3))
     rest = rests(7, 8)
 
-    # ------------------------------- bars 123 to 130: the theme in changing metres, on C
+    # ------------------------------- mark K: the theme in changing metres, on C
     s = work.section_of(MIXED_METRES * 2)
     structure.mark(s.bar(1), "K")
     theme, higher = tr(MIXED, 1), tr(MIXED, 4)
@@ -564,7 +564,7 @@ def _chase_end(work: Work) -> None:
         s.write(player, MIXED_REST + line)
     s.close()
 
-    # ---------------------------------- bars 131 to 142: three voices, one bar apart, on F
+    # ---------------------------------- mark L: three voices, one bar apart, on F
     s = work.section(12, *seven)
     structure.mark(s.bar(1), "L")
     call = tr(CALL, 6)  # the call on F (above middle C)
@@ -593,9 +593,73 @@ def _chase_end(work: Work) -> None:
     s.write("perc1", rests(7, 8, 10) + r"c'2..:32\p\< ~ | c'2..:32\f |")
     s.close()
 
-    # ------------------------------------------- bars 143 to 150: the hammer strokes
-    s = work.section(8, *seven)
+    # ------------------------------------------------ the heavy section (32 bars)
+    # The low instruments hammer a riff of the motto notes (B, C, F). The high
+    # strings and the horns play in the gaps of the riff: together they fill
+    # all eighth notes. Each phrase of 8 bars is a minor third higher.
+    s = work.section(32, *seven)
     structure.mark(s.bar(1), "M")
+    structure.tempo(s.bar(1), 1, 276, "Pesante e feroce", unit="8")
+    eight = rests(7, 8, 8)
+    block = Block(s, eight, eight, eight, eight)
+
+    riff = r"b,,8-> r b,,8-> r f,8-> es,8 c,8 | b,,8-> b,,8 r c,8-> r b,,8-> f,8 |"
+    # The answer in the gaps of the riff (2 bars): the letter X is the chord.
+    gaps = r"r8 X8-> r X8-> r4 X8-> | r4 X8-> r X8-> r4 |"
+    # The theme in long notes (8 bars), on F: the cell of the walking theme, four times.
+    theme = r"""
+        f4-> ges4-> as4.-> | a4-> b4-> a4.-> | as4-> a4-> b4.-> | c'4-> d'4-> c'4.-> |
+        b4-> c'4-> d'4.-> | es'4-> f'4-> es'4.-> | d'4-> es'4-> f'4.-> | ges'4-> as'4-> ges'4.-> |
+    """
+    levels = [r"\f", r"\f", r"\ff", r"\ff"]
+    roots = ["b,", "d", "f", "as,"]  # the notes of the timpani
+    for phrase, (level, root) in enumerate(zip(levels, roots, strict=True), start=1):
+        shift = 3 * (phrase - 1)
+        low = times(tr(riff, shift), 4)
+        block.add("cb tuba btbn bn3 cbcl cl3 vc:1 bn1:1 bn2:1 cimb.lh:1", phrase, low, level)
+        block.add("pno.lh", phrase, double(low, -1), level)
+        for player, chord in [("va", r"<f b>1"), ("vn2", r"<d' gis'>1"), ("vn1", r"<b' f''>1")]:
+            block.add(player, phrase, times(fill(tr(chord, shift), gaps), 4), level)
+        block.add("pno.rh", phrase, times(fill(tr(r"<f b d' gis'>1", shift), gaps), 4), level)
+        block.add(
+            "timp", phrase,
+            times(fill(f"<{root}>1", r"A8-> r A8-> r r4. | A8-> A8 r4 r8 A8-> r |"), 4), level,
+        )  # fmt: skip
+        block.add("perc3", phrase, times(r"c'8-> r r4 c'8-> r4 | c'8-> r r4 r4. |", 4), level)
+        block.add(
+            "perc6", phrase,
+            times(r"c'8-> r c'8-> r c'8-> r4 | c'8-> c'8 r c'8-> r c'8-> r |", 4), level,
+        )  # fmt: skip
+        block.add("perc5", phrase, times(r"r4 r4 r8 a8 c'8 | r4 r8 e'8 r c'8 a8 |", 4), level)
+    block.start("perc6", r'\switch "taiko"')
+    block.start("perc5", r'\switch "tom-toms"')
+
+    # From the second phrase: the horns with the high strings, and the snare drum.
+    snare = r"r4 c'8-> r r4 c'8-> | r4 c'8-> r r4. |"
+    roll = r"r4 c'8-> r r4 c'8-> | c'2..:32\< |"
+    horns = times(fill(r"<as b d' f'>1", gaps), 4)
+    for phrase in (2, 3, 4):
+        if phrase < 4:
+            block.spread("hn4 hn3 hn2 hn1", phrase, horns, levels[phrase - 1])
+        block.add("perc4", phrase, times(snare, 3) + roll, levels[phrase - 1])
+    block.add("perc4", 1, r'\switch "snare drum" ' + eight)
+
+    # The third phrase: the theme in the trombones, bassoons, and violas' register.
+    block.add("tbn1 tbn2", 3, theme, r"\ff")
+    high = times(fill(r"<as' b' d''>1", gaps), 4)
+    block.spread("tpt3 tpt2 tpt1", 3, high, r"\ff")
+    block.add("fl1:1 fl2:1 ob1 ob2 cl1 cl2", 3, times(fill(r"<f''>1", gaps.replace("X", "A")), 4),
+              r"\ff")  # fmt: skip
+    # The fourth phrase: the theme one octave higher in the trumpets, with horns and trombones.
+    block.add("tpt1:1 tpt2:1 tpt3:1 hn1 hn2 hn3 hn4 tbn1 tbn2 perc2:2", 4, theme, r"\ff")
+    block.add("fl1:1 fl2:1 fl3:1 ob1 ob2 cl1 cl2", 4,
+              times(fill(r"<as''>1", gaps.replace("X", "A")), 4), r"\ff")  # fmt: skip
+    block.add("perc1", 2, rests(7, 8, 6) + r"c'2..:32\p\< ~ | c'2..:32\f |")
+    block.add("perc1", 4, rests(7, 8, 6) + r"c'2..:32\mf\< ~ | c'2..:32\ff |")
+    block.close()
+
+    # ------------------------------------------------- the hammer strokes (8 bars)
+    s = work.section(8, *seven)
 
     def hammer(chord: str, letter: str = "X") -> str:
         """Return the 8 bars of hammer strokes for a chord in its D form."""
@@ -622,7 +686,7 @@ def _chase_end(work: Work) -> None:
     put(s, "hn3 hn1 cl1", voices[4])
     put(s, "tpt3 ob2:1", voices[5])
     put(s, "tpt2 ob1 cl2:1 fl2:1", voices[6])
-    put(s, "tpt1 fl1:1 fl3:1 perc2:1", voices[7])
+    put(s, "tpt1 fl1:1 fl3:1", voices[7])
     s.write("vc", first(hammer(r"<as, d>1"), r"\ord", note=True))
     s.write("va", hammer(r"<b f'>1"))
     s.write("vn2", hammer(r"<es' as'>1"))
@@ -631,19 +695,18 @@ def _chase_end(work: Work) -> None:
     s.write("pno.rh", hammer(r"<b es' as' d''>1"))
     s.write("timp", hammer(r"<d>1", "A"))
     strokes = r"c'8->\ff r c'8-> r c'8-> r4 |"
-    s.write("perc3", times(strokes, 7) + r" c'8-> r c'8-> r c'4.->\fff |")
-    s.write("perc1", r"c'8\ff\lv r r4 r4. | " + rests(7, 8, 6) + r"r4 r4 c'4.\fff\lv |")
+    # The bass drum, the taiko, and the snare drum have the rhythm of the strokes.
+    put(s, "perc3 perc6 perc4", times(strokes, 7) + r" c'8-> r c'8-> r c'4.->\fff |")
     s.write(
-        "perc4",
-        r"""\switch "crash cymbals" c'8\ff\lv r r4 r4. | """
-        + rests(7, 8, 6)
-        + r"r4 r4 c'4.\fff\lv |",
+        "perc5", times(r"a8->\ff r c'8-> r e'8-> c'8 a8 |", 7) + r" a8-> c'8 e'8-> c'8 a4.->\fff |"
     )
+    # The roll of the suspended cymbal ends with one stroke. Then the player goes to the tam-tam.
+    s.write("perc1", r"c'8\ff\lv r r4 r4. | " + rests(7, 8, 7))
     s.close()
 
 
 def _broad_motto(work: Work) -> None:
-    """Bars 151 to 162: the motto in long notes, three times (D, F, A-flat)."""
+    """Mark N: the motto in long notes, three times (D, F, A-flat)."""
     structure = work.structure
     s = work.section(12, 4, 4)
     structure.mark(s.bar(1), "N")
@@ -662,7 +725,6 @@ def _broad_motto(work: Work) -> None:
     block.add("perc2", 1, r"""\switch "tubular bells" d'1\ff | es'1 | as'1 | R1 |""")
     block.add("perc1", 1, r"""\switch "tam-tams" c'1\ff\lv | R1*3 |""")
     block.add("perc3", 1, r"c'4\ff r4 r2 | R1*3 |")
-    block.add("perc4", 1, r"c'4\ff\lv r4 r2 | R1*3 |")
     block.add("timp", 1, r"d,1:32\ff\> ~ | d,1:32 ~ | d,1:32\p ~ | d,1:32 |")
     block.add("pno.lh", 1, r"<d,, d,>1\ff | <es,, es,>1 | <as,, as,>1 ~ | <as,, as,>1 |")
 
@@ -692,7 +754,7 @@ def _broad_motto(work: Work) -> None:
 
 
 def _song_returns(work: Work) -> None:
-    """Bars 163 to 178: the song theme in B minor, then a rise by minor thirds."""
+    """Mark O: the song theme in B minor, then a rise by minor thirds."""
     structure = work.structure
     s = work.section(16, 4, 4)
     structure.mark(s.bar(1), "O")
@@ -769,7 +831,7 @@ def _song_returns(work: Work) -> None:
 
 
 def _ascent(work: Work) -> None:
-    """Bars 179 to 206: the way up to the first climax.
+    """Mark P: the way up to the first climax.
 
     The bass goes up by semitones from A to C-sharp. Above each bass note is
     the diminished seventh chord one semitone higher. The head of the
@@ -827,7 +889,10 @@ def _ascent(work: Work) -> None:
     ]
     for unit, (pedal, level) in enumerate(zip(pedals, levels, strict=True), start=1):
         low = "cb bn3 bn1:1 bn2:1" + (" cbcl" if unit >= 3 else "")
-        low += " tuba btbn" if unit >= 5 else ""
+        if unit >= 5:
+            # The tuba and the bass trombone hammer the bass note.
+            strokes = r"A4-> A4-> A4-> A4-> |" if unit == 5 else r"A8-> A A-> A A-> A A-> A |"
+            block.add("tuba btbn", unit, fill(tr(r"<c,>1", pedal), times(strokes, 4)), level)
         marks = level + (r"\arco" if unit == 1 else "")
         block.add("cb", unit, fill(tr(r"<c,>1", pedal), held), marks)
         block.add(low.replace("cb ", ""), unit, fill(tr(r"<c,>1", pedal), held), level)
@@ -846,6 +911,19 @@ def _ascent(work: Work) -> None:
     block.add("perc3", 7, r"c'1:32\f\< ~ | c'1:32 ~ | c'1:32 ~ | c'1:32\fff |")
     block.add(
         "perc4", 6, r"""\switch "suspended cymbals" c'1:32\p\< ~ | c'1:32 ~ | c'1:32 ~ | c'1:32 |"""
+    )
+    # The tom-toms and the taiko: their strokes come nearer and nearer together.
+    block.add("perc5", 3, times(r"r8 a8\p r8 a8 r8 c'8 r8 c'8 |", 4))
+    block.add("perc5", 4, times(r"r8 a8\mp c'8 a8 r8 c'8 e'8 c'8 |", 4))
+    block.add("perc5", 5, times(r"a8\mf a c' c' e' e' c' a |", 4))
+    fast_toms = r"a16 a a a c' c' c' c' e' e' e' e' c' c' a a |"
+    block.add("perc5", 6, first(times(fast_toms, 4), r"\f\<", note=True))
+    block.add("perc5", 7, first(times(fast_toms, 4), r"\ff\<", note=True))
+    block.add("perc6", 4, times(r"c'4->\mp r c'4-> r |", 4))
+    block.add("perc6", 5, times(r"c'4->\mf c'4-> c'4-> c'4-> |", 4))
+    block.add("perc6", 6, times(r"c'8->\f c' c'-> c' c'-> c' c'-> c' |", 4))
+    block.add(
+        "perc6", 7, first(times(r"c'8-> c' c'-> c' c'-> c' c'-> c' |", 4), r"\ff\<", note=True)
     )
     block.add("perc4", 7, r"c'1:32\mf\< ~ | c'1:32 ~ | c'1:32 ~ | c'1:32\fff |")
 
@@ -898,7 +976,7 @@ def _ascent(work: Work) -> None:
 
 
 def _first_climax(work: Work) -> None:
-    """Bars 207 to 214: the chorale of part 1, fff. It stops on the motto as a chord."""
+    """Mark Q: the chorale of part 1, fff. It stops on the motto as a chord."""
     structure = work.structure
     s = work.section(8, 4, 4)
     structure.mark(s.bar(1), "Q")
@@ -922,10 +1000,19 @@ def _first_climax(work: Work) -> None:
     block.add("va", 1, low + fill(r"<d' as'>1", motto_tremolo))
     block.add("vc", 1, octave(low, -1) + fill(r"<d as>1", motto_tremolo))
     block.add("cb", 1, octave(low, -2) + fill(r"<d,>1", motto_tremolo))
-    block.add("timp", 1, r"d,1:32\fff ~ | " + times(r"d,1:32 ~ |", 6) + r" d,1:32 |")
+    block.add("timp", 1, r"d,1:32\fff-> | " + times(r"d,1:32-> |", 7))
     block.add("perc3", 1, times(r"c'4\fff r4 r2 |", 6) + r" c'1:32 ~ | c'1:32 |")
-    block.add("perc1", 1, r"c'1\fff\lv | R1*3 | c'1\lv | R1 | c'1\lv | R1 |")
-    block.add("perc4", 1, r"c'4\fff\lv r4 r2 | R1 | c'4\lv r4 r2 | R1 | " * 2)
+    # Hand cymbals at the start of each second bar.
+    block.add("perc1", 1, r"""\switch "crash cymbals" """ + r"c'4\fff\lv r4 r2 | R1 | " * 4)
+    # The suspended cymbal: a stroke, then a roll that grows into the subsequent stroke.
+    block.add("perc4", 1, r"c'4\fff\lv r4 r2 | c'1:32\mf\< | " * 4)
+    # The player of the tom-toms goes to the tam-tam: it starts the second half of the chorale.
+    block.add("perc5", 1, r"""\switch "tam-tams" R1*4 | c'1\fff\lv | R1 | c'1\lv | R1 |""")
+    block.add(
+        "perc6", 1,
+        times(r"c'4->\fff r c'4-> r |", 6)
+        + r" c'4-> c'4-> c'4-> c'4-> | c'8-> c' c'-> c' c'-> c' c'-> c' |",
+    )  # fmt: skip
     block.add("pno.lh", 1, times(r"<d,, d,>1\fff-^ |", 8))
     block.add(
         "pno.rh", 1,
@@ -936,7 +1023,7 @@ def _first_climax(work: Work) -> None:
 
 
 def _collapse(work: Work) -> None:
-    """Bars 215 to 220: one stroke, then only the tritone and the note A-flat stay."""
+    """Mark R: one stroke, then only the tritone and the note A-flat stay."""
     structure = work.structure
     s = work.section(6, 4, 4)
     structure.mark(s.bar(1), "R")
@@ -951,7 +1038,7 @@ def _collapse(work: Work) -> None:
         "fl1:2 fl2:2 fl3:2 ob1:1 ob2:1 cl1:1 cl2:1 bn1:-1 bn2:-1 bn3:-2 cbcl:-2 vn2:1 cb:-2",
         1, stroke,
     )  # fmt: skip
-    block.add("perc3 perc1", 1, r"c'4\sffz\lv r4 r2 | R1*5 |")
+    block.add("perc3 perc1 perc5 perc6", 1, r"c'4\sffz\lv r4 r2 | R1*5 |")
     block.add("timp", 1, r"d,4\sffz r4 r2 | R1*5 |")
     block.add("pno.lh", 1, r"<d,, d,>1\sffz\lv | R1*5 |")
     block.add("harp.lh", 1, r"<d,, d,>4\ff\lv r4 r2 | R1*5 |")

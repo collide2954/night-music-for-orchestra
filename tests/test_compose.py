@@ -100,6 +100,25 @@ def test_the_work_has_no_notes_out_of_range():
     assert [str(problem) for problem in check(build())] == []
 
 
+def test_a_change_of_instrument_needs_time():
+    from nightmusic.compose.check import check
+    from nightmusic.notation.work import Work, load_orchestra
+
+    work = Work("Test", load_orchestra())
+    section = work.section(4, 4, 4)
+    work.structure.tempo(section.bar(1), 1, 60, "Lento")
+    # A roll occupies the player to its end. After a stroke, the player is free.
+    section.write(
+        "perc1",
+        r"""\switch "snare drum" c'1:32\f | \switch "tam-tams" c'1\lv | R1 | """
+        r"""\switch "triangle" c'1 |""",
+    )
+    section.close()
+    assert [str(problem) for problem in check(work)] == [
+        "perc1, bar 2: only 0.0 s for the change from the snare drum to the tam-tams"
+    ]
+
+
 def test_scatter_puts_figures_between_rests():
     text = scatter(3, 3, 2, {(1, 4): r"c'8 d'8 e'4", (3, 1.5): r"g'8"})
     assert text == "r2 r4 c'8 d'8 e'4 r4 | R1*3/2 | r8 g'8 r4 r2 r2 |"

@@ -70,6 +70,14 @@ UNPITCHED = {
     "crash cymbals": ("Hand Cymbals", "metal.cymbal.crash", {None: 57}),
     "wood blocks": ("Wood Blocks", "wood.wood-block", {60: 77, None: 76}),
     "triangle": ("Triangle", "metal.triangle", {None: 81}),
+    "snare drum": ("Snare Drum", "drum.snare-drum", {None: 38}),
+    # Six drums: the written notes a, b, c', d', e', f' are the drums from low to high.
+    "tom-toms": (
+        "Concert Toms",
+        "drum.tom-tom",
+        {57: 41, 59: 43, 60: 45, 62: 47, 64: 48, 65: 50, None: 45},
+    ),
+    "taiko": ("Taiko", "drum.taiko", {None: 87}),
 }
 
 # One player of a string section alone.
@@ -138,7 +146,10 @@ class _Event:
     instrument: str
     solo: bool
     tuplet: str = ""  # "start" or "stop": the first and the last note of a tuplet
-    before: list[str] = field(default_factory=list)  # directions before the note
+    dynamic: str = ""  # the dynamic mark in effect at the note
+    short: bool = False  # the player makes short strokes (spiccato)
+    plucked: bool = False  # the player plucks the string (pizzicato)
+    taper: bool = False  # the note gets softer at its end
 
 
 @dataclass
@@ -148,6 +159,8 @@ class _State:
     instrument: str
     solo: bool = False
     dynamic: str = ""
+    short: bool = False
+    plucked: bool = False
     techniques: dict[str, str] = field(default_factory=dict)  # state -> technique name
 
 
@@ -175,7 +188,8 @@ def _walk(
             length = Fraction(0) if grace else element.duration * scale
             events.append(
                 _Event(position, length, element.duration, scale, element, voice, grace,
-                       state.instrument, state.solo and state.instrument in SOLO_SOUNDS)
+                       state.instrument, state.solo and state.instrument in SOLO_SOUNDS,
+                       dynamic=state.dynamic, short=state.short, plucked=state.plucked)
             )  # fmt: skip
             position += length
         elif isinstance(element, music.Group):
@@ -210,6 +224,11 @@ def _read_marks(posts: list[music.Post], state: _State) -> None:
             state.dynamic = post.value
         elif post.kind == "command":
             technique = TECHNIQUES.get(post.value)
+            if post.value in ("spicc", "arco", "pizz", "collegno", "ord"):
+                # Spiccato and pizzicato stay until a different way to play comes.
+                state.short = post.value == "spicc"
+                if post.value != "ord":
+                    state.plucked = post.value == "pizz"
             if technique and technique.state == "desk":
                 state.solo = technique.value == "solo"
             elif technique and technique.state and post.value in TECHNIQUE_WORDS:
@@ -265,16 +284,38 @@ def _marks_before(event: _Event, hairpin_open: bool) -> tuple[list[str], bool]:
     return result, hairpin_open
 
 
+# All note lengths that have a usual note value, with zero to two dots.
+PIECE_LENGTHS = sorted(
+    {base * (2 - Fraction(1, 2**dots)) for base in TYPE_NAMES for dots in range(3)}, reverse=True
+)
+
+
+def _pieces(length: Fraction) -> list[Fraction]:
+    """Divide a length into lengths that have a usual note value (the longest first)."""
+    result = []
+    while length > 0:
+        piece = next((value for value in PIECE_LENGTHS if value <= length), None)
+        if piece is None:
+            raise ValueError(f"no note value for the length {length}")
+        result.append(piece)
+        length -= piece
+    return result
+
+
 def _note_xml(
     event: _Event,
     index: int,
     length: Fraction,
     ties: tuple[bool, bool],
     drum: str = "",
+    *,
+    marks: bool = True,
 ) -> str:
     """Return one note of a chord (or a single note) as MusicXML.
 
     `drum` is the identifier of the drum, for a note of unpitched percussion.
+    If `marks` is false, the note is a continuation of a longer note: it has
+    only its ties.
     """
     note = event.note
     pitch = note.pitches[index].pitch
@@ -302,9 +343,10 @@ def _note_xml(
     if drum:
         parts.append(f'<instrument id="{drum}"/>')
     parts.append(f"<voice>{event.voice + 1}</voice>")
-    name, dots = _note_type(event.written if length == event.length else length / event.ratio)
+    whole = length == event.written * event.ratio or event.grace
+    name, dots = _note_type(event.written if whole else length)
     parts.append(f"<type>{name}</type>" + "<dot/>" * dots)
-    if event.ratio != 1:
+    if event.ratio != 1 and whole:
         parts.append(
             f"<time-modification><actual-notes>{event.ratio.denominator}</actual-notes>"
             f"<normal-notes>{event.ratio.numerator}</normal-notes></time-modification>"
@@ -314,11 +356,13 @@ def _note_xml(
         notations.append('<tied type="stop"/>')
     if tie_start:
         notations.append('<tied type="start"/>')
-    if index == 0:
+    if index == 0 and marks:
+        slurred = False
         for post in note.posts:
             if post.kind == "slur":
                 kind = "start" if post.value == "(" else "stop"
                 notations.append(f'<slur type="{kind}" number="1"/>')
+                slurred = True
             elif post.kind == "phrasing":
                 kind = "start" if post.value == "(" else "stop"
                 notations.append(f'<slur type="{kind}" number="2"/>')
@@ -326,10 +370,21 @@ def _note_xml(
             notations.append(f'<tuplet type="{event.tuplet}"/>')
         names = [post.value for post in note.posts if post.kind == "articulation"]
         names += [name for name in ARTICULATIONS if name in commands]
-        marks = "".join(f"<{ARTICULATIONS[name]}/>" for name in dict.fromkeys(names)
-                        if name in ARTICULATIONS)  # fmt: skip
-        if marks:
-            notations.append(f"<articulations>{marks}</articulations>")
+        # Spiccato: each short note is a short stroke.
+        if (
+            event.short
+            and event.written <= 1
+            and "tremolo" not in kinds
+            and not slurred
+            and "staccato" not in names
+            and "staccatissimo" not in names
+        ):
+            names.append("staccato")
+        articulations = "".join(
+            f"<{ARTICULATIONS[name]}/>" for name in dict.fromkeys(names) if name in ARTICULATIONS
+        )
+        if articulations:
+            notations.append(f"<articulations>{articulations}</articulations>")
         if "tremolo" in kinds:
             value = next(post.value for post in note.posts if post.kind == "tremolo")
             strokes = {"8": 1, "16": 2, "32": 3, "64": 4}.get(value, 3)
@@ -345,6 +400,77 @@ def _note_xml(
         parts.append("<notations>" + "".join(notations) + "</notations>")
     parts.append("</note>")
     return "".join(parts)
+
+
+# Instruments that ring after the stroke, and the time in seconds that the
+# sound needs. The playback program stops a note at the end of its written
+# length. Thus a note of these instruments gets a longer length in the file:
+# to the subsequent note of the voice, but not more than this time.
+RING_SECONDS = {
+    "harp": 6.0,
+    "celesta": 3.0,
+    "piano": 5.0,
+    "vibraphone": 8.0,
+    "glockenspiel": 4.0,
+    "crotales": 8.0,
+    "tubular bells": 9.0,
+    "tuned gongs": 12.0,
+    "timpani": 2.5,
+    "tam-tams": 20.0,
+    "suspended cymbals": 10.0,
+    "crash cymbals": 7.0,
+    "bass drum": 3.0,
+    "triangle": 5.0,
+    "taiko": 2.5,
+    "tom-toms": 1.5,
+}
+
+# The loudest dynamic mark at which the last note of a phrase gets softer at its end.
+TAPER_MARKS = {"ppppp", "pppp", "ppp", "pp", "p", "mp", "mf"}
+TAPER_LENGTH = Fraction(2)  # shortest note that gets softer at its end (quarter notes)
+TAPER_REST = Fraction(1)  # shortest rest after the note (quarter notes)
+
+
+def _shape(events: list[_Event], work: Work) -> None:
+    """Make the notes of one part more natural for the playback.
+
+    - A note of an instrument that rings gets the length of its ring.
+    - The last long note of a phrase of a wind or string instrument gets
+      softer at its end, as a player does it.
+    """
+    structure = work.structure
+    by_voice: dict[int, list[_Event]] = {}
+    for event in events:
+        if not event.grace:
+            by_voice.setdefault(event.voice, []).append(event)
+    for voice_events in by_voice.values():
+        for index, event in enumerate(voice_events):
+            following = voice_events[index + 1] if index + 1 < len(voice_events) else None
+            limit = following.start if following else structure.length
+            end = event.start + event.length
+            kinds = {post.kind for post in event.note.posts}
+            names = {post.value for post in event.note.posts}
+            ring = RING_SECONDS.get(event.instrument)
+            dry = bool(names & {"staccato", "staccatissimo", "damp"}) or "tremolo" in kinds
+            if ring and event.ratio == 1 and not dry and "tie" not in kinds:
+                quarters = Fraction(ring * structure.bpm_at(event.start) / 60.0).limit_denominator(
+                    2
+                )
+                wanted = min(limit, event.start + max(quarters, event.length))
+                wanted = Fraction(int(wanted * 2), 2)  # an eighth note is the smallest step
+                if wanted > end and ((wanted - event.start) * 16).denominator == 1:
+                    event.length = wanted - event.start
+            elif (
+                ring is None
+                and event.instrument not in UNPITCHED
+                and event.length >= TAPER_LENGTH
+                and limit - end >= TAPER_REST
+                and event.dynamic in TAPER_MARKS
+                and not event.plucked
+                and "hairpin" not in kinds
+                and "tie" not in kinds
+            ):
+                event.taper = True
 
 
 def _tempo_points(work: Work, first: Fraction, last: Fraction) -> dict[Fraction, float]:
@@ -458,6 +584,7 @@ def score(
             f'<score-part id="P{number}"><part-name>{escape(name)}</part-name>'
             f"{instruments_xml}</score-part>"
         )
+        _shape(events, work)
         bodies.append(
             _part_xml(number, events, measures, tempos if number == 1 else {}, starts[key], drums)
         )
@@ -485,11 +612,34 @@ def _part_xml(
     by_voice: dict[int, list[_Event]] = {}
     for event in events:
         by_voice.setdefault(event.voice, []).append(event)
-    open_ties: dict[int, set[float]] = {voice: set() for voice in by_voice}
+    tied_in: dict[int, set[float]] = {voice: set() for voice in by_voice}
     hairpins: dict[int, bool] = {voice: False for voice in by_voice}
+    restate: dict[int, bool] = {voice: False for voice in by_voice}
+    carried: dict[int, tuple[_Event, Fraction] | None] = {voice: None for voice in by_voice}
     cursors = {voice: 0 for voice in by_voice}
     previous = None
     first_note = True
+
+    def write(event: _Event, length: Fraction, *, head: bool, tail: bool, voice: int) -> None:
+        """Write a note (or a part of a long note) as one or more tied notes."""
+        pieces = (
+            [length] if length == event.written * event.ratio or event.grace else _pieces(length)
+        )
+        written_tie = any(post.kind == "tie" for post in event.note.posts)
+        for count, piece in enumerate(pieces):
+            first_piece = head and count == 0
+            last_piece = tail and count == len(pieces) - 1
+            for pitch_index, note_pitch in enumerate(event.note.pitches):
+                midi = note_pitch.pitch.midi
+                tie_in = (not first_piece) or midi in tied_in[voice]
+                tie_out = (not last_piece) or written_tie
+                drum = drums.get(midi, drums[None]) if drums else ""
+                lines.append(
+                    _note_xml(event, pitch_index, piece, (tie_in, tie_out), drum, marks=first_piece)
+                )
+        if tail and not event.grace:
+            tied_in[voice] = {p.pitch.midi for p in event.note.pitches} if written_tie else set()
+
     for bar in measures:
         lines.append(f'<measure number="{bar.number}">')
         metre = (bar.numerator, bar.denominator)
@@ -518,6 +668,15 @@ def _part_xml(
             cursor = bar.start
             index = cursors[voice]
             wrote = False
+            # A long note from the bar before continues.
+            if carried[voice] is not None:
+                event, remaining = carried[voice]
+                length = min(remaining, bar_length)
+                ends = remaining <= bar_length
+                write(event, length, head=False, tail=ends, voice=voice)
+                carried[voice] = None if ends else (event, remaining - length)
+                cursor += length
+                wrote = True
             while index < len(voice_events) and voice_events[index].start < bar.end:
                 event = voice_events[index]
                 index += 1
@@ -525,21 +684,30 @@ def _part_xml(
                     lines.append(_forward(event.start - cursor))
                     cursor = event.start
                 before, hairpins[voice] = _marks_before(event, hairpins[voice])
+                has_dynamic = any(
+                    p.kind == "dynamic" and p.value in DYNAMIC_ELEMENTS for p in event.note.posts
+                )
+                if restate[voice] and not has_dynamic and event.dynamic:
+                    # The phrase before became softer at its end: give the dynamic again.
+                    before.insert(0, _direction(f"<dynamics><{event.dynamic}/></dynamics>"))
+                restate[voice] = False
                 if first_note:
                     before = _state_marks(start) + before
                     first_note = False
+                taper = event.taper and not hairpins[voice]
+                if taper:
+                    before.append(_direction('<wedge type="diminuendo"/>'))
                 lines.extend(before)
-                length = min(event.length, bar.end - cursor)  # a note stops at the bar line
-                tie_out = any(post.kind == "tie" for post in event.note.posts)
-                for pitch_index, note_pitch in enumerate(event.note.pitches):
-                    midi = note_pitch.pitch.midi
-                    tie_in = midi in open_ties[voice]
-                    drum = drums.get(midi, drums[None]) if drums else ""
-                    lines.append(_note_xml(event, pitch_index, length, (tie_in, tie_out), drum))
-                still = {p.pitch.midi for p in event.note.pitches} if tie_out else set()
+                length = min(event.length, bar.end - cursor)
+                ends = length == event.length
+                write(event, length, head=True, tail=ends, voice=voice)
                 if not event.grace:
-                    open_ties[voice] = still
                     cursor += length
+                    if not ends:
+                        carried[voice] = (event, event.length - length)
+                if taper:
+                    lines.append(_direction('<wedge type="stop"/>'))
+                    restate[voice] = True
                 wrote = True
             cursors[voice] = index
             if cursor < bar.end and wrote:

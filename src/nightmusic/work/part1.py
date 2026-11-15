@@ -64,7 +64,7 @@ def write(work: Work) -> None:
     s.write("cl3", r"""\switch "bass clarinet" R1*8 |""")
     s.close()
 
-    # ----------------------------------------------------------- bars 9 to 20
+    # ----------------------------------------------------------- mark A
     s = work.section(12, 4, 4)
     structure.mark(s.bar(1), "A")
 
@@ -155,7 +155,7 @@ def write(work: Work) -> None:
     )
     s.close()
 
-    # ---------------------------------------------------------- bars 21 to 28
+    # ---------------------------------------------------------- mark B
     s = work.section(8, 4, 4)
     structure.mark(s.bar(1), "B")
 
@@ -246,7 +246,7 @@ def write(work: Work) -> None:
     )
     s.close()
 
-    # ---------------------------------------------------------- bars 29 to 38
+    # ---------------------------------------------------------- mark C
     s = work.section(10, 4, 4)
     structure.mark(s.bar(1), "C")
     structure.change(s.bar(9), 1, "poco rit.")

@@ -372,19 +372,81 @@ FAMILY_TITLES = {
     "strings": "Strings",
 }
 
-SCORE_NOTES = [
-    "The score is in C. The parts are transposed.",
-    "Piccolo, celesta, and glockenspiel sound higher than written, by one or two octaves. "
-    "Contrabassoon, contrabass clarinet, and double basses sound one octave lower than written.",
-    "An accidental is for one bar and one octave only.",
-    "Quarter-tones: the alto flute (bars 231 to 257), one cello (bar 256), and the "
-    "woodwinds in bars 399 to 408 have quarter-tones. In bars 399 to 408, these are "
-    "the notes of the harmonic series on D: play them with no vibrato.",
-    "l.v.: let the sound ring.",
-    "Three players have an ocarina in C (bars 221 to 262): oboe 2, clarinet 1, and bassoon 2.",
-    "Seating: the first violins are on the left of the conductor, the second violins on the right.",
-    "Duration: 30 minutes.",
-]
+
+def score_notes(work: Work) -> list[str]:
+    """Return the notes for the performance on the first page of the score.
+
+    The bar numbers come from the music. Thus they stay correct when the
+    music changes.
+    """
+    from ..perform.events import perform  # at call time: that module imports this package
+
+    structure = work.structure
+    quarter: dict[str, set[int]] = {"alto flute": set(), "violoncello": set(), "woodwinds": set()}
+    ocarina: set[int] = set()
+    for player in work.orchestra.players:
+        for note in perform(work, player.id):
+            bar = structure.bar_at(note.start).number
+            if note.instrument == "ocarina":
+                ocarina.add(bar)
+            if note.midi != round(note.midi):
+                if note.instrument in quarter:
+                    quarter[note.instrument].add(bar)
+                elif player.family == "woodwinds":
+                    quarter["woodwinds"].add(bar)
+                else:
+                    raise ValueError(f"no note about the quarter-tones of the {player.id}")
+
+    def bars(numbers: set[int]) -> str:
+        first, last = min(numbers), max(numbers)
+        return f"bar {first}" if first == last else f"bars {first} to {last}"
+
+    notes = [
+        "The score is in C. The parts are transposed.",
+        "Piccolo, celesta, and glockenspiel sound higher than written, by one or two octaves. "
+        "Contrabassoon, contrabass clarinet, and double basses sound one octave lower than "
+        "written.",
+        "An accidental is for one bar and one octave only.",
+    ]
+    places = []
+    if quarter["alto flute"]:
+        places.append(f"the alto flute ({bars(quarter['alto flute'])})")
+    if quarter["violoncello"]:
+        places.append(f"one cello ({bars(quarter['violoncello'])})")
+    series = ""
+    if quarter["woodwinds"]:
+        # The woodwinds hold their quarter-tones to the end of the section.
+        marks = sorted(structure.marks)
+        before = [number for number in marks if number <= min(quarter["woodwinds"])]
+        after = [number for number in marks if number > max(quarter["woodwinds"])]
+        first = before[-1] if before else 1
+        last = after[0] - 1 if after else len(structure.bars)
+        series = f"bars {first} to {last}"
+        places.append(f"the woodwinds ({series})")
+    if places:
+        text = "Quarter-tones are in these parts: "
+        text += places[0] if len(places) == 1 else ", ".join(places[:-1]) + ", and " + places[-1]
+        text += "."
+        if series:
+            text += (
+                f" In {series}, the quarter-tones are the notes of the harmonic series on D: "
+                "play them with no vibrato."
+            )
+        notes.append(text)
+    notes.append("l.v.: let the sound ring.")
+    if ocarina:
+        notes.append(
+            f"Three players have an ocarina in C ({bars(ocarina)}): oboe 2, clarinet 1, and "
+            "bassoon 2."
+        )
+    notes.append(
+        "Seating: the first violins are on the left of the conductor, the second violins on "
+        "the right."
+    )
+    minutes = round(structure.duration_seconds / 60)
+    if minutes >= 1:
+        notes.append(f"Duration: {minutes} minutes.")
+    return notes
 
 
 def _instrument_lines(work: Work) -> dict[str, list[str]]:
@@ -438,7 +500,7 @@ def _front_page(work: Work) -> str:
         target.extend(f"\\line {{ {text(line)} }}" for line in families[family])
     left = "\n      ".join(columns[0])
     right = "\n      ".join(columns[1])
-    notes = "\n    ".join(f"\\vspace #0.4 {wrapped(note)}" for note in SCORE_NOTES)
+    notes = "\n    ".join(f"\\vspace #0.4 {wrapped(note)}" for note in score_notes(work))
     return (
         "\\markup \\fontsize #4 \\column {\n"
         '  \\vspace #2 \\line { \\bold \\fontsize #2 "Orchestra" }\n'

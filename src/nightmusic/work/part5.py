@@ -8,8 +8,9 @@ Material of this part:
   of the sound of D.
 - The warm theme and the song theme at the same time, in D major. The
   walking theme and the chase theme go with them.
-- The calls of the brass and woodwinds: each has the motto in its light
-  form (D, E, A) at its own speed. They come together on one chord.
+- The rhythm of the heavy section of part 2, now in D major. The riff, the
+  calls of the brass, and the peal of the bells have the motto in its
+  light form (D, E, A).
 - The chorale of part 1 in D major, fff, and the last chord.
 
 Style profile: "Theatre", then "Transfigured" after the turn.
@@ -17,7 +18,7 @@ Style profile: "Theatre", then "Transfigured" after the turn.
 
 from __future__ import annotations
 
-from ..compose.tools import Block, bars, double, dyn, fill, first, lines, rests, scatter, times, tr
+from ..compose.tools import Block, bars, double, dyn, fill, first, lines, put, rests, times, tr
 from ..notation.work import Work
 from .part4 import (
     BELLS_OFF_BEAT,
@@ -65,12 +66,12 @@ CHORALE = r"""
 def write(work: Work) -> None:
     _first_light(work)
     _themes_together(work)
-    _calls(work)
+    _engine(work)
     _last_statement(work)
 
 
 def _first_light(work: Work) -> None:
-    """Bars 399 to 408: the harmonic series on D, from the lowest note up."""
+    """Mark DD: the harmonic series on D, from the lowest note up."""
     structure = work.structure
     count = 10
     s = work.section(count, 4, 4)
@@ -120,7 +121,7 @@ def _first_light(work: Work) -> None:
 
 
 def _themes_together(work: Work) -> None:
-    """Bars 409 to 424: the warm theme and the song theme at the same time."""
+    """Mark EE: the warm theme and the song theme at the same time."""
     structure = work.structure
     s = work.section(16, 4, 4)
     structure.mark(s.bar(1), "EE")
@@ -155,77 +156,143 @@ def _themes_together(work: Work) -> None:
     block.close()
 
 
-def _calls(work: Work) -> None:
-    """Bars 425 to 436: many calls, each at its own speed. They come together.
+def _engine(work: Work) -> None:
+    """The rhythm of the heavy section of part 2 comes back, in D major.
 
-    Each call is the motto in its light form (D, E, A). The strings hold
-    the same three notes as a chord of fifths.
+    The riff of the low instruments has the motto in its light form (D, E,
+    A). The calls of the brass and the peal of the bells have the same
+    notes. The phrases move by major thirds (D, F-sharp, B-flat, D). The
+    section ends with hammer strokes on the chord of D major.
     """
     structure = work.structure
-    s = work.section(12, 4, 4)
+    seven = (7, 8, (2, 2, 3))
+    s = work.section(32, *seven)
     structure.mark(s.bar(1), "FF")
-    structure.tempo(s.bar(1), 1, 66, "Poco più mosso")
-    block = Block(s, rests(4, 4, 9), rests(4, 4, 3))
+    structure.tempo(s.bar(1), 1, 264, "Con slancio", unit="8")
+    eight = rests(7, 8, 8)
+    one = rests(7, 8)
+    block = Block(s, eight, eight, eight, eight)
 
-    call = r"d'8-> e'8-> a'4->"
-    levels = [r"\p", r"\p", r"\mp", r"\mp", r"\mf", r"\mf", r"\f", r"\f", r"\f"]
-    # For each group of players: the first call (in quarter notes from the
-    # start), the time between two calls, and the octave.
-    groups = [
-        ("hn1", 0.0, 5.0, 0),
-        ("tpt1", 2.0, 7.0, 1),
-        ("tbn1", 5.0, 6.0, -1),
-        ("cl1", 8.0, 4.5, 1),
-        ("ob1", 10.5, 5.5, 1),
-        ("fl1", 12.0, 6.5, 2),
-        ("hn3", 14.0, 5.5, 0),
-        ("tpt2", 16.5, 6.0, 0),
-        ("tbn2", 18.0, 5.0, -1),
-        ("cl2", 19.5, 4.0, 0),
-        ("ob2", 21.0, 4.5, 1),
-        ("fl2", 22.5, 5.0, 2),
-        ("hn2", 24.0, 4.0, 0),
-        ("hn4", 25.0, 3.5, -1),
-        ("tpt3", 26.5, 3.0, 0),
-        ("bn1", 27.0, 3.5, -1),
-        ("fl3", 28.5, 3.0, 2),
-        ("perc2", 29.0, 2.5, 2),
-    ]
-    together = (
-        r"A8->\ff B8-> C4-> A8-> B8-> C4-> | A8-> B8-> C4-> A8-> B8-> C4-> | "
-        r"A4->\fff B4-> C2-> |"
-    )
-    for player, start, period, shift in groups:
-        events = {}
-        position = start
-        while position < 36.0 - 1.9:
-            bar = int(position // 4)
-            figure = tr(call, 12 * shift) if shift else call
-            events[(bar + 1, position - 4 * bar + 1)] = first(figure, levels[bar], note=True)
-            position += period
-        block.add(player, 1, scatter(9, 4, 4, events))
-        chord = tr(r"<d' e' a'>1", 12 * shift) if shift else r"<d' e' a'>1"
-        block.add(player, 2, fill(chord, together))
-    extra = "hn5 hn6 btbn:-1 tuba:-2 bn2:-1 bn3:-2 cbcl:-2 cimb.rh mand:1 acc.rh pno.rh:1 pno.lh:-1"
-    block.add(extra, 2, fill(r"<d' e' a'>1", together))
+    riff = r"d,8-> r d,8-> r a,8-> e,8 d,8 | d,8-> d,8 r e,8-> r d,8-> a,8 |"
+    gaps = r"r8 X8-> r X8-> r4 X8-> | r4 X8-> r X8-> r4 |"
+    call = r"d'8-> e'8-> a'4.-> r4 |"
+    peal = r"d'4 e'4 a'4. |"
+    run = r"d''8-> e'' fis''-> gis'' a''-> gis'' fis'' |"
+    levels = [r"\mf", r"\f", r"\ff", r"\ff"]
+    low_shifts = [0, 4, 8, 0]  # the riff: D, F-sharp, B-flat, D
+    high_shifts = [0, 4, 8, 12]  # the chords of the strings go up
+    brass_shifts = [0, 4, -4, 0]  # the calls stay in the range of the instruments
+    bell_shifts = [0, 4, 8, 0]
+    drums = [("d,", "a,"), ("fis,", "cis"), ("bes,", "f"), ("d,", "a,")]
 
-    # The chord of fifths (D, A, E) in the strings: it grows through the section.
-    grow = r"X1:32\pp\< ~ | " + r"X1:32 ~ | " * 7 + r"X1:32\f |"
-    last = r"X1:32\ff\< ~ | X1:32 ~ | X1:32\fff |"
-    for player, chord in [("vn1", "e'' a''"), ("vn2", "a' e''"), ("va", "d' a'"),
-                          ("vc", "d a"), ("cb", "d,")]:  # fmt: skip
-        letter = "X" if " " in chord else "A"
-        block.add(player, 1, fill(f"<{chord}>1", grow.replace("X", letter)))
-        block.add(player, 2, fill(f"<{chord}>1", last.replace("X", letter)))
-    block.add("timp", 1, r"d,1:32\pp\< ~ | " + r"d,1:32 ~ | " * 7 + r"d,1:32\f |")
-    block.add("timp", 2, r"d,1:32\ff\< ~ | d,1:32 ~ | d,1:32\fff |")
-    block.add("perc1", 2, r"c'1:32\p\< ~ | c'1:32 ~ | c'1:32\ff |")
-    block.add("perc3", 2, r"R1 | c'1:32\mf\< ~ | c'1:32\fff |")
+    for phrase in (1, 2, 3, 4):
+        level = levels[phrase - 1]
+        low = times(tr(riff, low_shifts[phrase - 1]), 4)
+        block.add("cb tuba btbn bn3 cbcl cl3 vc bn1:1 bn2:1 cimb.lh:1", phrase, low, level)
+        block.add("pno.lh", phrase, double(low, -1), level)
+        shift = high_shifts[phrase - 1]
+        for player, chord in [("va", r"<d' a'>1"), ("vn2", r"<a' e''>1"), ("vn1", r"<e'' a''>1")]:
+            block.add(player, phrase, times(fill(tr(chord, shift), gaps), 4), level)
+        block.add(
+            "pno.rh", phrase,
+            times(fill(tr(r"<d' e' a' d''>1", low_shifts[phrase - 1]), gaps), 4), level,
+        )  # fmt: skip
+        root, fifth = drums[phrase - 1]
+        beat = f"{root}8-> r {root}8-> r {fifth}8-> r4 | {root}8-> {root}8 r4 r8 {fifth}8-> r |"
+        block.add("timp", phrase, times(beat, 4), level)
+        block.add("perc3", phrase, times(r"c'8-> r r4 c'8-> r4 | c'8-> r r4 r4. |", 4), level)
+        block.add(
+            "perc6", phrase,
+            times(r"c'8-> r c'8-> r c'8-> r4 | c'8-> c'8 r c'8-> r c'8-> r |", 4), level,
+        )  # fmt: skip
+        block.add("perc5", phrase, times(r"r4 r4 r8 a8 c'8 | r4 r8 e'8 r c'8 a8 |", 4), level)
+    # The bells and the celesta peal the motto: from the second phrase, then in each bar.
+    # The player of the bells comes from the xylophone: the first phrase gives the time.
+    every = tuple(range(1, 9))
+    for phrase in (2, 3, 4):
+        bell = tr(peal, bell_shifts[phrase - 1])
+        numbers = (1, 3, 5, 7) if phrase == 2 else every
+        text = bars(8, one, dict.fromkeys(numbers, bell))
+        block.add("perc2 cel.rh:2", phrase, text, levels[phrase - 1])
+    block.start("perc2", r'\switch "tubular bells"')
+    block.start("perc6", r'\switch "taiko"')
+    block.start("perc5", r'\switch "tom-toms"')
+
+    # The snare drum from the second phrase. Hand cymbals at the start of each phrase.
+    snare = r"r4 c'8-> r r4 c'8-> | r4 c'8-> r r4. |"
+    roll = r"r4 c'8-> r r4 c'8-> | c'2..:32\< |"
+    block.add("perc4", 1, r'\switch "snare drum" ' + eight)
+    for phrase in (2, 3, 4):
+        block.add("perc4", phrase, times(snare, 3) + roll, levels[phrase - 1])
+        block.add("perc1", phrase, r"c'8\ff\lv r r4 r4. | " + rests(7, 8, 7))
+    block.add("perc1", 1, r'\switch "crash cymbals" ' + eight)
+
+    # The calls: at first two in a phrase, then one in each bar.
+    def calls(numbers: tuple[int, ...], shift: int) -> str:
+        return bars(8, one, {number: tr(call, shift) for number in numbers})
+
+    block.add("hn1 hn3", 1, calls((3, 7), 0), r"\mf")
+    block.add("hn1 hn2 hn3 hn4", 2, calls((3, 7), brass_shifts[1]), r"\f")
+    block.add("tpt1 tpt2", 2, calls((1, 5), brass_shifts[1]), r"\f")
+    block.add("hn1 hn2 hn3 hn4 tbn1:-1 tbn2:-1", 3, calls((2, 4, 6, 8), brass_shifts[2]), r"\ff")
+    block.add("tpt1 tpt2 tpt3", 3, calls((1, 3, 5, 7), brass_shifts[2] + 12), r"\ff")
+    block.add("tpt1:1 tpt2 tpt3", 4, calls(every, 0), r"\ff")
+    block.add("hn1 hn2 hn3 hn4", 4, calls(every, 0), r"\ff")
+    block.add("tbn1:-1 tbn2:-1", 4, calls((2, 4, 6, 8), 0), r"\ff")
+
+    # The chase theme in a major key, in the woodwinds and the xylophone part of the piano.
+    def runs(numbers: tuple[int, ...], shift: int) -> str:
+        return bars(8, one, {number: tr(run, shift) for number in numbers})
+
+    block.add("fl1:1 fl2:1 ob1 ob2 cl1 cl2", 2, runs((2, 4, 6, 8), 4), r"\f")
+    block.add("fl1:1 fl2:1 fl3:1 ob1 ob2 cl1 cl2", 3, runs(every, -4), r"\ff")
+    block.add("fl1:1 fl2:1 fl3:1 ob1 ob2 cl1 cl2", 4, runs(every, 0), r"\ff")
     block.close()
+
+    # ------------------------------------------------ hammer strokes on D major (4 bars)
+    s = work.section(4, *seven)
+    stroke = r"X8-> r X8-> r X8-> X X |"
+    run_of_strokes = r"X8-> X X-> X X-> X X |"
+    last = r"X8-> X X-> X X4.-> |"
+
+    def hammer(chord: str) -> str:
+        letter = "X" if " " in chord else "A"
+        patterns = [stroke, stroke, run_of_strokes, last]
+        text = " ".join(fill(f"<{chord}>1", pattern.replace("X", letter)) for pattern in patterns)
+        return first(text, r"\fff", note=True)
+
+    put(s, "cb tuba btbn bn3 cbcl cl3 timp", hammer("d,"))
+    put(s, "bn1 bn2 tbn2", hammer("a,"))
+    put(s, "tbn1 hn4", hammer("d"))
+    put(s, "hn3", hammer("fis"))
+    put(s, "hn2", hammer("a"))
+    put(s, "hn1 tpt3", hammer("d'"))
+    put(s, "tpt2 cl2 ob2", hammer("fis'"))
+    put(s, "tpt1 cl1 ob1", hammer("a'"))
+    put(s, "fl2 fl3", hammer("d''"))
+    put(s, "fl1", hammer("fis''"))
+    s.write("vc", hammer("d a"))
+    s.write("va", hammer("d' a'"))
+    s.write("vn2", hammer("fis' d''"))
+    s.write("vn1", hammer("a'' d'''"))
+    s.write("pno.lh", hammer("d,, d,"))
+    s.write("pno.rh", hammer("d' fis' a' d''"))
+    strokes = r"c'8->\fff r c'8-> r c'8-> r4 |"
+    s.write("perc3", times(strokes, 3) + r" c'8-> r c'8-> r c'4.-> |")
+    s.write(
+        "perc6", times(strokes, 2) + r" c'8-> c' c'-> c' c'-> c' c' | c'8-> c' c'-> c' c'4.-> |"
+    )
+    # The players of the snare drum and of the tom-toms stop in the first bar.
+    # They go to the glockenspiel and to the tam-tam.
+    three = rests(7, 8, 3)
+    s.write("perc4", r"c'8->\fff r c'8-> r r4. | " + three)
+    s.write("perc5", r"a8->\fff r c'8-> r r4. | " + three)
+    s.write("perc1", r"c'8\fff\lv r r4 r4. | " + rests(7, 8, 2) + r"r4 r4 c'4.\lv |")
+    s.close()
 
 
 def _last_statement(work: Work) -> None:
-    """Bars 437 to 457: the chorale in D major, and the last chord."""
+    """Mark GG: the chorale in D major, and the last chord."""
     structure = work.structure
     s = work.section(21, 4, 4)
     structure.mark(s.bar(1), "GG")
@@ -251,9 +318,19 @@ def _last_statement(work: Work) -> None:
         r"""\switch "tubular bells" d'1\fff | e'1 | a'1 | fis'1 | d'1 | e'1 | e'1 | d'1 | """
         r"d'1 | e'1 | a'1 |",
     )  # fmt: skip
-    block.add("perc1", 1, r"""\switch "tam-tams" c'1\fff\lv | R1*7 | c'1\lv | R1*2 |""")
+    block.add("perc5", 1, r"""\switch "tam-tams" c'1\fff\lv | R1*7 | c'1\lv | R1*2 |""")
     block.add("perc3", 1, r"c'4\fff r r2 | R1*3 | c'4 r r2 | R1*3 | c'4 r r2 | R1 | c'4 r r2 |")
     block.start("perc4", r'\switch "glockenspiel"')
+    # Hand cymbals at the start of each phrase. The suspended cymbal grows into them.
+    block.add(
+        "perc1", 1,
+        r"c'4\fff\lv r4 r2 | R1*3 | c'4\lv r4 r2 | R1*3 | c'4\lv r4 r2 | R1 | c'4\lv r4 r2 |",
+    )  # fmt: skip
+    block.add(
+        "perc6", 1,
+        r"""\switch "suspended cymbals" R1*3 | c'1:32\mf\< | R1*3 | c'1:32\mf\< | """
+        r"R1 | c'1:32\f\< | R1 |",
+    )  # fmt: skip
 
     # The last chord (10 bars): D major. The brass has the motto in long notes.
     motto = r"d'1\fff-^ | e'1-^ | a'1-^ ~ | a'1 | "
@@ -296,7 +373,18 @@ def _last_statement(work: Work) -> None:
     octave_d = r"<d,, d,>"
     block.add("pno.lh", 2, rf"{octave_d}1\fff | R1 | {octave_d}1 | R1 | {octave_d}1 | R1 | "
               rf"{octave_d}1 | R1 | {octave_d}2.-^ r4 | {octave_d}1-^\fermata |")  # fmt: skip
-    block.add("perc1", 2, r"c'1\fff\lv | R1*3 | c'1\lv | R1*3 | c'2.\lv r4 | c'1\lv\fermata |")
+    block.add("perc5", 2, r"c'1\fff\lv | R1*3 | c'1\lv | R1*3 | c'2.\lv r4 | c'1\lv\fermata |")
+    block.add(
+        "perc1", 2,
+        r"c'4\fff\lv r4 r2 | R1*3 | c'4\lv r4 r2 | R1*3 | c'2.\lv r4 | c'1\lv\fermata |",
+    )  # fmt: skip
+    block.add(
+        "perc6", 2,
+        r"""\switch "taiko" """
+        + times(r"c'4->\fff c'4-> c'4-> c'4-> |", 4)
+        + times(r" c'8-> c' c'-> c' c'-> c' c'-> c' |", 4)
+        + r" c'2.-> r4 | c'1->\fermata |",
+    )  # fmt: skip
     block.add("perc3", 2, r"c'4\fff r r2 | R1*3 | c'1:32 ~ | c'1:32 ~ | c'1:32 ~ | c'1:32 | "
               r"c'2. r4 | c'1\fermata |")  # fmt: skip
     block.close()

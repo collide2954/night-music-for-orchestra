@@ -270,6 +270,9 @@ def _play(
         technique = TECHNIQUES.get(name)
         if technique and technique.state:
             voice.state[technique.state] = technique.value
+        # "ord." also stops spiccato and col legno: the player uses the bow as usual.
+        if name == "ord" and voice.state.get("attack") in ("spiccato", "col legno"):
+            voice.state["attack"] = "arco"
     if "startTrillSpan" in commands:
         voice.trill_span = True
 

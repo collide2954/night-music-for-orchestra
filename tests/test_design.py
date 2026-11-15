@@ -59,6 +59,7 @@ def test_orchestra():
         "bass drum",
         "snare drum",
         "tom-toms",
+        "taiko",
         "frame drum",
         "wood blocks",
         "temple blocks",

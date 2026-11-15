@@ -100,3 +100,37 @@ def test_a_stem_that_is_too_wide_gets_a_smaller_difference_signal():
     normal = np.stack([shared + 0.3 * wide[:, 0], shared + 0.3 * wide[:, 1]], axis=1)
     same, gain_db = musescore.narrow(normal.copy())
     assert gain_db == 0.0 and np.array_equal(same, normal)
+
+
+def _work_with(player: str, text: str, bars: int = 2) -> Work:
+    work = Work("Test", load_orchestra())
+    section = work.section(bars, 4, 4)
+    work.structure.tempo(1, 1, 60, "Lento")
+    section.write(player, text)
+    section.close()
+    return work
+
+
+def test_a_note_of_an_instrument_that_rings_is_longer_in_the_file():
+    text, _names = musicxml.score(_work_with("harp.rh", r"c''4\p r4 r2 | R1 |"))
+    root = ElementTree.fromstring(text.split("\n", 2)[2])
+    durations = [int(note.findtext("duration")) for note in root.iter("note")]
+    # The harp rings for 6 seconds: 6 quarter notes at this tempo, across the bar line.
+    assert sum(durations) == 6 * musicxml.DIVISIONS
+    assert text.count('<tie type="start"/>') == text.count('<tie type="stop"/>') >= 1
+
+
+def test_the_last_note_of_a_soft_phrase_gets_softer_and_the_dynamic_comes_again():
+    text, _names = musicxml.score(_work_with("fl1", r"c''1\p | r2 d''2 |"))
+    first, second = text.split('<measure number="2">')
+    assert '<wedge type="diminuendo"/>' in first and '<wedge type="stop"/>' in first
+    assert "<dynamics><p/></dynamics>" in second
+    loud, _names = musicxml.score(_work_with("fl1", r"c''1\ff | r2 d''2 |"))
+    assert "wedge" not in loud  # a loud phrase stops with its full sound
+
+
+def test_spiccato_makes_short_notes():
+    text, _names = musicxml.score(
+        _work_with("vn1", r"c''8\spicc d'' e'' f'' g''2 | a''8\arco b'' r4 r2 |")
+    )
+    assert text.count("<staccato/>") == 4  # the four eighth notes, not the half note
