@@ -95,10 +95,20 @@ def show_stats() -> None:
         print(f"{name:45s} {value}")
 
 
+def draw_chart() -> None:
+    """Draw the loudness of the audio master against the time. The audio master must exist."""
+    from .audio.chart import loudness_chart
+    from .work import build
+
+    audio = BUILD_DIR / "audio" / "night-music.flac"
+    print(f"chart: {loudness_chart(build(), audio, Path('docs') / 'loudness.svg')}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="nightmusic", description="Build Night Music.")
     parser.add_argument(
-        "command", choices=["check", "stats", "ly", "score", "parts", "audio", "video", "all"]
+        "command",
+        choices=["check", "stats", "ly", "score", "parts", "audio", "video", "chart", "all"],
     )
     parser.add_argument(
         "--bars", metavar="FIRST-LAST", help="render only these bars (command: audio)"
@@ -112,6 +122,9 @@ def main(argv: list[str] | None = None) -> int:
         return 1 if check_work() else 0
     if args.command == "stats":
         show_stats()
+        return 0
+    if args.command == "chart":
+        draw_chart()
         return 0
     if args.command == "ly":
         for path in write_lilypond():

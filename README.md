@@ -34,6 +34,11 @@ Each build of the repository publishes the results in the release
 | 4 | 263 to 398 | 16:13 | The turn to D major. Broad warm themes. A shimmer of bells. The main climax, then calm. |
 | 5 | 399 to 457 | 25:37 | First light. The themes sound together. The last statement, fff. |
 
+The picture shows the loudness of the audio master against the time.
+The two climaxes are at 11 minutes and at 22 minutes. The last statement starts at 28 minutes.
+
+![Loudness of the audio master against the time](docs/loudness.svg)
+
 One idea of three notes (the motto) is in all parts.
 It starts as D, E-flat, A-flat (dark) and ends as D, E, A (light).
 The document [`docs/work.md`](docs/work.md) gives the full form, the themes, and the sources of the ideas.
@@ -137,6 +142,18 @@ To hear only some bars, give the first bar and the last bar:
 
 ```bash
 uv run nightmusic audio --bars 207-220
+```
+
+To measure the work (dynamic levels and tempo marks):
+
+```bash
+uv run nightmusic stats
+```
+
+To draw the picture of the loudness (the audio must be there):
+
+```bash
+uv run nightmusic chart
 ```
 
 To build the style study:
