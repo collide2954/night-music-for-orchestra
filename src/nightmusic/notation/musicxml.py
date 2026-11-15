@@ -14,11 +14,11 @@ is for the sound only: it is not the printed score. Thus:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from fractions import Fraction
 from xml.sax.saxutils import escape
 
-from . import music
+from . import music, playback
 from .techniques import TECHNIQUES
 from .work import Work
 
@@ -151,6 +151,8 @@ class _Event:
     plucked: bool = False  # the player plucks the string (pizzicato)
     taper: Fraction = Fraction(0)  # the length of the end of the note that gets softer
     plain_attack: bool = False  # the note is too long for an accent of the playback program
+    play_dynamic: str = ""  # the dynamic mark for the playback program (empty: as written)
+    play_way: str = ""  # a different articulation for the playback program (empty: as written)
 
 
 @dataclass
@@ -267,6 +269,11 @@ def _marks_before(event: _Event, hairpin_open: bool) -> tuple[list[str], bool]:
     result: list[str] = []
     posts = event.note.posts
     dynamics = [p.value for p in posts if p.kind == "dynamic" and p.value in DYNAMIC_ELEMENTS]
+    # The mark in effect at the note gets the mark that the playback program must play.
+    dynamics = [
+        event.play_dynamic if name == event.dynamic and event.play_dynamic else name
+        for name in dynamics
+    ]
     hairpins = [p.value for p in posts if p.kind == "hairpin"]
     if hairpin_open and (dynamics or hairpins):
         result.append(_direction('<wedge type="stop"/>'))
@@ -360,12 +367,10 @@ def _note_xml(
     if tie_start:
         notations.append('<tied type="start"/>')
     if index == 0 and marks:
-        slurred = False
         for post in note.posts:
             if post.kind == "slur":
                 kind = "start" if post.value == "(" else "stop"
                 notations.append(f'<slur type="{kind}" number="1"/>')
-                slurred = True
             elif post.kind == "phrasing":
                 kind = "start" if post.value == "(" else "stop"
                 notations.append(f'<slur type="{kind}" number="2"/>')
@@ -376,15 +381,13 @@ def _note_xml(
         if event.plain_attack:
             names = [name for name in names if name not in ACCENT_MARKS]
         # Spiccato: each short note is a short stroke.
-        if (
-            event.short
-            and event.written <= 1
-            and "tremolo" not in kinds
-            and not slurred
-            and "staccato" not in names
-            and "staccatissimo" not in names
-        ):
+        if _is_short_stroke(event) and not (set(names) & set(SHORT_MARKS)):
             names.append("staccato")
+        # A different articulation for the playback program (see `playback.py`).
+        if event.play_way == "long":
+            names = [name for name in names if name not in (*ACCENT_MARKS, *SHORT_MARKS)]
+        elif event.play_way == "accent":
+            names = [name for name in names if name != "marcato"] + ["accent"]
         articulations = "".join(
             f"<{ARTICULATIONS[name]}/>" for name in dict.fromkeys(names) if name in ARTICULATIONS
         )
@@ -443,12 +446,55 @@ RING_SECONDS = {
 # values here are a little smaller. A longer note has no such mark in the file.
 ACCENT_SECONDS = {"tenor trombone": 3.9, "double bass": 5.5, "violin": 6.3}
 ACCENT_MARKS = ("accent", "marcato")
+SHORT_MARKS = ("staccato", "staccatissimo")
 
 # The loudest dynamic mark at which the last note of a phrase gets softer at its end.
 TAPER_MARKS = {"ppppp", "pppp", "ppp", "pp", "p", "mp", "mf"}
 TAPER_LENGTH = Fraction(2)  # shortest note that gets softer at its end (quarter notes)
 TAPER_REST = Fraction(1)  # shortest rest after the note (quarter notes)
 TAPER_SECONDS = 1.2  # the time at the end of the note in which it gets softer
+
+
+def _is_short_stroke(event: _Event) -> bool:
+    """Return true if the note is a short stroke of the bow (spiccato)."""
+    posts = event.note.posts
+    return (
+        event.short
+        and event.written <= 1
+        and not any(post.kind in ("tremolo", "slur") for post in posts)
+    )
+
+
+def _way(event: _Event) -> str:
+    """Return the way to play of a note, as the table of the measured levels names it."""
+    posts = event.note.posts
+    commands = {post.value for post in posts if post.kind == "command"}
+    names = {post.value for post in posts if post.kind == "articulation"}
+    names |= {name for name in ARTICULATIONS if name in commands}
+    if event.plain_attack:
+        names -= set(ACCENT_MARKS)
+    if any(post.kind == "tremolo" for post in posts):
+        return "long"
+    if "marcato" in names:
+        return "marcato"
+    if "accent" in names:
+        return "accent"
+    if names & set(SHORT_MARKS) or _is_short_stroke(event):
+        return "staccato"
+    if event.plucked:
+        return "pizzicato"
+    return "long"
+
+
+def _calibrate(events: list[_Event], levels: playback.Levels | None, brass: bool) -> None:
+    """Give each note the dynamic mark and the articulation for the playback program."""
+    for event in events:
+        if not event.dynamic:
+            continue
+        way = _way(event)
+        mark, new_way = playback.played(levels, event.dynamic, way, brass)
+        event.play_dynamic = mark
+        event.play_way = new_way if new_way != way else ""
 
 
 def _shape(events: list[_Event], work: Work) -> None:
@@ -548,14 +594,19 @@ def score(
     bars: tuple[int, int] | None = None,
     instruments: set[str] | None = None,
     players: set[str] | None = None,
+    levels: dict[str, playback.Levels] | None = None,
 ) -> tuple[str, list[str]]:
     """Return the MusicXML text of the work, and the names of the parts in it.
 
     `bars` gives the first and the last bar (default: the full work).
     `instruments` gives the instruments that are in the file (default: all
     instruments that the playback program can play). `players` gives the
-    players that are in the file (default: all players).
+    players that are in the file (default: all players). `levels` are the
+    measured levels of the playback program (default: the table of
+    `playback.py`; an empty table gives the marks of the score).
     """
+    if levels is None:
+        levels = playback.load()
     structure = work.structure
     first_bar, last_bar = bars or (1, len(structure.bars))
     measures = structure.bars[first_bar - 1 : last_bar]
@@ -626,6 +677,8 @@ def score(
             f"{instruments_xml}</score-part>"
         )
         _shape(events, work)
+        brass = work.orchestra.player(player_id).family == "brass"
+        _calibrate(events, levels.get(name), brass)
         bodies.append(
             _part_xml(number, events, measures, tempos if number == 1 else {}, starts[key], drums)
         )
@@ -656,6 +709,7 @@ def _part_xml(
     tied_in: dict[int, set[float]] = {voice: set() for voice in by_voice}
     hairpins: dict[int, bool] = {voice: False for voice in by_voice}
     restate: dict[int, bool] = {voice: False for voice in by_voice}
+    sounding: dict[int, str] = {voice: "" for voice in by_voice}  # the mark that plays now
     slides: dict[int, bool] = {voice: False for voice in by_voice}  # a slide is open
     carried: dict[int, tuple[_Event, Fraction] | None] = {voice: None for voice in by_voice}
     cursors = {voice: 0 for voice in by_voice}
@@ -739,16 +793,24 @@ def _part_xml(
                 if event.start > cursor:
                     lines.append(_forward(event.start - cursor))
                     cursor = event.start
+                in_hairpin = hairpins[voice]
                 before, hairpins[voice] = _marks_before(event, hairpins[voice])
                 has_dynamic = any(
                     p.kind == "dynamic" and p.value in DYNAMIC_ELEMENTS for p in event.note.posts
                 )
-                if restate[voice] and not has_dynamic and event.dynamic:
-                    # The phrase before became softer at its end: give the dynamic again.
-                    before.insert(0, _direction(f"<dynamics><{event.dynamic}/></dynamics>"))
+                mark = event.play_dynamic or event.dynamic
+                if has_dynamic:
+                    sounding[voice] = mark
+                elif mark and (restate[voice] or (mark != sounding[voice] and not in_hairpin)):
+                    # The phrase before became softer at its end, or the playback program
+                    # needs a different mark for this note: give the dynamic mark.
+                    if not first_note or not start.dynamic:
+                        before.insert(0, _direction(f"<dynamics><{mark}/></dynamics>"))
+                    sounding[voice] = mark
                 restate[voice] = False
                 if first_note:
-                    before = _state_marks(start) + before
+                    before = _state_marks(replace(start, dynamic=mark or start.dynamic)) + before
+                    sounding[voice] = mark or start.dynamic
                     first_note = False
                 lines.extend(before)
                 length = min(event.length, bar.end - cursor)

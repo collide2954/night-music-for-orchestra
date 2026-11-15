@@ -45,11 +45,16 @@ class Page:
     bottom: float = 0.0
 
 
-def staff_size(staves: int) -> float:
+def staff_size(staves: int, mobile: bool = False) -> float:
     """Return the staff size (points) for a section with a number of staves.
 
-    The size is as large as possible. The tallest system must fit on the screen.
+    The size is as large as possible. The tallest system must fit on the
+    screen. The screen of a telephone is tall: the staves can be larger.
     """
+    if mobile:
+        # A measurement of the pages gave the height of a system: about 3.6 pixels for
+        # each staff and each point of the staff size. The score area is 1500 pixels.
+        return float(np.clip(400.0 / (staves + 0.5), 6.5, 30.0))
     return float(np.clip(215.0 / (staves + 1.5), 5.5, 15.0))
 
 
@@ -143,17 +148,23 @@ def _parse(svg: Path, image: Path, section_start: Fraction, width_px: int) -> Pa
     )
 
 
-def build_pages(work: Work, directory: Path, width_px: int = 1920) -> list[Page]:
-    """Write, compile, and read the score pages of the full work."""
+def build_pages(
+    work: Work, directory: Path, width_px: int = 1920, *, mobile: bool = False
+) -> list[Page]:
+    """Write, compile, and read the score pages of the full work.
+
+    If `mobile` is true, the pages are for the video for a telephone.
+    """
     directory.mkdir(parents=True, exist_ok=True)
-    dpi = width_px / (lilypond.VIDEO_PAGE_MM[0] / 25.4)
+    page_mm = lilypond.MOBILE_PAGE_MM if mobile else lilypond.VIDEO_PAGE_MM
+    dpi = width_px / (page_mm[0] / 25.4)
     files: list[tuple[Path, Fraction]] = []
     changed: list[Path] = []
     for index in range(lilypond.chunk_count(work)):
         first, _last = lilypond.chunk_bars(work, index)
         staves = len(lilypond.active_players(work, index))
         path = directory / f"section-{index + 1:03d}.ly"
-        text = lilypond.video_file(work, index, staff_size(staves))
+        text = lilypond.video_file(work, index, staff_size(staves, mobile), mobile=mobile)
         # A file that did not change keeps its pages from the last build.
         same = path.exists() and path.read_text(encoding="utf-8") == text
         if not (same and _numbered(directory, path.stem, "png")):

@@ -126,8 +126,8 @@ The loudness of a moment is the loudest dynamic mark in effect at that moment.
 
 | Value | Target | The work |
 | --- | --- | --- |
-| Share of the time: p or softer | 0.55 to 0.68 | 0.51 |
-| Share of the time: mp or mf | 0.08 to 0.14 | 0.15 |
+| Share of the time: p or softer | 0.55 to 0.68 | 0.50 |
+| Share of the time: mp or mf | 0.08 to 0.14 | 0.16 |
 | Share of the time: f or louder | 0.18 to 0.28 | 0.34 |
 | Bars for each tempo mark | 5 to 13 | 10.3 |
 

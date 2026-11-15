@@ -408,12 +408,15 @@ def _chase_start(work: Work) -> None:
     structure.mark(s.bar(1), "G")
     structure.tempo(s.bar(1), 1, 276, "Presto, alla bulgarese", unit="8")
 
-    s.write("vc", first(times(OSTINATO, 4), r"\pp\spicc", note=True))
-    s.write("bn1", rests(7, 8, 2) + dyn(times(OSTINATO, 2), r"\p\staccato"))
-    s.write("cb", rests(7, 8, 2) + first(times(STEPS, 2), r"\p\pizz", note=True))
+    # The cellos start the chase alone. The owner of the project heard no sound here.
+    # A measurement showed the cause: the short notes of one string section at pp or mp
+    # are 20 dB softer than the loud passage before them. Thus the ostinato is mf.
+    s.write("vc", first(times(OSTINATO, 4), r"\mf\spicc", note=True))
+    s.write("bn1", rests(7, 8, 2) + dyn(times(OSTINATO, 2), r"\mf\staccato"))
+    s.write("cb", rests(7, 8, 2) + first(times(STEPS, 2), r"\mf\pizz", note=True))
     s.write(
         "perc4",
-        r"""\switch "wood blocks" """ + rests(7, 8, 2) + r"c'8\p r d'8 r c'8 r d'8 | "
+        r"""\switch "wood blocks" """ + rests(7, 8, 2) + r"c'8\mf r d'8 r c'8 r d'8 | "
         r"c'8 r d'8 r c'8 r d'8 |",
     )
     s.write("perc3", r"""\switch "frame drum" """ + rests(7, 8, 4))
@@ -427,10 +430,10 @@ def _chase_start(work: Work) -> None:
     put(s, "cl1 va", dyn(CHASE, r"\mf") + rests(7, 8, 4))
     put(s, "ob1 ob2", rests(7, 8, 4) + dyn(ANSWER, r"\mf"))
     s.write("vn2", rests(7, 8, 4) + first(dyn(ANSWER, r"\mf"), r"\spicc", note=True))
-    s.write("vc", dyn(times(OSTINATO, 8), r"\p"))
-    put(s, "bn1 cl3", dyn(times(OSTINATO, 8), r"\p"))
-    s.write("cb", dyn(times(STEPS, 8), r"\mp"))
-    s.write("perc4", times(r"c'8\p r d'8 r c'8 r d'8 |", 8))
+    s.write("vc", dyn(times(OSTINATO, 8), r"\mf"))
+    put(s, "bn1 cl3", dyn(times(OSTINATO, 8), r"\mp"))
+    s.write("cb", dyn(times(STEPS, 8), r"\mf"))
+    s.write("perc4", times(r"c'8\mp r d'8 r c'8 r d'8 |", 8))
     stabs = lines(times(rests(7, 8) + dyn(STAB, r"\mf"), 4))
     for player, line in zip(["hn4", "hn3", "hn2", "hn1"], stabs, strict=True):
         s.write(player, first(line, r"\stopped", note=True))

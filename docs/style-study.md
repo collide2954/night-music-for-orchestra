@@ -452,9 +452,9 @@ The table shows how frequently a bar comes again with no change. Each value is a
 | Full texture: bar is the same as the bar before | 2.4 % | 1.2 % | 0.0 % | 2.8 % | 0.0 % | 0.0 % | 0.0 % |
 | Full texture: bar is the same as one of the 8 bars before | 5.1 % | 6.7 % | 0.0 % | 8.0 % | 0.0 % | 0.0 % | 20.5 % |
 | Full texture: bar is the same at a different pitch | 3.9 % | 0.2 % | 0.0 % | 0.0 % | 0.0 % | 0.8 % | 0.0 % |
-| Full texture: bar has the same rhythm with different notes | 8.7 % | 9.7 % | 0.0 % | 13.6 % | 0.0 % | 10.8 % | 7.2 % |
-| One voice: bar is the same as one of its 8 bars before | 10.2 % | 41.1 % | 26.1 % | 36.7 % | 50.7 % | 21.1 % | 63.6 % |
-| One voice: bar is the same at a different pitch | 8.5 % | 19.0 % | 2.3 % | 26.2 % | 0.0 % | 14.1 % | 12.2 % |
+| Full texture: bar has the same rhythm with different notes | 8.7 % | 9.9 % | 0.0 % | 13.6 % | 0.0 % | 11.5 % | 7.2 % |
+| One voice: bar is the same as one of its 8 bars before | 10.2 % | 41.3 % | 26.1 % | 36.7 % | 50.7 % | 22.4 % | 63.8 % |
+| One voice: bar is the same at a different pitch | 8.5 % | 18.9 % | 2.3 % | 26.2 % | 0.0 % | 13.8 % | 12.0 % |
 | Bars in a block of 4 bars that is the same as an earlier block | 0.0 % | 3.2 % | 0.0 % | 1.9 % | 0.0 % | 0.0 % | 14.5 % |
 
 Data files: [`research/measured/repetition.csv`](../research/measured/repetition.csv), [`research/measured/work_repetition.csv`](../research/measured/work_repetition.csv)
@@ -485,8 +485,8 @@ Data file: [`research/measured/work_harmony.csv`](../research/measured/work_harm
 
 | Player | Share of the time | Range in use | Notes in the low third | Notes in the middle third | Notes in the high third | Techniques |
 | --- | --- | --- | --- | --- | --- | --- |
-| fl1 | 40.2 % | 94.7 % | 2.6 % | 44.8 % | 52.6 % | - |
-| fl2 | 34.0 % | 76.3 % | 1.0 % | 46.0 % | 53.1 % | grace notes |
+| fl1 | 40.2 % | 94.6 % | 2.6 % | 45.5 % | 51.9 % | - |
+| fl2 | 34.0 % | 75.7 % | 1.0 % | 48.0 % | 51.0 % | grace notes |
 | fl3 | 22.6 % | 70.6 % | 39.9 % | 59.6 % | 0.5 % | - |
 | ob1 | 33.9 % | 81.8 % | 20.3 % | 62.0 % | 17.8 % | - |
 | ob2 | 28.3 % | 81.8 % | 16.8 % | 63.2 % | 20.0 % | grace notes |
@@ -514,10 +514,10 @@ Data file: [`research/measured/work_harmony.csv`](../research/measured/work_harm
 | timp | 32.2 % | 81.8 % | 57.0 % | 36.7 % | 6.4 % | mallet: soft; tremolo |
 | perc1 | 9.7 % | - | - | - | - | tremolo |
 | perc2 | 46.0 % | 58.1 % | 23.5 % | 75.7 % | 0.8 % | motor: on |
-| perc3 | 13.0 % | - | - | - | - | tremolo |
+| perc3 | 14.0 % | - | - | - | - | tremolo |
 | perc4 | 18.3 % | - | - | - | - | tremolo |
 | perc5 | 7.0 % | - | - | - | - | - |
-| perc6 | 12.1 % | - | - | - | - | tremolo |
+| perc6 | 12.2 % | - | - | - | - | tremolo |
 | harp.rh | 36.5 % | 56.2 % | 0.0 % | 36.7 % | 63.3 % | harmonic |
 | harp.lh | 7.4 % | 38.8 % | 65.2 % | 34.8 % | 0.0 % | - |
 | cimb.rh | 3.5 % | 36.8 % | 0.0 % | 46.0 % | 54.0 % | tremolo |
@@ -535,7 +535,7 @@ Data file: [`research/measured/work_harmony.csv`](../research/measured/work_harm
 | vc | 125.4 % | 85.4 % | 48.3 % | 48.3 % | 3.3 % | desk: solo; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
 | cb | 85.3 % | 62.8 % | 52.2 % | 45.9 % | 1.9 % | mute: on; pizzicato; sul tasto; tremolo |
 
-Instruments in the list of the orchestra that have no notes: marimba, crotales, singing bowls, temple blocks, claves, guiro, cowbells, finger cymbals, wind chimes, waterphone.
+Instruments in the list of the orchestra that have no notes: marimba, crotales, singing bowls, triangle, temple blocks, claves, guiro, cowbells, finger cymbals, wind chimes, waterphone.
 
 Data file: [`research/measured/work_instruments.csv`](../research/measured/work_instruments.csv)
 

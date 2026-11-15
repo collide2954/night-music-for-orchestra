@@ -272,7 +272,7 @@ score_transposition = -12
 [instrument."flute"]
 transposition = 0
 clef = "treble"
-range = [60, 98]
+range = [60, 97]  # to D-flat 7: the highest note that the audio can play
 
 [instrument."alto flute"]
 transposition = 5

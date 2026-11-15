@@ -54,6 +54,80 @@ The table `RING_SECONDS` in the code gives the ring time of each instrument.
 The table `ACCENT_SECONDS` gives the longest note that keeps its accent.
 Measurements of test renders gave the values of the two tables.
 
+## How the dynamic marks get balanced levels
+
+Muse Sounds do not play all dynamic marks and articulations at balanced levels.
+The owner of the project heard two faults: one instrument had no sound (the cellos at the mark G), and the loud brass had a hard "splat".
+
+The command `uv run nightmusic calibrate` measures the sound source.
+For each wind, brass, and string instrument, it renders a test score: each dynamic mark from ppp to fff as a long note, a staccato note, a note with an accent, a note with a marcato mark, and (for the strings) a pizzicato note.
+The table [`audio/muse_levels.csv`](../src/nightmusic/audio/muse_levels.csv) has the level of each case.
+
+| Fault that the table shows | Example |
+| --- | --- |
+| The steps between the marks are not regular | Bass clarinet: 17 dB from mf to f. Oboe: 2 dB from mp to fff. |
+| A mark is softer than the mark below it | Clarinet: mp is 10 dB softer than p. |
+| A soft staccato note is almost silent | Trumpet: 25 dB below a long note at pp. |
+| A marcato mark is much louder than its dynamic mark | Trumpet: 12 dB at mp. |
+| The loud marks of the brass are very bright | Trombone: from mf to f, the share of the sound above 2 kHz goes up by 26 dB. |
+
+The module [`notation/playback.py`](../src/nightmusic/notation/playback.py) uses the table. For each note, it selects the dynamic mark and the articulation that the audio file gets:
+
+1. The level of the mark f of the instrument is the anchor. Each written mark has a target level in relation to the anchor: about 5 to 6 dB for each mark below f, and less above f.
+2. A note gets the mark whose measured level is nearest to the target.
+3. A brass instrument plays no mark louder than ff.
+4. A note with an articulation gets a level near that of a note with no articulation (staccato 3 dB below, accent 3 dB above, marcato 5 dB above). If no mark gives such a level, the note gets a different articulation, or none.
+
+The printed score and the parts do not change.
+
+Muse Sounds do not play some very high notes (for example the violins above F7). The table `HIGHEST_NOTE` has these limits, and a test makes sure that the work has no such note.
+
+## How the loud brass gets a round tone
+
+The owner of the project heard that the loud brass had a "splat" that "cuts against the texture".
+Measurements of Muse Sounds showed the cause:
+
+| Measurement | Result |
+| --- | --- |
+| The level of the marks f, ff, and fff of each brass instrument | The same in a range of 3 dB. |
+| The tone of these three marks (the share of the sound above 2 kHz) | The same in a range of 4 dB: very bright. |
+| The step from mf to f | Trombone: 11 dB louder, and 26 dB more of its sound above 2 kHz. Trumpet: 6 dB louder, and 10 dB more above 2 kHz. |
+| The start of a brass note | No fault: the first 30 ms are not louder than the held note (2.5 dB or less). |
+| The start of a loud note of the violins | Slow: a quarter note at ff stays 8 dB below its loudest level for 0.4 s. A slur or a tenuto mark does not change this. |
+| The groups in the loud passages | In most loud passages, the brass was not louder than the strings. In the main climax and in the last chords, where all brass players hold loud chords, the brass was 5 to 6 dB louder than the strings. |
+
+Thus a written f of the brass sounded as loud and as hard as a written fff.
+A real brass section at f has a full, round tone. Only at fff it has a hard edge.
+
+The mix repairs this in two steps ([`audio/stemtone.py`](../src/nightmusic/audio/stemtone.py)).
+
+Step 1 is the tone. The mix knows the written dynamic marks of the brass at each moment.
+In relation to the loudest written mark of the brass, the brass group becomes less bright:
+
+| Written mark of the brass | Change above 2 kHz |
+| --- | --- |
+| mf and softer | none |
+| f | 8 dB softer |
+| ff | 6 dB softer |
+| fff | 4 dB softer |
+
+Between two marks (for example in a crescendo), the change moves smoothly.
+
+Step 2 is the level. Where the brass group is very loud (the main climax and the last chords), the mix moves its level down slowly, as an engineer moves a fader.
+Only the part of the level above a threshold becomes smaller (ratio 2.5). The largest change is 3 dB. The other loud passages change by 1 dB or less.
+
+The mix also has an equalization (`MASTER_EQ` in [`audio/musescore.py`](../src/nightmusic/audio/musescore.py)).
+Its values come from a comparison of the loud passages of the mix with the loud passages of the five reference recordings.
+The microphones of Muse Sounds are near the instruments: the mix had too much sound above 8 kHz and between 125 and 250 Hz, and not sufficient sound between 1 and 4 kHz.
+
+| Filter | Change |
+| --- | --- |
+| Bell filter at 170 Hz | 2 dB softer |
+| Bell filter at 2 kHz | 2 dB louder |
+| High shelf filter at 6 kHz | 4 dB softer |
+
+The owner of the project must make the decision about the result: a measurement does not show if the brass sounds correct.
+
 ## How the master sets the loudness
 
 In the render of MuseScore, the soft passages are about 50 dB below the loudest passages.

@@ -142,7 +142,7 @@ def _themes_together(work: Work) -> None:
 
     # The second time: loud, with the chase theme in a major key.
     block.add("tpt1 tpt2 hn1 hn2 hn3 hn4 vc va", 2, dyn(WARM, r"\f\espr"))
-    block.add("vn1:1 vn2:1 fl1:2 fl2:2 ob1:1 ob2:1", 2, first(SONG_TOGETHER, r"\f", note=True))
+    block.add("vn1:1 vn2:1 fl1:1 fl2:1 ob1:1 ob2:1", 2, first(SONG_TOGETHER, r"\f", note=True))
     block.add("cl1 cl2 mand cimb.rh fl3:1 perc2:1 pno.rh:1", 2, dyn(RUN_TOGETHER, r"\f"))
     block.start("perc2", r'\switch "xylophone"')
     bass, tenor, alto, _top = lines(dyn(WARM_CHORDS, r"\mf"))

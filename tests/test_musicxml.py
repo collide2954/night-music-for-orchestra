@@ -3,6 +3,8 @@
 import xml.etree.ElementTree as ElementTree
 from fractions import Fraction
 
+import pytest
+
 from nightmusic.audio import musescore
 from nightmusic.notation import musicxml
 from nightmusic.notation.work import Work, load_orchestra
@@ -102,6 +104,12 @@ def test_a_stem_that_is_too_wide_gets_a_smaller_difference_signal():
     assert gain_db == 0.0 and np.array_equal(same, normal)
 
 
+@pytest.fixture(autouse=True)
+def _no_measured_levels(monkeypatch):
+    """The tests use the marks of the score, if a test does not give a table of levels."""
+    monkeypatch.setattr(musicxml.playback, "load", dict)
+
+
 def _work_with(player: str, text: str, bars: int = 2) -> Work:
     work = Work("Test", load_orchestra())
     section = work.section(bars, 4, 4)
@@ -179,3 +187,66 @@ def test_a_long_note_of_some_instruments_has_no_accent_in_the_file():
     assert "<accent/>" not in text  # three tied notes of 6 s
     text, _names = musicxml.score(_work_with("hn1", r"c'1\f-^ ~ | c'1 |"))
     assert text.count("<strong-accent/>") == 1  # the horn has no limit
+
+
+VIOLINS = {
+    "long": [-59.3, -53.8, -48.5, -41.7, -28.5, -24.1, -19.2, -17.6],
+    "staccato": [-61.2, -54.1, -49.1, -43.0, -31.0, -24.7, -19.6, -18.0],
+}
+CLARINET = {"long": [-45.2, -42.3, -39.2, -49.9, -36.5, -32.7, -30.2, -29.1]}
+FLUTE = {
+    "long": [-47.0, -44.9, -43.1, -43.2, -33.6, -33.0, -29.2, -29.6],
+    "staccato": [-70.7, -64.3, -59.1, -52.7, -41.9, -31.4, -29.5, -27.9],
+}
+TRUMPET = {
+    "long": [-49.2, -46.5, -43.7, -40.9, -36.8, -30.2, -27.0, -26.1],
+    "accent": [-42.2, -40.4, -38.3, -34.1, -30.5, -27.0, -27.1, -25.8],
+    "marcato": [-40.2, -38.0, -36.9, -27.9, -23.4, -23.5, -23.8, -25.7],
+}
+
+
+def test_the_playback_marks_come_from_the_measured_levels():
+    from nightmusic.notation.playback import played
+
+    # The soft marks of the violins are very soft: they play one mark louder.
+    assert played(VIOLINS, "pp") == ("p", "long")
+    assert played(VIOLINS, "p") == ("mp", "long")
+    assert played(VIOLINS, "mp") == ("mp", "long")
+    assert played(VIOLINS, "pp", "staccato") == ("p", "staccato")
+    assert played(VIOLINS, "pppp") == ("ppp", "long")
+    # The mark mp of the clarinet is softer than its mark p: no note gets it.
+    assert played(CLARINET, "mp") == ("ppp", "long")
+    assert played(CLARINET, "mf") == ("p", "long")
+    # A soft staccato note of the flute is almost silent: it gets a louder mark.
+    assert played(FLUTE, "p") == ("ppp", "long")
+    assert played(FLUTE, "p", "staccato") == ("mp", "staccato")
+    # The marcato of the trumpet is very loud: a softer mark gives the correct level,
+    # or the note gets an accent.
+    assert played(TRUMPET, "f", "marcato", brass=True) == ("mp", "marcato")
+    assert played(TRUMPET, "mf", "marcato", brass=True) == ("mp", "accent")
+    assert played(TRUMPET, "f", "accent", brass=True) == ("f", "accent")
+    # A brass instrument plays no mark louder than ff.
+    assert played(TRUMPET, "fff", brass=True) == ("ff", "long")
+    # Marks that are not levels, and instruments with no measurement, do not change.
+    assert played(TRUMPET, "sffz", brass=True) == ("sffz", "long")
+    assert played(None, "pp", "staccato") == ("pp", "staccato")
+
+
+def test_the_audio_file_gets_the_playback_marks():
+    work = _work_with("fl1", r"c''8-.\p d''-. e''-. f''-. g''2 | c''1\ff |")
+    plain, _names = musicxml.score(work, levels={})
+    assert plain.count("<staccato/>") == 4 and "<dynamics><p/></dynamics>" in plain
+    tuned, _names = musicxml.score(work, levels={"Flute": FLUTE})
+    # The staccato notes get the mark mp. The long note after them gets the mark ppp.
+    short, long_note = tuned.split("<type>half</type>")[0].split("<dynamics><ppp/></dynamics>")
+    assert "<dynamics><mp/></dynamics>" in short and short.count("<staccato/>") == 4
+    assert "<dynamics><ff/></dynamics>" in tuned
+    work = _work_with("vn1", r"c''1\pp ~ | c''1 |")
+    violins, _names = musicxml.score(work, levels={"Violins": VIOLINS})
+    assert "<dynamics><p/></dynamics>" in violins and "<pp/>" not in violins
+
+
+def test_the_work_has_no_notes_that_muse_sounds_cannot_play():
+    from nightmusic.work import build
+
+    assert musescore.silent_notes(build()) == []

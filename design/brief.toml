@@ -79,6 +79,18 @@ free_rhythm = "Exact notation: each player has a written figure with its own len
 devices = ["colour processes (one chord or line in changing instruments; heterophony)", "living textures (micropolyphony; climax chords from two interval types)", "time devices (tempo modulation; phrases of unequal length; sections that overlap; written accelerations)"]
 not_selected = ["space (antiphonal violins; distant players)"]
 
+# More decisions of the owner for the third version (2026-11-15, a later message).
+[third_version_additions]
+piano_interlude = "An interlude with the piano as its focus. It can add 5 to 6 minutes. The owner selected: across the turn (it starts in the night music of part 3 in E-flat minor, the piano makes the turn to D major, and it gives the warm theme to the cellos)."
+piano_interlude_orchestra = "The piano leads. A soft halo answers: string harmonics, celesta, vibraphone, gongs, and one or two solo winds."
+themes = "Do not show the theme too frequently. Sometimes change the theme or hide it."
+high_strings = "The strings can sometimes be in their highest register."
+trades = "When the music is intense, the woodwinds and the strings can trade fast figures (sixteenth notes, short groups of thirty-second notes), especially immediately before a transition with a strong stroke of the bass drum. This keeps the texture interesting when the theme repeats."
+main_climax = "At the main climax, the gongs and the bass drum play on beats 2 and 4."
+silent_instrument = "The instrument at the mark G had no sound."
+brass_sound = "The loud brass must not sound as a 'splat' that cuts against the texture. The sound must have the balance of an orchestra."
+telephone_video = "A version of the score video that is readable on a telephone (not the landscape format)."
+
 # Decisions that the composer's assistant made while the owner was not available
 # (night of 2026-11-15). The owner must examine each decision. Each decision is
 # easy to change.
@@ -109,3 +121,8 @@ score_layout = "The code selects the system breaks of the score from the number 
 ocarinas = "Three players have an ocarina (oboe 2, clarinet 1, bassoon 2). The contrabass clarinet player has no ocarina."
 audio_source = "The owner selected MuseScore Studio with Muse Sounds for the audio (2026-11-15). The open sample render stays as the source of the build server."
 audio_release = "The computer of the owner puts the audio master in the release 'audio'. The build uses it if it is for the music of the commit."
+playback_marks = "For the audio only: each note gets the dynamic mark and the articulation of Muse Sounds whose measured level agrees with an even scale of dynamic marks. The score does not change."
+mark_g = "At the mark G, the chase starts at mp, not at pp."
+brass_tone = "For the audio only: the brass is less bright at the written marks f, ff, and fff (8, 6, and 4 dB less above 2 kHz). Muse Sounds play these three marks with almost the same hard sound. Where all brass players hold loud chords, the level of the brass goes down slowly (3 dB or less)."
+mix_equalization = "For the audio only: the mix gets three small filters (2 dB less at 170 Hz, 2 dB more at 2 kHz, 4 dB less above 6 kHz). The values come from a comparison of its loud passages with five recordings of real orchestras."
+telephone_video_format = "1080 x 1920, tall pages, less music on each screen, and a ribbon of four rows."

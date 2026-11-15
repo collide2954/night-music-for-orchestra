@@ -85,15 +85,25 @@ def check_work() -> int:
     return len(problems)
 
 
-def build_video() -> None:
-    """Render the score video. The audio master must exist."""
+def build_video(mobile: bool = False) -> None:
+    """Render the score video. The audio master must exist.
+
+    If `mobile` is true, the video is for a telephone (1080 x 1920).
+    """
     from .video import pages, render
     from .work import build
 
     work = build()
-    screens = pages.build_pages(work, BUILD_DIR / "video" / "pages")
     audio = BUILD_DIR / "audio" / "night-music.flac"
-    path = render.render(work, screens, audio, BUILD_DIR / "video" / "night-music.mp4")
+    if mobile:
+        screens = pages.build_pages(
+            work, BUILD_DIR / "video" / "pages-mobile", width_px=1080, mobile=True
+        )
+        output = BUILD_DIR / "video" / "night-music-mobile.mp4"
+        path = render.render(work, screens, audio, output, width=1080, height=1920, mobile=True)
+    else:
+        screens = pages.build_pages(work, BUILD_DIR / "video" / "pages")
+        path = render.render(work, screens, audio, BUILD_DIR / "video" / "night-music.mp4")
     print(f"video: {path}")
 
 
@@ -132,6 +142,13 @@ def draw_chart() -> None:
     print(f"chart: {loudness_chart(build(), audio, Path('docs') / 'loudness.svg')}")
 
 
+def calibrate_levels() -> None:
+    """Measure the levels of MuseScore with Muse Sounds for each dynamic mark."""
+    from .audio import calibrate
+
+    print(f"calibrate: {calibrate.measure(BUILD_DIR / 'musescore' / 'calibrate')}")
+
+
 def update_documents() -> None:
     """Write the bar numbers, the times, and the measured values of the work into the documents."""
     from . import documents
@@ -160,6 +177,7 @@ def main(argv: list[str] | None = None) -> int:
             "video",
             "chart",
             "docs",
+            "calibrate",
             "all",
         ],
     )
@@ -171,6 +189,11 @@ def main(argv: list[str] | None = None) -> int:
         choices=["open", "musescore"],
         default="open",
         help="source of the sound (command: audio)",
+    )
+    parser.add_argument(
+        "--mobile",
+        action="store_true",
+        help="make the video for a telephone, 1080 x 1920 (command: video)",
     )
     parser.add_argument(
         "--profile",
@@ -193,6 +216,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "docs":
         update_documents()
         return 0
+    if args.command == "calibrate":
+        calibrate_levels()
+        return 0
     if args.command == "fetch-audio":
         return fetch_audio()
     if args.command == "publish-audio":
@@ -208,11 +234,12 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "audio":
         build_audio(bars, args.engine, args.profile)
     elif args.command == "video":
-        build_video()
+        build_video(args.mobile)
     else:
         build_pdfs(parts=True)
         build_audio()
         build_video()
+        build_video(mobile=True)
     return 0
 
 
