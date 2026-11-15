@@ -53,3 +53,8 @@ parts = "one part for each player"
 audio = "realistic audio from free sample libraries"
 video = "score video with part tracking"
 build = "CI builds all assets"
+
+[audio]
+# Decision of 2026-11-15: all audio must have excellent equalization.
+equalization = "excellent, at three levels: each instrument, each section, and the full mix"
+reference = "Measure the tone balance of real orchestra recordings. Use it as the target for the mix."
