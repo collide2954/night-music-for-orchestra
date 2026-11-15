@@ -19,12 +19,14 @@ The steps are:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
 import shutil
 import subprocess
 import zipfile
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -109,6 +111,7 @@ def render(
     bars: tuple[int, int] | None = None,
     profile: str = PROFILE,
     instruments: set[str] | None = None,
+    players: set[str] | None = None,
 ) -> tuple[np.ndarray, list[str]]:
     """Render the work (or some bars) with MuseScore.
 
@@ -119,7 +122,7 @@ def render(
     directory.mkdir(parents=True, exist_ok=True)
     log = directory / "musescore.log"
     log.write_text("", encoding="utf-8")
-    text, names = musicxml.score(work, bars, instruments)
+    text, names = musicxml.score(work, bars, instruments, players)
     source = directory / "score.musicxml"
     source.write_text(text, encoding="utf-8")
     packed = directory / "score.mscz"
@@ -130,10 +133,7 @@ def render(
     sound.unlink(missing_ok=True)
     _run(["-o", str(sound), str(packed)], log)
     print(f"musescore: {len(names)} parts, {count} playing technique marks, profile {profile}")
-    audio = reference.load_stereo(sound)
-    # Give the sound the level that it has with the master control at 0 dB.
-    audio *= np.float32(dsp.db(-MASTER_VOLUME_DB))
-    return audio, names
+    return _load(sound), names
 
 
 def prepare_file(packed: Path, profile: str) -> int:
@@ -200,20 +200,82 @@ def calibration_gain(work: Work, directory: Path, profile: str) -> float:
     return gain_db
 
 
+# The groups of the orchestra. MuseScore renders each group as one file (a
+# stem). The sum of the stems is the same as one render of all groups. The
+# stems make three things possible: parallel renders, a new render of one
+# group only, and a change of the balance between the groups.
+STEMS = {
+    "woodwinds": ("woodwinds",),
+    "brass": ("brass",),
+    "percussion": ("percussion",),
+    "keys": ("plucked", "keyboards"),
+    "strings": ("strings",),
+}
+
+# Level of each stem in the mix, in dB.
+STEM_GAIN_DB = {"woodwinds": 0.0, "brass": 0.0, "percussion": 0.0, "keys": 0.0, "strings": 0.0}
+
+PARALLEL_RENDERS = 3  # number of MuseScore programs that run at the same time
+RENDER_VERSION = 2  # a change of this number makes all kept stems invalid
+
+
+def render_stems(
+    work: Work, directory: Path, bars: tuple[int, int] | None = None, profile: str = PROFILE
+) -> dict[str, np.ndarray]:
+    """Render each group of the orchestra with MuseScore. Return the sound of each group.
+
+    A stem that is in the directory from an earlier render stays, if its
+    music did not change.
+    """
+
+    def one(name: str) -> tuple[str, np.ndarray | None]:
+        families = STEMS[name]
+        players = {p.id for p in work.orchestra.players if p.family in families}
+        text, names = musicxml.score(work, bars, players=players)
+        if not names:
+            return name, None
+        folder = directory / name
+        record = folder / "stem.json"
+        sound = folder / "score.wav"
+        key = hashlib.sha256(
+            f"{RENDER_VERSION}|{profile}|{MASTER_VOLUME_DB}|{text}".encode()
+        ).hexdigest()
+        kept = json.loads(record.read_text(encoding="utf-8")) if record.exists() else {}
+        if sound.exists() and kept.get("key") == key:
+            print(f"musescore: stem {name}: kept from the last render")
+            return name, _load(sound)
+        audio, _names = render(work, folder, bars, profile, players=players)
+        record.write_text(json.dumps({"key": key, "parts": names}), encoding="utf-8")
+        return name, audio
+
+    with ThreadPoolExecutor(max_workers=PARALLEL_RENDERS) as pool:
+        results = list(pool.map(one, STEMS))
+    return {name: audio for name, audio in results if audio is not None}
+
+
+def _load(sound: Path) -> np.ndarray:
+    """Read the sound of MuseScore, at the level of a master control at 0 dB."""
+    audio = reference.load_stereo(sound)
+    audio *= np.float32(dsp.db(-MASTER_VOLUME_DB))
+    return audio
+
+
 def render_master(
     work: Work, directory: Path, bars: tuple[int, int] | None = None, profile: str = PROFILE
 ):
     """Render the master: MuseScore plays, the sampler adds the other instruments."""
     from . import mix
 
-    played, names = render(work, directory, bars, profile)
+    stems = render_stems(work, directory, bars, profile)
     others, count = mix.render_mix(work, bars=bars, instruments=other_instruments(work))
     # The mix of an excerpt starts some time before its first bar.
     begin = work.structure.seconds(work.structure.bar(bars[0]).start) if bars else 0.0
     lead = int(round(min(begin, mix.SEGMENT_LEAD) * dsp.RATE)) if bars else 0
     others = others[lead:]
     gain = dsp.db(calibration_gain(work, directory, profile))
-    total = np.zeros((max(len(played), len(others)), 2), dtype=np.float32)
-    total[: len(played)] += played
+    length = max([len(others), *(len(audio) for audio in stems.values())])
+    total = np.zeros((length, 2), dtype=np.float32)
+    for name, audio in stems.items():
+        total[: len(audio)] += np.float32(dsp.db(STEM_GAIN_DB[name])) * audio
     total[: len(others)] += np.float32(gain) * others
-    return mix.master(total, len(names) + count, full=bars is None, tone=False)
+    return mix.master(total, len(stems) + count, full=bars is None, tone=False)

@@ -106,6 +106,23 @@ def show_stats() -> None:
         print(f"{name:45s} {value}")
 
 
+def fetch_audio() -> int:
+    """Get the audio master from the release `audio`. Return 1 if it is not for this music."""
+    from . import release
+    from .work import build
+
+    return 0 if release.fetch(build(), BUILD_DIR / "audio") else 1
+
+
+def publish_audio() -> None:
+    """Put the audio master of the directory `build/audio` in the release `audio`."""
+    from . import release
+    from .work import build
+
+    release.publish(build(), BUILD_DIR / "audio", "MuseScore Studio with Muse Sounds")
+    print("publish-audio: the release 'audio' has the new master")
+
+
 def draw_chart() -> None:
     """Draw the loudness of the audio master against the time. The audio master must exist."""
     from .audio.chart import loudness_chart
@@ -119,7 +136,19 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="nightmusic", description="Build Night Music.")
     parser.add_argument(
         "command",
-        choices=["check", "stats", "ly", "score", "parts", "audio", "video", "chart", "all"],
+        choices=[
+            "check",
+            "stats",
+            "ly",
+            "score",
+            "parts",
+            "audio",
+            "fetch-audio",
+            "publish-audio",
+            "video",
+            "chart",
+            "all",
+        ],
     )
     parser.add_argument(
         "--bars", metavar="FIRST-LAST", help="render only these bars (command: audio)"
@@ -147,6 +176,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "chart":
         draw_chart()
+        return 0
+    if args.command == "fetch-audio":
+        return fetch_audio()
+    if args.command == "publish-audio":
+        publish_audio()
         return 0
     if args.command == "ly":
         for path in write_lilypond():

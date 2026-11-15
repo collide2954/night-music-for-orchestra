@@ -27,8 +27,10 @@ def _small_work() -> Work:
 def test_the_file_is_xml_and_has_one_part_for_each_instrument():
     text, names = musicxml.score(_small_work())
     root = ElementTree.fromstring(text.split("\n", 2)[2])
-    assert names == ["Flute (fl1)", "Violins (vn1)"]  # MuseScore does not play the tam-tam
-    assert [len(part.findall("measure")) for part in root.findall("part")] == [3, 3]
+    assert names == ["Flute (fl1)", "Tam-tam (perc1)", "Violins (vn1)"]
+    assert [len(part.findall("measure")) for part in root.findall("part")] == [3, 3, 3]
+    # The tam-tam is unpitched percussion: its note has a drum, not a pitch.
+    assert "<unpitched>" in text and "<midi-unpitched>53</midi-unpitched>" in text
 
 
 def test_each_bar_of_each_voice_has_the_length_of_the_bar():

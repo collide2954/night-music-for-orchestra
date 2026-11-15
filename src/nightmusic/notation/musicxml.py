@@ -34,7 +34,8 @@ SOUNDS = {
     "clarinet in E-flat": ("E♭ Clarinet", "wind.reed.clarinet.eflat"),
     "clarinet in B-flat": ("B♭ Clarinet", "wind.reed.clarinet.bflat"),
     "bass clarinet": ("Bass Clarinet", "wind.reed.clarinet.bass"),
-    "contrabass clarinet": ("Contrabass Clarinet", "wind.reed.clarinet.contrabass"),
+    # Muse Sounds have no contrabass clarinet: the contrabassoon has the same range.
+    "contrabass clarinet": ("Contrabassoon", "wind.reed.contrabassoon"),
     "bassoon": ("Bassoon", "wind.reed.bassoon"),
     "contrabassoon": ("Contrabassoon", "wind.reed.contrabassoon"),
     "horn in F": ("Horn in F", "brass.french-horn"),
@@ -49,6 +50,7 @@ SOUNDS = {
     "crotales": ("Crotales", "metal.crotales"),
     "xylophone": ("Xylophone", "pitched-percussion.xylophone"),
     "tubular bells": ("Tubular Bells", "pitched-percussion.tubular-bells"),
+    "tuned gongs": ("Tubular Bells", "pitched-percussion.tubular-bells"),
     "harp": ("Harp", "pluck.harp"),
     "celesta": ("Celesta", "keyboard.celesta"),
     "piano": ("Piano", "keyboard.piano"),
@@ -56,6 +58,18 @@ SOUNDS = {
     "viola": ("Violas", "strings.group"),
     "violoncello": ("Violoncellos", "strings.group"),
     "double bass": ("Contrabasses", "strings.group"),
+}
+
+# Unpitched percussion: the name of the part, the sound identifier, and the
+# drum of the playback program for each written note (MIDI number). The
+# entry `None` is for all other written notes.
+UNPITCHED = {
+    "bass drum": ("Bass Drum", "drum.bass-drum", {None: 36}),
+    "tam-tams": ("Tam-tam", "metal.tamtam", {None: 52}),
+    "suspended cymbals": ("Suspended Cymbal", "metal.cymbal.crash", {None: 57}),
+    "crash cymbals": ("Hand Cymbals", "metal.cymbal.crash", {None: 57}),
+    "wood blocks": ("Wood Blocks", "wood.wood-block", {60: 77, None: 76}),
+    "triangle": ("Triangle", "metal.triangle", {None: 81}),
 }
 
 # One player of a string section alone.
@@ -107,7 +121,7 @@ TECHNIQUE_WORDS = {
 
 def can_play(instrument: str) -> bool:
     """Return true if the playback program has a sound for the instrument."""
-    return instrument in SOUNDS
+    return instrument in SOUNDS or instrument in UNPITCHED
 
 
 @dataclass
@@ -251,8 +265,17 @@ def _marks_before(event: _Event, hairpin_open: bool) -> tuple[list[str], bool]:
     return result, hairpin_open
 
 
-def _note_xml(event: _Event, index: int, length: Fraction, ties: tuple[bool, bool]) -> str:
-    """Return one note of a chord (or a single note) as MusicXML."""
+def _note_xml(
+    event: _Event,
+    index: int,
+    length: Fraction,
+    ties: tuple[bool, bool],
+    drum: str = "",
+) -> str:
+    """Return one note of a chord (or a single note) as MusicXML.
+
+    `drum` is the identifier of the drum, for a note of unpitched percussion.
+    """
     note = event.note
     pitch = note.pitches[index].pitch
     kinds = {post.kind for post in note.posts}
@@ -262,7 +285,13 @@ def _note_xml(event: _Event, index: int, length: Fraction, ties: tuple[bool, boo
         parts.append("<grace/>")
     if index:
         parts.append("<chord/>")
-    parts.append(_pitch_xml(pitch))
+    if drum:
+        parts.append(
+            "<unpitched><display-step>E</display-step><display-octave>4</display-octave>"
+            "</unpitched>"
+        )
+    else:
+        parts.append(_pitch_xml(pitch))
     if not event.grace:
         parts.append(f"<duration>{int(length * DIVISIONS)}</duration>")
     tie_stop, tie_start = ties
@@ -270,6 +299,8 @@ def _note_xml(event: _Event, index: int, length: Fraction, ties: tuple[bool, boo
         parts.append('<tie type="stop"/>')
     if tie_start:
         parts.append('<tie type="start"/>')
+    if drum:
+        parts.append(f'<instrument id="{drum}"/>')
     parts.append(f"<voice>{event.voice + 1}</voice>")
     name, dots = _note_type(event.written if length == event.length else length / event.ratio)
     parts.append(f"<type>{name}</type>" + "<dot/>" * dots)
@@ -346,13 +377,17 @@ def _tempo_points(work: Work, first: Fraction, last: Fraction) -> dict[Fraction,
 
 
 def score(
-    work: Work, bars: tuple[int, int] | None = None, instruments: set[str] | None = None
+    work: Work,
+    bars: tuple[int, int] | None = None,
+    instruments: set[str] | None = None,
+    players: set[str] | None = None,
 ) -> tuple[str, list[str]]:
     """Return the MusicXML text of the work, and the names of the parts in it.
 
     `bars` gives the first and the last bar (default: the full work).
     `instruments` gives the instruments that are in the file (default: all
-    instruments that the playback program can play).
+    instruments that the playback program can play). `players` gives the
+    players that are in the file (default: all players).
     """
     structure = work.structure
     first_bar, last_bar = bars or (1, len(structure.bars))
@@ -364,6 +399,8 @@ def score(
     parts: dict[tuple[str, str, bool], list[_Event]] = {}
     starts: dict[tuple[str, str, bool], _State] = {}
     for player in work.orchestra.players:
+        if players is not None and player.id not in players:
+            continue
         state = _State(player.instruments[0])
         events: list[_Event] = []
         _walk(work.music_of(player.id).children, Fraction(0), Fraction(1), 0, state, events)
@@ -391,18 +428,38 @@ def score(
     bodies: list[str] = []
     for number, (key, events) in enumerate(parts.items(), start=1):
         player_id, instrument, solo = key
-        name, sound = (SOLO_SOUNDS if solo else SOUNDS)[instrument]
-        label = f"{name} ({player_id})"
-        names.append(label)
-        tags = "<solo/>" if solo or sound != "strings.group" else "<ensemble/>"
+        drums: dict[float | None, str] = {}
+        if instrument in UNPITCHED:
+            name, sound, table = UNPITCHED[instrument]
+            # One instrument of the part for each drum, as MusicXML specifies it.
+            pitches = sorted(set(table.values()))
+            instruments_xml = "".join(
+                f'<score-instrument id="P{number}-I{pitch}"><instrument-name>{escape(name)}'
+                f"</instrument-name><instrument-sound>{sound}</instrument-sound>"
+                f"</score-instrument>"
+                for pitch in pitches
+            ) + "".join(
+                f'<midi-instrument id="P{number}-I{pitch}"><midi-channel>10</midi-channel>'
+                f"<midi-program>1</midi-program><midi-unpitched>{pitch + 1}</midi-unpitched>"
+                f"</midi-instrument>"
+                for pitch in pitches
+            )
+            drums = {written: f"P{number}-I{pitch}" for written, pitch in table.items()}
+        else:
+            name, sound = (SOLO_SOUNDS if solo else SOUNDS)[instrument]
+            tags = "<solo/>" if solo or sound != "strings.group" else "<ensemble/>"
+            instruments_xml = (
+                f'<score-instrument id="P{number}-I1"><instrument-name>{escape(name)}'
+                f"</instrument-name><instrument-sound>{sound}</instrument-sound>{tags}"
+                f"</score-instrument>"
+            )
+        names.append(f"{name} ({player_id})")
         part_list.append(
             f'<score-part id="P{number}"><part-name>{escape(name)}</part-name>'
-            f'<score-instrument id="P{number}-I1"><instrument-name>{escape(name)}'
-            f"</instrument-name><instrument-sound>{sound}</instrument-sound>{tags}"
-            f"</score-instrument></score-part>"
+            f"{instruments_xml}</score-part>"
         )
         bodies.append(
-            _part_xml(number, events, measures, tempos if number == 1 else {}, starts[key])
+            _part_xml(number, events, measures, tempos if number == 1 else {}, starts[key], drums)
         )
     text = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -416,8 +473,15 @@ def score(
     return text, names
 
 
-def _part_xml(number: int, events: list[_Event], measures, tempos, start: _State) -> str:
+def _part_xml(
+    number: int, events: list[_Event], measures, tempos, start: _State, drums=None
+) -> str:
     lines = [f'<part id="P{number}">']
+    clef = (
+        "<clef><sign>percussion</sign></clef>"
+        if drums
+        else "<clef><sign>G</sign><line>2</line></clef>"
+    )
     by_voice: dict[int, list[_Event]] = {}
     for event in events:
         by_voice.setdefault(event.voice, []).append(event)
@@ -434,7 +498,7 @@ def _part_xml(number: int, events: list[_Event], measures, tempos, start: _State
             lines.append(
                 f"<attributes>{head if previous is None else ''}<time><beats>{bar.numerator}"
                 f"</beats><beat-type>{bar.denominator}</beat-type></time>"
-                + ("<clef><sign>G</sign><line>2</line></clef>" if previous is None else "")
+                + (clef if previous is None else "")
                 + "</attributes>"
             )
             previous = metre
@@ -470,7 +534,8 @@ def _part_xml(number: int, events: list[_Event], measures, tempos, start: _State
                 for pitch_index, note_pitch in enumerate(event.note.pitches):
                     midi = note_pitch.pitch.midi
                     tie_in = midi in open_ties[voice]
-                    lines.append(_note_xml(event, pitch_index, length, (tie_in, tie_out)))
+                    drum = drums.get(midi, drums[None]) if drums else ""
+                    lines.append(_note_xml(event, pitch_index, length, (tie_in, tie_out), drum))
                 still = {p.pitch.midi for p in event.note.pitches} if tie_out else set()
                 if not event.grace:
                     open_ties[voice] = still

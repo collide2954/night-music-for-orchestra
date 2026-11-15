@@ -56,8 +56,14 @@ jobs:
       - name: Build the score and the parts
         run: uv run nightmusic parts
 
-      - name: Build the audio
-        run: uv run nightmusic audio
+      # The audio master of the release "audio" is from MuseScore Studio with
+      # Muse Sounds. A build server cannot make it. If the master is for the
+      # music of this commit, the build uses it. If not, the build makes the
+      # audio with the open sample libraries.
+      - name: Get or build the audio
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run nightmusic fetch-audio || uv run nightmusic audio
 
       - name: Save the sample libraries
         if: always() && steps.samples.outputs.cache-hit != 'true'
