@@ -14,6 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
+nightmusic = "nightmusic.cli:main"
 nightmusic-study = "nightmusic.study.cli:main"
 
 [dependency-groups]

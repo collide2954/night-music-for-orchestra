@@ -49,7 +49,7 @@ class Sound:
     decays: bool = False  # the sound decays by itself (percussion, harp, piano)
     lowcut_hz: float = 40.0  # frequency of the high-pass filter
     max_shift: float = 7.0  # largest pitch shift of a sample, in semitones
-    shift_bias: float = 0.0  # prefer samples from below (negative) or above (positive)
+    unpitched: bool = False  # the written pitch selects a sample; it is not a real pitch
     extra: dict[str, float] = field(default_factory=dict)
 
 
@@ -599,6 +599,29 @@ SOUNDS: dict[str, Sound] = {
         lowcut_hz=350,
     ),
 }
+
+SOUNDS.update(
+    {
+        "tam-tams": Sound(
+            {"sustain": (sso("Percussion", r"tamtam-.*", pitched=False, held=False),)},
+            "percussion",
+            loud_db=-5,
+            range_db=42,
+            decays=True,
+            lowcut_hz=30,
+            unpitched=True,
+        ),
+        "bass drum": Sound(
+            {"sustain": (sso("Percussion", r"bass_drum-.*", pitched=False, held=False),)},
+            "percussion",
+            loud_db=-3,
+            range_db=42,
+            decays=True,
+            lowcut_hz=25,
+            unpitched=True,
+        ),
+    }
+)
 
 # Instruments that use the sound of a different instrument until the project has samples.
 ALIASES = {

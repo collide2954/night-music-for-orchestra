@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import zlib
 from collections import OrderedDict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from fractions import Fraction
 from pathlib import Path
 
 import numpy as np
@@ -80,7 +81,14 @@ class Voicebank:
         for key, sources in sound.sources.items():
             by_pitch: dict[int, list[Sample]] = {}
             for source in sources:
-                for sample in build_index(source):
+                samples = build_index(source)
+                if sound.unpitched:
+                    # The written notes c', d', e' ... select the samples in sequence.
+                    steps = [60, 62, 64, 65, 67, 69, 71, 72, 74, 76]
+                    for number, sample in enumerate(sorted(samples, key=lambda s: s.path)):
+                        by_pitch.setdefault(steps[number % len(steps)], []).append(sample)
+                    continue
+                for sample in samples:
                     by_pitch.setdefault(sample.nominal, []).append(sample)
             if by_pitch:
                 self.groups[key] = by_pitch
@@ -212,10 +220,13 @@ def render_player(
     random = np.random.default_rng(zlib.crc32(notes[0].player.encode()))
     lowcut = 1000.0
 
-    ordered = sorted(notes, key=lambda n: (n.voice, n.start, -n.grace))
-    for index, note in enumerate(ordered):
+    for note in notes:
         if note.instrument not in banks:
             banks[note.instrument] = Voicebank(sound_of(note.instrument))
+    ordered = sorted(
+        _expand_rolls(notes, structure, banks), key=lambda n: (n.voice, n.start, -n.grace)
+    )
+    for index, note in enumerate(ordered):
         bank = banks[note.instrument]
         sound = bank.sound
         lowcut = min(lowcut, sound.lowcut_hz)
@@ -262,6 +273,8 @@ def render_player(
             for choice in bank.choose(sample_key, nominal, level):
                 sample = choice.sample
                 cents = int(round(((note.midi - sample.midi) * 100.0 + detune) / 5.0)) * 5
+                if sound.unpitched:
+                    cents = 0
                 audio = CACHE.get(sample, cents)
                 scale = 2.0 ** (cents / 1200.0)
                 loop = None
@@ -325,6 +338,41 @@ def render_player(
         else:
             groups[voice_number] = filtered.copy()
     return [dsp.apply(groups[number], dsp.highpass(lowcut, 2)) for number in sorted(groups)]
+
+
+ROLL_STROKES_PER_SECOND = 13.0
+
+
+def _expand_rolls(
+    notes: list[PerfNote], structure: Structure, banks: dict[str, Voicebank]
+) -> list[PerfNote]:
+    """Change a roll on an instrument with no roll samples into its single strokes."""
+    result: list[PerfNote] = []
+    random = np.random.default_rng(7)
+    for note in notes:
+        bank = banks[note.instrument]
+        if not (note.tremolo and bank.sound.decays and not bank.has("tremolo")):
+            result.append(note)
+            continue
+        quarters_per_second = structure.bpm_at(note.start) / 60.0
+        step = Fraction(quarters_per_second / ROLL_STROKES_PER_SECOND).limit_denominator(96)
+        count = max(2, int(note.duration / step))
+        for number in range(count):
+            share = number / count
+            level = note.level + (note.level_end - note.level) * share
+            wobble = float(random.uniform(0.9, 1.0))
+            result.append(
+                replace(
+                    note,
+                    start=note.start + number * step,
+                    duration=step,
+                    level=level * wobble,
+                    level_end=level * wobble,
+                    tremolo=False,
+                    accent=note.accent if number == 0 else 0.0,
+                )
+            )
+    return result
 
 
 def _shift_loop(loop: tuple[int, int, int] | None, skip: int) -> tuple[int, int, int] | None:
