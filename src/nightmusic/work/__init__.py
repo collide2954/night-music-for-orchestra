@@ -38,6 +38,17 @@ RITARDANDI = [
 ]
 
 
+# The fermatas at the ends of the parts: the mark after the bar that has the
+# fermata, and the time in seconds that the fermata adds to the bar.
+FERMATAS = [
+    ("D", 3.0),  # the end of part 1: the note A
+    ("S", 3.0),  # the end of part 2: the note A-flat
+    ("W", 3.0),  # the end of part 3: E-flat minor
+    ("DD", 3.0),  # the end of part 4: D major, very soft
+]
+LAST_FERMATA = 5.0  # the last chord of the work
+
+
 def _inflections(work: Work) -> None:
     """Add the small changes of tempo at the ends of phrases."""
     structure = work.structure
@@ -46,3 +57,7 @@ def _inflections(work: Work) -> None:
         structure.ritardando(marks[label] + number - 1, beat, slow)
     # The end of the warm theme (second time): the tempo of the subsequent section follows.
     structure.ritardando(marks["X"] + 15, 3, 44, resume="")
+    # The fermatas: the last bar before each of these marks, and the last bar of the work.
+    for label, seconds in FERMATAS:
+        structure.fermata(marks[label] - 1, seconds)
+    structure.fermata(len(structure.bars), LAST_FERMATA)

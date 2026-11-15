@@ -159,3 +159,23 @@ def test_the_mixer_gets_the_levels_of_some_instruments():
             "out": {"volumeDb": musescore.TRIM_DB["Taiko"], "balance": 0, "fxChain": {}},
         }
     ]
+
+
+def test_a_rolled_chord_and_a_slide_are_in_the_file():
+    text, _names = musicxml.score(_work_with("harp.rh", r"<c' e' g'>1\p\arpeggio | c'1 |"))
+    assert text.count("<arpeggiate/>") == 3  # one mark for each note of the chord
+    text, _names = musicxml.score(_work_with("vc", r"g2\p\glissando e2 | c1 |"))
+    first, second, third = text.split("<note>")[1:4]
+    assert '<slide type="start"' in first and '<slide type="stop"' not in first
+    assert '<slide type="stop"' in second
+    assert "slide" not in third
+
+
+def test_a_long_note_of_some_instruments_has_no_accent_in_the_file():
+    # The tempo is 60: a whole note is 4 s. The limit of the trombone is 3.9 s.
+    text, _names = musicxml.score(_work_with("tbn1", r"c'1\f-^ | c'2-^ r2 |"))
+    assert text.count("<strong-accent/>") == 1  # only the half note
+    text, _names = musicxml.score(_work_with("tbn1", r"c'2\f-> ~ c'2 ~ | c'2 r2 |"))
+    assert "<accent/>" not in text  # three tied notes of 6 s
+    text, _names = musicxml.score(_work_with("hn1", r"c'1\f-^ ~ | c'1 |"))
+    assert text.count("<strong-accent/>") == 1  # the horn has no limit

@@ -147,6 +147,15 @@ def render(
     return _load(sound), names
 
 
+def continuous_slides(score: str) -> str:
+    """Make each slide between two notes a continuous change of pitch.
+
+    MuseScore plays a slide from a MusicXML file as a sequence of semitones.
+    The play style "portamento" gives the slide of a string player.
+    """
+    return score.replace("<Glissando>", "<Glissando><glissandoStyle>portamento</glissandoStyle>")
+
+
 def mixer_tracks(score: str, names: list[str]) -> list[dict]:
     """Return the mixer settings for the parts that have a level in `TRIM_DB`.
 
@@ -167,7 +176,8 @@ def prepare_file(packed: Path, profile: str, names: list[str] | None = None) -> 
 
     The file is a ZIP archive. The function changes two files in it:
 
-    - The score: the words of the playing techniques become technique marks.
+    - The score: the words of the playing techniques become technique marks,
+      and a slide between two notes becomes a continuous change of pitch.
     - The audio settings: the sound profile, a lower level of the master
       control, and the levels of `TRIM_DB`. With the master control at 0 dB,
       a loud passage of the full orchestra is too loud for the output of
@@ -182,6 +192,7 @@ def prepare_file(packed: Path, profile: str, names: list[str] | None = None) -> 
     for name, data in contents.items():
         if name.endswith(".mscx"):
             changed, count = play_techniques(data.decode("utf-8"))
+            changed = continuous_slides(changed)
             contents[name] = changed.encode("utf-8")
             if names is not None:
                 tracks = mixer_tracks(changed, names)

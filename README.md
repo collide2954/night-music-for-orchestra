@@ -29,10 +29,10 @@ Each build of the repository publishes the results in the release
 | Part | Bars | Start | Contents |
 | --- | --- | --- | --- |
 | 1 | 1 to 38 | 0:00 | Very slow. A walk in the dark. One lonely melody. |
-| 2 | 39 to 252 | 3:29 | Agitation and development. A chase in uneven metres. A heavy section with drums. The first climax, then a collapse. |
-| 3 | 253 to 294 | 12:49 | The still centre. A soft cluster, a cycle of gongs, calls of the night. |
-| 4 | 295 to 430 | 17:02 | The turn to D major. Broad warm themes. A shimmer of bells. The main climax, then calm. |
-| 5 | 431 to 513 | 26:25 | First light. The themes sound together. The heavy rhythm comes back in D major. The last statement, fff. |
+| 2 | 39 to 252 | 3:32 | Agitation and development. A chase in uneven metres. A heavy section with drums. The first climax, then a collapse. |
+| 3 | 253 to 294 | 12:55 | The still centre. A soft cluster, a cycle of gongs, calls of the night. |
+| 4 | 295 to 430 | 17:11 | The turn to D major. Broad warm themes. A shimmer of bells. The main climax, then calm. |
+| 5 | 431 to 513 | 26:37 | First light. The themes sound together. The heavy rhythm comes back in D major. The last statement, fff. |
 
 The picture shows the loudness of the audio master against the time.
 The two climaxes are at 12 minutes and at 23 minutes. The last statement starts at 29 minutes.

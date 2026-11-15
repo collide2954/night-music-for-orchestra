@@ -42,6 +42,7 @@ class TempoPoint:
     text: str = ""  # the mark in the score; empty = no mark
     unit: str = ""  # note value of the metronome mark, for example "4" or "4."; empty = no number
     italic: bool = False
+    hold: bool = False  # the point is the hold of a fermata: it is not a tempo of the music
 
 
 def _segment_seconds(start_bpm: float, end_bpm: float, span: float, quarters: float) -> float:
@@ -163,6 +164,27 @@ class Structure:
         self._add(TempoPoint(end - Fraction(1, 8), slow))
         if resume:
             self._add(TempoPoint(end, before, False, resume, "", True))
+
+    def fermata(self, bar: int, seconds: float) -> None:
+        """Hold the end of a bar: its last quarter note gets `seconds` more time.
+
+        The score shows a fermata as a sign on the notes. This function puts
+        the time of the fermata into the tempo plan. Thus the audio and the
+        video have the same time.
+        """
+        target = self.bar(bar)
+        position = target.end - 1
+        earlier = [point for point in self.tempo_points if point.position < position]
+        if earlier and earlier[-1].glide:
+            # A gradual change of tempo is in effect: it stops one quarter note before
+            # the hold. If not, the hold becomes the end of the gradual change.
+            pin = max(position - 1, (earlier[-1].position + position) / 2)
+            self._add(TempoPoint(pin, self.bpm_at(pin)))
+        before = self.bpm_at(position)
+        self._add(TempoPoint(position, 60.0 / (seconds + 60.0 / before), hold=True))
+        last = bar == len(self.bars)
+        if not last and all(point.position != target.end for point in self.tempo_points):
+            self._add(TempoPoint(target.end, before))
 
     def _add(self, point: TempoPoint) -> None:
         self.tempo_points = [p for p in self.tempo_points if p.position != point.position]

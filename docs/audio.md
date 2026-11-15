@@ -45,8 +45,14 @@ The MusicXML file is for the audio only. Thus it can give MuseScore the sound th
 | A soft long note before a rest (mf or softer, two quarter notes or longer) | Two tied notes. The second note is the last second of the sound: it has a decrease of loudness. Then the dynamic mark comes again. | The end of a phrase becomes soft (5 to 10 dB at mf). It does not stop suddenly. |
 | A short bow stroke (spiccato) | A staccato note | The stroke is short and has a clear start. |
 | A roll on a percussion instrument | A tremolo note | The instrument plays a roll. |
+| A rolled chord (harp, piano) | The mark of a rolled chord on each note | The notes of the chord start one after the other. |
+| A slide between two notes (one cello in part 3) | A slide, with the play style "portamento" in the MuseScore file | The pitch changes continuously. Without the play style, MuseScore plays a sequence of semitones. |
+| A long note with an accent or a marcato mark (tenor trombone, violins, double basses) | The note has no such mark | The note sounds to its end. In Muse Sounds, the sound of an accent has a fixed length: 4.6 s for the trombone, 6.5 s for the double basses, and 7.4 s for the violins. A longer note with such a mark stops before its end. |
+| A fermata | More time for the last quarter note of the bar, in the tempo plan | The sound, the score video, and the times in the documents agree. |
 
 The table `RING_SECONDS` in the code gives the ring time of each instrument.
+The table `ACCENT_SECONDS` gives the longest note that keeps its accent.
+Measurements of test renders gave the values of the two tables.
 
 ## How the master sets the loudness
 

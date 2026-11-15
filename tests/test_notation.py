@@ -174,3 +174,24 @@ def test_three_quarter_flat_names_are_valid_in_lilypond():
     assert low.name == "eeseh''"
     assert Pitch.parse("es'").name == "es'"
     assert Pitch.parse("aeseh").name == "aeseh"
+
+
+def test_a_fermata_adds_time_to_the_end_of_a_bar():
+    from nightmusic.notation.structure import Structure
+
+    structure = Structure()
+    structure.add_bars(3, 4, 4)
+    structure.tempo(1, 1, 60, "Lento")
+    structure.fermata(2, 3.0)
+    assert structure.seconds(structure.bar(2).start) == pytest.approx(4.0)
+    assert structure.seconds(structure.bar(3).start) == pytest.approx(11.0)  # 4 s and 3 s more
+    assert structure.seconds(structure.length) == pytest.approx(15.0)  # the tempo comes back
+    # A gradual change of tempo before the fermata keeps its own speed.
+    slower = Structure()
+    slower.add_bars(3, 4, 4)
+    slower.tempo(1, 1, 60, "Lento")
+    slower.change(1, 1, "rit.")
+    slower.tempo(3, 1, 30, "Largo")
+    plain = slower.seconds(slower.bar(2).start)
+    slower.fermata(2, 3.0)
+    assert slower.seconds(slower.bar(2).start) == pytest.approx(plain)

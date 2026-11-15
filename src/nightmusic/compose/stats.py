@@ -82,7 +82,7 @@ def measure(work: Work) -> Stats:
     loud_limit = 0.5 * (DYNAMIC_LEVEL["mf"] + DYNAMIC_LEVEL["f"])
     loudest_limit = 0.5 * (DYNAMIC_LEVEL["ff"] + DYNAMIC_LEVEL["fff"])
     sounding = level > 0
-    tempos = [point.bpm for point in structure.tempo_points]
+    tempos = [point.bpm for point in structure.tempo_points if not point.hold]
     return Stats(
         bars=len(structure.bars),
         minutes=total / 60.0,

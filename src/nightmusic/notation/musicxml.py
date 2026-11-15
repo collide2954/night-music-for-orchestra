@@ -150,6 +150,7 @@ class _Event:
     short: bool = False  # the player makes short strokes (spiccato)
     plucked: bool = False  # the player plucks the string (pizzicato)
     taper: Fraction = Fraction(0)  # the length of the end of the note that gets softer
+    plain_attack: bool = False  # the note is too long for an accent of the playback program
 
 
 @dataclass
@@ -310,12 +311,14 @@ def _note_xml(
     drum: str = "",
     *,
     marks: bool = True,
+    slide: tuple[bool, bool] = (False, False),
 ) -> str:
     """Return one note of a chord (or a single note) as MusicXML.
 
     `drum` is the identifier of the drum, for a note of unpitched percussion.
     If `marks` is false, the note is a continuation of a longer note: it has
-    only its ties.
+    only its ties. `slide` tells if a slide to the subsequent note starts at
+    this note, and if a slide from the note before stops at this note.
     """
     note = event.note
     pitch = note.pitches[index].pitch
@@ -370,6 +373,8 @@ def _note_xml(
             notations.append(f'<tuplet type="{event.tuplet}"/>')
         names = [post.value for post in note.posts if post.kind == "articulation"]
         names += [name for name in ARTICULATIONS if name in commands]
+        if event.plain_attack:
+            names = [name for name in names if name not in ACCENT_MARKS]
         # Spiccato: each short note is a short stroke.
         if (
             event.short
@@ -396,6 +401,12 @@ def _note_xml(
             technical += "<harmonic/>"
         if technical:
             notations.append(f"<technical>{technical}</technical>")
+    if marks and "arpeggio" in commands and len(note.pitches) > 1:
+        notations.append("<arpeggiate/>")  # each note of a rolled chord has this mark
+    if slide[1]:
+        notations.append('<slide type="stop" number="1"/>')
+    if slide[0]:
+        notations.append('<slide type="start" line-type="solid" number="1"/>')
     if notations:
         parts.append("<notations>" + "".join(notations) + "</notations>")
     parts.append("</note>")
@@ -425,6 +436,14 @@ RING_SECONDS = {
     "tom-toms": 1.5,
 }
 
+# The longest note with an accent or a marcato mark that Muse Sounds can play, in
+# seconds. A longer note with such a mark stops before its end: the sound of the
+# accent has a fixed length. A measurement with a note of 12 s gave: trombone 4.6 s,
+# double basses 6.5 s, violins 7.4 s. The other instruments have no limit. The
+# values here are a little smaller. A longer note has no such mark in the file.
+ACCENT_SECONDS = {"tenor trombone": 3.9, "double bass": 5.5, "violin": 6.3}
+ACCENT_MARKS = ("accent", "marcato")
+
 # The loudest dynamic mark at which the last note of a phrase gets softer at its end.
 TAPER_MARKS = {"ppppp", "pppp", "ppp", "pp", "p", "mp", "mf"}
 TAPER_LENGTH = Fraction(2)  # shortest note that gets softer at its end (quarter notes)
@@ -439,6 +458,8 @@ def _shape(events: list[_Event], work: Work) -> None:
     - The last long note of a phrase of a wind or string instrument gets
       softer in its last second, as a player does it. A measurement of the
       sound of MuseScore gave a decrease of 5 to 10 dB at mf.
+    - A note that is too long for an accent of the playback program (see
+      `ACCENT_SECONDS`) gets no accent.
     """
     structure = work.structure
     by_voice: dict[int, list[_Event]] = {}
@@ -452,6 +473,19 @@ def _shape(events: list[_Event], work: Work) -> None:
             end = event.start + event.length
             kinds = {post.kind for post in event.note.posts}
             names = {post.value for post in event.note.posts}
+            longest = ACCENT_SECONDS.get(event.instrument)
+            if longest and names & set(ACCENT_MARKS):
+                # The full length of the note, with the notes that are tied to it.
+                last, place = event, index
+                while place + 1 < len(voice_events) and any(
+                    post.kind == "tie" for post in last.note.posts
+                ):
+                    place += 1
+                    last = voice_events[place]
+                seconds = structure.seconds(last.start + last.length) - structure.seconds(
+                    event.start
+                )
+                event.plain_attack = seconds > longest
             ring = RING_SECONDS.get(event.instrument)
             dry = bool(names & {"staccato", "staccatissimo", "damp"}) or "tremolo" in kinds
             if ring and event.ratio == 1 and not dry and "tie" not in kinds:
@@ -622,6 +656,7 @@ def _part_xml(
     tied_in: dict[int, set[float]] = {voice: set() for voice in by_voice}
     hairpins: dict[int, bool] = {voice: False for voice in by_voice}
     restate: dict[int, bool] = {voice: False for voice in by_voice}
+    slides: dict[int, bool] = {voice: False for voice in by_voice}  # a slide is open
     carried: dict[int, tuple[_Event, Fraction] | None] = {voice: None for voice in by_voice}
     cursors = {voice: 0 for voice in by_voice}
     previous = None
@@ -633,17 +668,31 @@ def _part_xml(
             [length] if length == event.written * event.ratio or event.grace else _pieces(length)
         )
         written_tie = any(post.kind == "tie" for post in event.note.posts)
+        slides_away = not event.grace and any(
+            post.kind == "command" and post.value == "glissando" for post in event.note.posts
+        )
         for count, piece in enumerate(pieces):
             first_piece = head and count == 0
             last_piece = tail and count == len(pieces) - 1
+            # A slide stops at the start of a note, and it starts at the end of a note.
+            stop = first_piece and slides[voice] and not event.grace
+            start = last_piece and slides_away
+            if stop:
+                slides[voice] = False
+            if start:
+                slides[voice] = True
             for pitch_index, note_pitch in enumerate(event.note.pitches):
                 midi = note_pitch.pitch.midi
                 tie_in = (not first_piece) or midi in tied_in[voice]
                 tie_out = (not last_piece) or written_tie
                 drum = drums.get(midi, drums[None]) if drums else ""
+                top = pitch_index == 0
                 lines.append(
-                    _note_xml(event, pitch_index, piece, (tie_in, tie_out), drum, marks=first_piece)
-                )
+                    _note_xml(
+                        event, pitch_index, piece, (tie_in, tie_out), drum,
+                        marks=first_piece, slide=(start and top, stop and top),
+                    )
+                )  # fmt: skip
         if tail and not event.grace:
             tied_in[voice] = {p.pitch.midi for p in event.note.pitches} if written_tie else set()
 
