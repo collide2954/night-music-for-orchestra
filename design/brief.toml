@@ -58,3 +58,18 @@ build = "CI builds all assets"
 # Decision of 2026-11-15: all audio must have excellent equalization.
 equalization = "excellent, at three levels: each instrument, each section, and the full mix"
 reference = "Measure the tone balance of real orchestra recordings. Use it as the target for the mix."
+
+# Decisions that the composer's assistant made while the owner was not available
+# (night of 2026-11-15). The owner must examine each decision. Each decision is
+# easy to change.
+[pending_review]
+score_pitch = "The conductor score is in C. The parts are transposed."
+score_language = "Italian tempo words and standard abbreviations."
+seating = "First violins on the left, second violins on the right."
+horns = "6 horns."
+publication = "CI publishes each build as the GitHub release 'latest' (a prerelease)."
+commit_address = "The commits use the GitHub no-reply address of the owner."
+video_format = "1920 x 1080, 30 frames in a second, H.264 with AAC audio."
+cimbalom_audio = "No free cimbalom samples exist. The audio uses Hungarian zither samples."
+accordion_audio = "No free accordion samples are known. The audio uses harmonica samples."
+contrabass_clarinet_audio = "The audio uses bass clarinet samples at a lower pitch."

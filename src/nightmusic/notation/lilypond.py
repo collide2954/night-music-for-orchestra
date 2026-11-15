@@ -199,12 +199,65 @@ def _merge_full_bar_rests(elements: list[music.Element]) -> list[music.Element]:
     return merged
 
 
+def _pitches(elements: list[music.Element]) -> list[float]:
+    """Return the MIDI numbers of all notes in the elements."""
+    found: list[float] = []
+    for element in elements:
+        if isinstance(element, music.Note):
+            found.extend(note_pitch.pitch.midi for note_pitch in element.pitches)
+        elif isinstance(element, music.Group):
+            found.extend(_pitches(element.children))
+    return found
+
+
+def best_clef(base: str, instrument: Instrument | None, written: list[float]) -> str:
+    """Return the clef for a passage: the usual clef, or a better clef for its range."""
+    if not written or instrument is None or base in ("percussion", "grand"):
+        return base
+    ordered = sorted(written)
+    median, lowest = ordered[len(ordered) // 2], ordered[0]
+    if base == "treble" and instrument.name == "horn in F" and median < 55:
+        return "bass"
+    if base == "bass" and instrument.name == "bass clarinet" and median > 62:
+        return "treble"
+    tenor_instruments = ("bassoon", "violoncello", "tenor trombone")
+    if base == "bass" and instrument.name in tenor_instruments and median > 66 and lowest >= 55:
+        return "tenor"
+    if base == "alto" and median > 81 and lowest > 67:
+        return "treble"
+    return base
+
+
+def _with_clefs(
+    work: Work, player: Player, chunks: list[music.Group], emitter: _Emitter, instrument
+) -> list[music.Element]:
+    """Return the music of the chunks with a clef command where the best clef changes."""
+    elements: list[music.Element] = []
+    current = ""
+    for chunk in chunks:
+        shift = emitter.interval.semitones if emitter.interval else 0
+        written = [midi + shift for midi in _pitches(chunk.children)]
+        clef = best_clef(emitter.clef_of(instrument), instrument, written)
+        if clef != current:
+            elements.append(music.Command("clef", [clef]))
+            current = clef
+        elements.extend(chunk.children)
+        # A change of instrument in the chunk changes the usual clef.
+        for command in _walk_commands(chunk.children):
+            if command.name == "switch":
+                instrument = work.orchestra.instruments.get(command.arguments[0].strip('"'))
+                emitter.set_instrument(instrument)
+                current = emitter.clef_of(instrument)
+    emitter.set_instrument(work.orchestra.first_instrument(player.id))
+    return elements
+
+
 def _player_music(work: Work, player: Player, *, for_part: bool) -> str:
     emitter = _Emitter(work, for_part, left_hand=player.id.endswith(".lh"))
     instrument = work.orchestra.first_instrument(player.id)
     emitter.set_instrument(instrument)
-    body = emitter.emit(work.music_of(player.id).children)
-    return f"\\clef {emitter.clef_of(instrument)}\n{body}"
+    chunks = [chunk for _first_bar, chunk in work.chunks.get(player.id, [])]
+    return emitter.emit(_with_clefs(work, player, chunks, emitter, instrument))
 
 
 def _header(work: Work, instrument_line: str = "") -> str:
@@ -222,7 +275,9 @@ def _header(work: Work, instrument_line: str = "") -> str:
 
 def _definitions(work: Work, players: list[Player], *, for_part: bool) -> str:
     blocks = [
-        "global = {\n\\accidentalStyle Score.modern\n" + global_to_lilypond(work.structure) + "\n}"
+        "global = {\n\\accidentalStyle Score.modern\n\\numericTimeSignature\n"
+        + global_to_lilypond(work.structure)
+        + "\n}"
     ]
     for player in players:
         text = _player_music(work, player, for_part=for_part)
