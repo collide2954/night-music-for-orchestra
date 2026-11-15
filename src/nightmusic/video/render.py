@@ -37,6 +37,10 @@ FAMILY_COLOURS = {
 }
 TOP_BAND = 64  # pixels at 1080p
 BOTTOM_BAND = 128
+# The video for a telephone (1080 x 1920): the top band has two lines of text, and
+# the ribbon has four rows.
+MOBILE_TOP_BAND = 118  # pixels at a width of 1080
+MOBILE_BOTTOM_BAND = 276
 RING_SECONDS = 0.5  # shortest time that an instrument is lit
 MAX_WORKERS = 8  # largest number of parallel processes
 
@@ -70,11 +74,12 @@ class _Screen:
     bottom: int
 
 
-def _prepare(page: Page, width: int, height: int, scale: float) -> _Screen:
+def _prepare(
+    page: Page, width: int, height: int, scale: float, top_band: int, bottom_band: int
+) -> _Screen:
     """Put the system of a page in the centre of the score area of the frame."""
     picture = np.asarray(Image.open(page.image).convert("RGB"), dtype=np.float32) / 255.0
     picture = picture[:, :width]  # the page picture can be one pixel wider than the frame
-    top_band, bottom_band = int(TOP_BAND * scale), int(BOTTOM_BAND * scale)
     area_top, area_bottom = top_band + int(8 * scale), height - bottom_band - int(8 * scale)
     area_height = area_bottom - area_top
     crop_top = max(0, int(page.top - 80 * scale))
@@ -139,9 +144,16 @@ def render(
     width: int = 1920,
     height: int = 1080,
     fps: int = 30,
+    mobile: bool = False,
 ) -> Path:
-    """Write the score video."""
-    scale = height / 1080.0
+    """Write the score video.
+
+    If `mobile` is true, the video is for a telephone: the frame is tall and
+    narrow, and the text and the ribbon are larger.
+    """
+    scale = width / 1080.0 if mobile else height / 1080.0
+    top_band = int((MOBILE_TOP_BAND if mobile else TOP_BAND) * scale)
+    bottom_band = int((MOBILE_BOTTOM_BAND if mobile else BOTTOM_BAND) * scale)
     structure = work.structure
     duration = float(
         subprocess.run(
@@ -157,15 +169,16 @@ def render(
     families = {player.id.split(".")[0]: player.family for player in work.orchestra.players}
     shorts = {player.id.split(".")[0]: player.short for player in work.orchestra.players}
 
-    title_font = _font(True, int(26 * scale))
-    info_font = _font(False, int(24 * scale))
-    label_font = _font(False, int(17 * scale))
+    title_font = _font(True, int((30 if mobile else 26) * scale))
+    info_font = _font(False, int((28 if mobile else 24) * scale))
+    label_font = _font(False, int((21 if mobile else 17) * scale))
 
     # The ribbon: one label for each instrument, in the sequence of the score.
     label_boxes: dict[str, tuple[int, int, int, int]] = {}
-    ribbon_top = height - int(BOTTOM_BAND * scale) + int(14 * scale)
-    row_height = int(46 * scale)
-    per_row = (len(names) + 1) // 2
+    ribbon_top = height - bottom_band + int(14 * scale)
+    row_height = int((56 if mobile else 46) * scale)
+    rows = 4 if mobile else 2
+    per_row = -(-len(names) // rows)
     gap = int(6 * scale)
     box_width = (width - int(40 * scale) - gap * (per_row - 1)) // per_row
     for number, name in enumerate(names):
@@ -176,10 +189,10 @@ def render(
 
     @lru_cache(maxsize=8)
     def screen(index: int) -> _Screen:
-        return _prepare(pages[index], width, height, scale)
+        return _prepare(pages[index], width, height, scale, top_band, bottom_band)
 
-    band_top = int(TOP_BAND * scale)
-    band_bottom = height - int(BOTTOM_BAND * scale)
+    band_top = top_band
+    band_bottom = height - bottom_band
 
     @lru_cache(maxsize=64)
     def chrome(
@@ -188,18 +201,17 @@ def render(
         """Return the pictures of the top band and of the ribbon."""
         layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(layer)
-        baseline = int(18 * scale)
+        baseline = int((14 if mobile else 18) * scale)
         draw.text((int(24 * scale), baseline), work.title, font=title_font, fill=INK)
         centre = f"{tempo}     bar {bar}" + (f"     [{mark}]" if mark else "")
         box = draw.textbbox((0, 0), centre, font=info_font)
-        draw.text(((width - box[2]) // 2, baseline), centre, font=info_font, fill=INK)
+        # On a telephone, the tempo and the bar number are on a second line.
+        second_line = int(66 * scale) if mobile else baseline
+        draw.text(((width - box[2]) // 2, second_line), centre, font=info_font, fill=INK)
         clock = f"{second // 60}:{second % 60:02d} / {int(duration) // 60}:{int(duration) % 60:02d}"
         box = draw.textbbox((0, 0), clock, font=info_font)
         draw.text((width - box[2] - int(24 * scale), baseline), clock, font=info_font, fill=INK)
-        draw.line(
-            [(0, int(TOP_BAND * scale) - 1), (width, int(TOP_BAND * scale) - 1)],
-            fill=(*INK, 60), width=1,
-        )  # fmt: skip
+        draw.line([(0, top_band - 1), (width, top_band - 1)], fill=(*INK, 60), width=1)
         for name, is_lit in zip(names, lit, strict=True):
             x0, y0, x1, y1 = label_boxes[name]
             colour = FAMILY_COLOURS[families[name]]

@@ -75,13 +75,16 @@ jobs:
       - name: Build the video
         run: uv run nightmusic video
 
+      - name: Build the video for a telephone
+        run: uv run nightmusic video --mobile
+
       - name: Collect the assets
         run: |
           mkdir -p build/release
           cp build/score/score.pdf build/release/night-music-score.pdf
           (cd build/parts && zip -q -r ../release/night-music-parts.zip . -i "*.pdf")
           cp build/audio/night-music.flac build/audio/night-music.mp3 build/release/
-          cp build/video/night-music.mp4 build/release/
+          cp build/video/night-music.mp4 build/video/night-music-mobile.mp4 build/release/
 
       - name: Upload the assets
         uses: actions/upload-artifact@v7

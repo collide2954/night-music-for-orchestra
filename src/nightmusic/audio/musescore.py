@@ -32,7 +32,7 @@ from pathlib import Path
 import numpy as np
 
 from ..compose import stats
-from ..notation import musicxml
+from ..notation import musicxml, playback
 from ..notation.work import Work
 from . import dsp, reference
 
@@ -123,6 +123,7 @@ def render(
     profile: str = PROFILE,
     instruments: set[str] | None = None,
     players: set[str] | None = None,
+    levels: dict[str, playback.Levels] | None = None,
 ) -> tuple[np.ndarray, list[str]]:
     """Render the work (or some bars) with MuseScore.
 
@@ -133,7 +134,7 @@ def render(
     directory.mkdir(parents=True, exist_ok=True)
     log = directory / "musescore.log"
     log.write_text("", encoding="utf-8")
-    text, names = musicxml.score(work, bars, instruments, players)
+    text, names = musicxml.score(work, bars, instruments, players, levels)
     source = directory / "score.musicxml"
     source.write_text(text, encoding="utf-8")
     packed = directory / "score.mscz"
@@ -145,6 +146,27 @@ def render(
     _run(["-o", str(sound), str(packed)], log)
     print(f"musescore: {len(names)} parts, {count} playing technique marks, profile {profile}")
     return _load(sound), names
+
+
+# The highest note (MIDI number) that Muse Sounds play, for the instruments whose
+# range in the orchestra file goes higher. A higher note has no sound. A test score
+# with all notes of each range gave these values.
+HIGHEST_NOTE = {
+    "flute": 97, "alto flute": 87, "bass clarinet": 80, "contrabass clarinet": 64,
+    "bassoon": 75, "harp": 102, "violin": 101, "viola": 86, "double bass": 61,
+}  # fmt: skip
+
+
+def silent_notes(work: Work) -> list[tuple[str, int, float]]:
+    """Return the notes of the work that Muse Sounds do not play: player, bar, MIDI number."""
+    from ..perform.events import perform
+
+    found = []
+    for player in work.orchestra.players:
+        for note in perform(work, player.id):
+            if note.midi > HIGHEST_NOTE.get(note.instrument, 1000):
+                found.append((player.id, work.structure.bar_at(note.start).number, note.midi))
+    return found
 
 
 def continuous_slides(score: str) -> str:
@@ -258,6 +280,12 @@ STEMS = {
 
 # Level of each stem in the mix, in dB.
 STEM_GAIN_DB = {"woodwinds": 0.0, "brass": 0.0, "percussion": 0.0, "keys": 0.0, "strings": 0.0}
+# A high shelf filter for a stem: the frequency in Hz and the gain in dB.
+# The loud marks of the trumpets and the trombones of Muse Sounds are very bright:
+# from mf to f, the share of the sound above 2 kHz goes up by 10 dB (trumpet) and by
+# 26 dB (trombone). The owner of the project heard a "splat". The filter makes the
+# brass softer above 2 kHz, as the air and the hall do it for a listener.
+STEM_SHELF = {"brass": (2000.0, -4.0)}
 
 PARALLEL_RENDERS = 3  # number of MuseScore programs that run at the same time
 
@@ -362,6 +390,11 @@ def render_master(
     for name, audio in stems.items():
         audio, side_db = narrow(audio)
         print(f"musescore: stem {name}: difference signal {side_db:+.1f} dB")
+        if name in STEM_SHELF:
+            frequency, gain_db = STEM_SHELF[name]
+            shelf = dsp.shelf(frequency, gain_db, high=True)
+            for channel in range(audio.shape[1]):
+                audio[:, channel] = dsp.apply(audio[:, channel], shelf)
         total[: len(audio)] += np.float32(dsp.db(STEM_GAIN_DB[name])) * audio
     total[: len(others)] += np.float32(gain) * others
     # The soft passages of Muse Sounds are much softer than those of the open

@@ -609,6 +609,10 @@ def part_file(work: Work, part_id: str) -> str:
 
 VIDEO_PAGE_MM = (480.0, 270.0)
 VIDEO_SECONDS_PER_SCREEN = 15.0
+# The video for a telephone: the screen is tall and narrow. A screen shows less
+# time, and the notes are larger.
+MOBILE_PAGE_MM = (270.0, 480.0)
+MOBILE_SECONDS_PER_SCREEN = 7.0
 
 VIDEO_SCHEME = r"""
 #(define (tag-when class)
@@ -642,6 +646,14 @@ VIDEO_LAYOUT = r"""
   }
 }
 """.replace("\\\\", "\\")
+
+
+# The names of the instruments are smaller on the narrow page: the staves are large.
+MOBILE_LAYOUT = VIDEO_LAYOUT.replace(
+    "\\override InstrumentName.self-alignment-X = #RIGHT",
+    "\\override InstrumentName.self-alignment-X = #RIGHT\n"
+    "    \\override InstrumentName.font-size = #-3",
+)
 
 
 def chunk_count(work: Work) -> int:
@@ -696,8 +708,11 @@ def active_players(work: Work, index: int) -> list[Player]:
     ]
 
 
-def video_file(work: Work, index: int, staff_size: float) -> str:
-    """Return the LilyPond text of one section, as a page for the video."""
+def video_file(work: Work, index: int, staff_size: float, *, mobile: bool = False) -> str:
+    """Return the LilyPond text of one section, as a page for the video.
+
+    If `mobile` is true, the page is for the video for a telephone.
+    """
     from .structure import Structure, global_to_lilypond
 
     first, last = chunk_bars(work, index)
@@ -719,7 +734,7 @@ def video_file(work: Work, index: int, staff_size: float) -> str:
     shown_from = start
     for bar in source.bars[first - 1 : last - 1]:
         seconds = source.seconds(bar.end) - source.seconds(shown_from)
-        if seconds >= VIDEO_SECONDS_PER_SCREEN:
+        if seconds >= (MOBILE_SECONDS_PER_SCREEN if mobile else VIDEO_SECONDS_PER_SCREEN):
             part.breaks.add(bar.number - first + 1)
             shown_from = bar.end
 
@@ -772,12 +787,13 @@ def video_file(work: Work, index: int, staff_size: float) -> str:
         for family, members in staves.items()
         if members
     ]
-    width, height = VIDEO_PAGE_MM
+    width, height = MOBILE_PAGE_MM if mobile else VIDEO_PAGE_MM
+    side = 6 if mobile else 10
     paper = (
         "\\paper {\n"
         f"  #(set-paper-size '(cons (* {width} mm) (* {height} mm)))\n"
-        "  top-margin = 8\\mm\n  bottom-margin = 8\\mm\n  left-margin = 10\\mm\n"
-        "  right-margin = 10\\mm\n  indent = 20\\mm\n  short-indent = 20\\mm\n"
+        f"  top-margin = 8\\mm\n  bottom-margin = 8\\mm\n  left-margin = {side}\\mm\n"
+        f"  right-margin = {side}\\mm\n  indent = 20\\mm\n  short-indent = 20\\mm\n"
         "  max-systems-per-page = 1\n  ragged-last = ##f\n  ragged-bottom = ##t\n"
         "  print-page-number = ##f\n  oddHeaderMarkup = ##f\n  evenHeaderMarkup = ##f\n"
         "  oddFooterMarkup = ##f\n  evenFooterMarkup = ##f\n}"
@@ -792,7 +808,11 @@ def video_file(work: Work, index: int, staff_size: float) -> str:
                 f"#(set-global-staff-size {staff_size:.2f})",
                 paper,
                 "\n\n".join(blocks),
-                "\\score {\n<<\n" + "\n".join(groups) + "\n>>\n" + VIDEO_LAYOUT.strip() + "\n}",
+                "\\score {\n<<\n"
+                + "\n".join(groups)
+                + "\n>>\n"
+                + (MOBILE_LAYOUT if mobile else VIDEO_LAYOUT).strip()
+                + "\n}",
             ]
         )
         + "\n"

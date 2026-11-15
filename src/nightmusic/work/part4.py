@@ -504,7 +504,8 @@ def _main_climax(work: Work) -> None:
     # Phrase 1 (8 bars): the theme.
     theme = dyn(WARM, r"\fff")
     block.add("vn1:1 vn2:1 va vc tpt1 tpt2 hn5 hn6", 1, theme)
-    block.add("fl1:2 fl2:2 fl3:2 ob1:1 ob2:1 cl1:1 cl2:1 perc4:2", 1, theme)
+    # The piccolo has the highest octave: the theme goes to D7, above the range of the flute.
+    block.add("fl1:1 fl2:1 fl3:2 ob1:1 ob2:1 cl1:1 cl2:1 perc4:2", 1, theme)
     bass, tenor, alto, top = lines(dyn(WARM_CHORDS, r"\fff"))
     block.add("hn4 btbn bn1 bn2 cl3 tuba:-1 bn3:-1 cbcl:-1 cb:-1", 1, bass)
     block.add("hn3 tbn2", 1, tenor)
@@ -525,11 +526,11 @@ def _main_climax(work: Work) -> None:
         r"""\switch "tubular bells" d'1\fff | gis'1 | b'1 | e'1 | """
         r"d'1 | gis'2 d''2 | cis''1 | fis'1 |",
     )  # fmt: skip
-    # The tam-tam at the start. Then a roll on the triangle, above the second half of the theme.
+    # The tam-tam and the bass drum have strokes on beats 2 and 4 of each bar
+    # (a decision of the owner of the project).
     block.add(
         "perc6", 1,
-        r"""\switch "tam-tams" c'1\fff\lv | R1*3 | """
-        r"""\switch "triangle" c'1:32\f ~ | c'1:32 ~ | c'1:32 | R1 |""",
+        r"""\switch "tam-tams" r4 c'4\fff\lv r4 c'4\lv | """ + r"r4 c'4\lv r4 c'4\lv | " * 7,
     )  # fmt: skip
     # Hand cymbals at the start of each second bar. The suspended cymbal grows into them.
     block.add("perc5", 1, r"c'4\fff\lv r4 r2 | R1 | " * 4)
@@ -537,7 +538,7 @@ def _main_climax(work: Work) -> None:
         "perc1", 1,
         r"c'4\fff\lv r4 r2 | c'1:32\mf\< | " + r"c'4\ff\lv r4 r2 | c'1:32\mf\< | " * 3,
     )  # fmt: skip
-    block.add("perc3", 1, r"c'4\fff r r2 | R1 | c'4 r r2 | R1 | c'4 r r2 | R1 | c'4 r r2 | R1 |")
+    block.add("perc3", 1, r"r4 c'4->\fff r4 c'4-> | " + r"r4 c'4-> r4 c'4-> | " * 7)
     block.start("perc4", r'\switch "glockenspiel"')
 
     # Phrase 2 (4 bars): the tonic. The motto in its light form, in long notes.
@@ -557,9 +558,16 @@ def _main_climax(work: Work) -> None:
     block.add("fl1:1 fl2:1 fl3:1 ob1 ob2 cl1 cl2", 2, r"d''1\fff ~ | d''1\> ~ | d''1 ~ | d''1\mf |")
     block.add("perc2", 2, r"d'1\fff | e'1 | a'1 | R1 |")
     block.add("perc4", 2, r"d'''1\ff | e'''1 | a'''1 | R1 |")
-    block.add("perc6", 2, r"""\switch "tam-tams" c'1\ff\lv | R1*3 |""")
+    # The strokes on beats 2 and 4 continue and become softer.
+    block.add(
+        "perc6", 2,
+        r"r4 c'4\ff\lv r4 c'4\lv | r4 c'4\mf\lv r4 c'4\lv | r4 c'4\mp\lv r4 c'4\p\lv | R1 |",
+    )  # fmt: skip
     block.add("perc5 perc1", 2, r"c'4\fff\lv r4 r2 | R1*3 |")
-    block.add("perc3", 2, r"c'4\fff r r2 | R1*3 |")
+    block.add(
+        "perc3", 2,
+        r"c'4->\fff c'4->\ff r4 c'4-> | r4 c'4->\mf r4 c'4-> | r4 c'4->\mp r4 c'4->\p | R1 |",
+    )  # fmt: skip
     block.add("pno.lh", 2, r"<d,, d,>1\fff | R1*3 |")
     block.add("harp.rh", 2, r"<d' fis' a' d'' fis'' a''>1\ff\arpeggio | R1*3 |")
     block.close()
