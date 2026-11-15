@@ -2,13 +2,18 @@
 
 The model has three parts:
 
-1. A main pair of microphones above the conductor. Each player has a seat on
-   the stage. The sound of a player arrives at each microphone with the delay
-   and the loss of its real distance. This gives the stereo image.
+1. A main pair of microphones above the conductor (two cardioid microphones,
+   17 cm apart, at an angle of 110 degrees: the ORTF system). Each player has
+   a seat on the stage. The sound of a player arrives at each microphone with
+   the level and the delay of its real direction and distance. This gives the
+   stereo image.
 2. The first reflections from the floor, the side walls, the back wall, and
    the ceiling of the stage.
 3. The late reverberation of the hall. The code makes it from noise with a
    decay time that depends on the frequency, as in a real concert hall.
+
+The measured values of real orchestra recordings are the test for this model:
+see `research/measured/reference_recordings.csv`.
 """
 
 from __future__ import annotations
@@ -28,8 +33,11 @@ SIDE_WALL = 11.5
 BACK_WALL = 15.0
 CEILING = 14.0
 SOURCE_HEIGHT = 1.1
-MICROPHONES = ((-0.85, -2.2, 3.4), (0.85, -2.2, 3.4))
+ARRAY = (0.0, -2.2, 3.4)  # centre of the microphone pair
+CAPSULE_DISTANCE = 0.17  # metres between the two microphones
+CAPSULE_ANGLE = np.radians(55.0)  # each microphone points this far to its side
 REFERENCE_DISTANCE = 7.0  # a source at this distance has a gain of 1
+NEAREST_PATH = 2.5  # metres; less than the distance of the nearest seat
 
 # Decay time of the hall (seconds for a decrease of 60 dB) for each octave band.
 # The values are those of a large concert hall with an audience.
@@ -103,14 +111,21 @@ def early_response(seat: Seat) -> np.ndarray:
     length = int(0.14 * dsp.RATE)
     direct = np.zeros((length, 2), dtype=np.float64)
     reflected = np.zeros((length, 2), dtype=np.float64)
-    for channel, microphone in enumerate(MICROPHONES):
-        for position, gain, is_reflection in _paths(seat):
-            distance = float(np.linalg.norm(np.subtract(position, microphone)))
-            delay = (distance - 2.5) / SPEED_OF_SOUND  # 2.5 m: less than the nearest seat
-            index = int(round(delay * dsp.RATE))
+    for position, gain, is_reflection in _paths(seat):
+        offset = np.subtract(position, ARRAY)
+        distance = float(np.linalg.norm(offset))
+        # Angle of the source in the horizontal plane: 0 = straight ahead, positive = right.
+        azimuth = float(np.arctan2(offset[0], offset[1]))
+        elevation_loss = float(np.hypot(offset[0], offset[1])) / distance
+        for channel, side in enumerate((-1.0, 1.0)):
+            # Cardioid microphone that points to its side.
+            pattern = 0.5 * (1.0 + np.cos(azimuth - side * CAPSULE_ANGLE) * elevation_loss)
+            # The sound arrives earlier at the microphone on the side of the source.
+            path = distance - side * 0.5 * CAPSULE_DISTANCE * np.sin(azimuth)
+            index = int(round((path - NEAREST_PATH) / SPEED_OF_SOUND * dsp.RATE))
             if 0 <= index < length:
                 target = reflected if is_reflection else direct
-                target[index, channel] += gain * REFERENCE_DISTANCE / distance
+                target[index, channel] += gain * pattern * REFERENCE_DISTANCE / distance
     # A reflection loses high frequencies at the wall and in the air.
     reflected = signal.sosfilt(dsp.lowpass(5500.0, 1), reflected, axis=0)
     return (direct + reflected).astype(np.float32)
@@ -130,8 +145,13 @@ def reverb_send(seat: Seat) -> float:
     The reverberant sound has almost the same level for all seats. The direct
     sound decreases with the distance. Thus a far seat sounds more distant.
     """
-    distance = float(np.hypot(seat.x, seat.y + 2.2))
+    distance = float(np.hypot(seat.x - ARRAY[0], seat.y - ARRAY[1]))
     return float(np.clip(0.75 + 0.03 * distance, 0.75, 1.15))
+
+
+# How similar the reverberation is at the two microphones, for each octave band.
+# In a real hall the low frequencies are almost the same in the two channels.
+SHARED_PART = {63: 0.95, 125: 0.9, 250: 0.75, 500: 0.6, 1000: 0.5, 2000: 0.45, 4000: 0.4, 8000: 0.4}
 
 
 def hall_response(seconds: float = 3.6, seed: int = 20261115) -> np.ndarray:
@@ -149,11 +169,11 @@ def hall_response(seconds: float = 3.6, seed: int = 20261115) -> np.ndarray:
             band = signal.butter(2, low, "highpass", fs=dsp.RATE, output="sos")
         else:
             band = signal.butter(2, [low, high], "bandpass", fs=dsp.RATE, output="sos")
-        noise = random.normal(0.0, 1.0, (length, 2))
-        if centre <= 125:
-            # Low frequencies are almost the same at the two microphones.
-            shared = random.normal(0.0, 1.0, (length, 1))
-            noise = 0.6 * noise + 0.8 * shared
+        shared = SHARED_PART[centre]
+        own = np.sqrt(1.0 - shared**2)
+        noise = own * random.normal(0.0, 1.0, (length, 2)) + shared * random.normal(
+            0.0, 1.0, (length, 1)
+        )
         decay = np.exp(-6.908 * time / DECAY_SECONDS[centre])[:, None]
         response += signal.sosfiltfilt(band, noise, axis=0) * decay
     # The reverberation builds up after the first reflections.

@@ -272,6 +272,61 @@ Bagatelle no. 12 is an early form of the night music style. It has five differen
 
 Data file: [`research/measured/bagatelles.csv`](../research/measured/bagatelles.csv)
 
+### M13. Real orchestra recordings: loudness and stereo width
+
+The recordings are public-domain recordings of full orchestras (Musopen). They are the reference for the sound of the audio master.
+
+The loudness unit is the LUFS (ITU-R BS.1770). The loudness range is the difference between the loud and the soft passages (EBU Tech 3342). The short-term values are relative to the integrated loudness. The side level is the level of the difference of the two channels, relative to their sum.
+
+| Recording | Minutes | Integrated loudness lufs | Loudness range lu | Short term 10th percentile lu | Short term median lu | Short term 95th percentile lu | Peak db | Crest factor db | Left right correlation | Side level db |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Tchaikovsky, Symphony No. 6, I | 17.52 | -21.2 | 23.6 | -19.0 | -8.4 | 4.6 | -1.1 | 25.5 | 0.66 | -7.0 |
+| Tchaikovsky, Symphony No. 6, IV | 10.32 | -24.1 | 21.7 | -16.3 | -7.4 | 5.4 | -4.7 | 24.3 | 0.69 | -7.3 |
+| Brahms, Symphony No. 4, I | 12.68 | -16.3 | 13.6 | -9.6 | -1.9 | 4.0 | -1.0 | 18.7 | 0.55 | -5.4 |
+| Smetana, Vltava | 12.85 | -12.3 | 20.5 | -16.9 | -5.0 | 3.7 | -1.0 | 16.0 | 0.53 | -5.1 |
+| Borodin, In the Steppes of Central Asia | 7.64 | -20.9 | 22.7 | -15.6 | -7.4 | 7.0 | -1.0 | 24.6 | 0.39 | -3.5 |
+
+Data file: [`research/measured/reference_recordings.csv`](../research/measured/reference_recordings.csv)
+
+### M14. Real orchestra recordings: tone balance
+
+The table gives the level of each third-octave band, relative to the total level, for the five recordings of table M13. The master of the project must agree with the mean values from 50 Hz to 8 kHz. Above 8 kHz, some of the recordings have no content, thus the values are not a reliable target.
+
+| Band hz | Mean db | Lowest db | Highest db |
+| --- | --- | --- | --- |
+| 20 | -49.4 | -54.6 | -44.3 |
+| 25 | -45.4 | -51.1 | -33.1 |
+| 31 | -39.3 | -47.7 | -19.7 |
+| 39 | -36.5 | -43.8 | -22.4 |
+| 50 | -28.5 | -33.4 | -19.2 |
+| 62 | -18.8 | -23.1 | -13.5 |
+| 79 | -15.5 | -17.3 | -12.4 |
+| 99 | -13.1 | -14.3 | -11.7 |
+| 125 | -11.3 | -13.2 | -9.7 |
+| 157 | -14.1 | -16.2 | -12.5 |
+| 198 | -16.4 | -18.6 | -14.6 |
+| 250 | -14.6 | -17.2 | -12.9 |
+| 315 | -13.7 | -14.6 | -12.8 |
+| 397 | -9.6 | -10.3 | -9.0 |
+| 500 | -8.8 | -10.3 | -7.7 |
+| 630 | -11.4 | -12.3 | -10.7 |
+| 794 | -13.5 | -14.2 | -12.8 |
+| 1000 | -12.7 | -14.1 | -10.2 |
+| 1260 | -10.9 | -12.1 | -8.5 |
+| 1587 | -10.8 | -11.1 | -10.6 |
+| 2000 | -13.7 | -14.6 | -13.0 |
+| 2520 | -17.1 | -17.9 | -16.1 |
+| 3175 | -19.7 | -21.9 | -17.3 |
+| 4000 | -23.7 | -26.2 | -19.5 |
+| 5040 | -28.0 | -30.9 | -25.9 |
+| 6350 | -31.4 | -35.5 | -29.3 |
+| 8000 | -36.4 | -42.1 | -30.3 |
+| 10079 | -43.5 | -53.8 | -30.0 |
+| 12699 | -61.6 | -76.8 | -33.5 |
+| 16000 | -70.4 | -90.7 | -36.7 |
+
+Data file: [`research/measured/reference_tone_balance.csv`](../research/measured/reference_tone_balance.csv)
+
 ### M11. Comparison of all measured works
 
 "Chord time" is the time in which three or more pitch classes sound together. A "semitone clash" is two notes that are a semitone apart (in all octaves). A "cluster" is three or more adjacent semitones. A "window" is four quarter notes (score data) or four seconds (performance data). The "top line" is the highest note at each note start.
@@ -861,8 +916,9 @@ Data file: [`research/tables/profiles.csv`](../research/tables/profiles.csv)
 - The *Out of Doors* data come from one performance.
   The sustain pedal holds notes, thus the measured chords are larger than the written chords.
 - The study did not measure the music of Corigliano.
-- The study did not analyze audio recordings.
-  The audio stage of the project will measure loudness and tone colour in real recordings.
+- The study measured audio recordings of full orchestras for the sound of the master
+  (tables M13 and M14). These recordings are not works of the three reference composers:
+  no free recordings of their works were available.
 - The rows with the code K are not checked.
 
 ## Sources

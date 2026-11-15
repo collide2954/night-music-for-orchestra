@@ -10,6 +10,7 @@
 - The *Out of Doors* data come from one performance.
   The sustain pedal holds notes, thus the measured chords are larger than the written chords.
 - The study did not measure the music of Corigliano.
-- The study did not analyze audio recordings.
-  The audio stage of the project will measure loudness and tone colour in real recordings.
+- The study measured audio recordings of full orchestras for the sound of the master
+  (tables M13 and M14). These recordings are not works of the three reference composers:
+  no free recordings of their works were available.
 - The rows with the code K are not checked.

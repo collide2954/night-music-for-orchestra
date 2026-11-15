@@ -331,6 +331,31 @@ def _measured_specs() -> list[TableSpec]:
                 "pitch_class_entropy_bits": number(2),
             },
         ),
+        TableSpec(
+            "M13. Real orchestra recordings: loudness and stereo width",
+            MEASURED_DIR / "reference_recordings.csv",
+            [
+                "The recordings are public-domain recordings of full orchestras (Musopen). "
+                "They are the reference for the sound of the audio master.",
+                "The loudness unit is the LUFS (ITU-R BS.1770). "
+                "The loudness range is the difference between the loud and the soft "
+                "passages (EBU Tech 3342). "
+                "The short-term values are relative to the integrated loudness. "
+                "The side level is the level of the difference of the two channels, "
+                "relative to their sum.",
+            ],
+        ),
+        TableSpec(
+            "M14. Real orchestra recordings: tone balance",
+            MEASURED_DIR / "reference_tone_balance.csv",
+            [
+                "The table gives the level of each third-octave band, relative to the "
+                "total level, for the five recordings of table M13. "
+                "The master of the project must agree with the mean values from 50 Hz to 8 kHz. "
+                "Above 8 kHz, some of the recordings have no content, thus the values are not "
+                "a reliable target.",
+            ],
+        ),
     ]
 
 

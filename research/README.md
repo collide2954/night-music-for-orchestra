@@ -38,6 +38,7 @@ The study code downloads them into the directory `.cache/corpus`.
 | Schoenberg, *Verklärte Nacht*, piano arrangement, text source | Peter Billam | CC BY 4.0 |
 | Bartók, *Out of Doors*, MIDI capture of a piano performance | Michael Bednarek | CC0 1.0 |
 | Bartók, *Fourteen Bagatelles* op. 6, note lists | Digital and Cognitive Musicology Lab (DCML) | CC BY-NC-SA 4.0 |
+| Five recordings of full orchestras (for loudness and tone balance) | Musopen | Public domain |
 
 The study code verifies the checksum of each file after the download.
 If a file changed at its source, the code stops and shows a message.
