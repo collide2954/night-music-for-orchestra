@@ -9,6 +9,7 @@ between players, and make a figure from each chord.
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from dataclasses import replace
 from fractions import Fraction
 
@@ -297,6 +298,108 @@ def double(text: str, shift: int = -1) -> str:
     """Return the music in octaves: each note gets a second note `shift` octaves from it."""
     parsed = music.parse(text)
     return music.body_to_lilypond(music.Group("sequence", _doubled(parsed.children, shift)))
+
+
+_DURATION_TEXT = {
+    Fraction(6): "1.", Fraction(4): "1", Fraction(3): "2.", Fraction(2): "2",
+    Fraction(3, 2): "4.", Fraction(1): "4", Fraction(3, 4): "8.", Fraction(1, 2): "8",
+}  # fmt: skip
+
+
+def _swell(bar: str, start: str, end: str) -> str:
+    """Return one bar with marks on its first note and on its last note.
+
+    If the bar has only one note, the note becomes two tied notes: thus the
+    second mark has a note.
+    """
+    parsed = music.parse(bar)
+    notes = [element for element in parsed.children if isinstance(element, music.Note)]
+    if not notes or len(notes) != len(parsed.children):
+        raise ValueError(f"a bar of a colour chain must have only notes and chords: {bar!r}")
+    if len(notes) == 1 and end:
+        note = notes[0]
+        half = _DURATION_TEXT[note.duration / 2]
+        head = replace(note, duration=note.duration / 2, duration_text=half, posts=[*note.posts])
+        tail = replace(note, duration=note.duration / 2, duration_text=half, posts=[])
+        head.posts.extend(_posts("~"))
+        notes = [head, tail]
+        parsed = music.Group("sequence", notes)
+    notes[0].posts[:0] = _posts(start)
+    if end:
+        notes[-1].posts[:0] = _posts(end)
+    return music.body_to_lilypond(parsed)
+
+
+def relay(
+    chords: str, groups: int, level: str = r"\p", soft: str = r"\ppp", rest: str = "R1"
+) -> list[str]:
+    """Divide a chord progression between groups of players that overlap: a chain of colours.
+
+    A new group starts in each bar. A group plays for two bars: it becomes
+    louder in its first bar and softer in its second bar. Thus each chord
+    has two colours at the same time: one colour comes and one colour goes.
+    This is the idea of "Farben" (Schoenberg, Five Pieces op. 16 no. 3).
+
+    Return the music of each group. `rest` is the full-bar rest of the metre.
+    """
+    parts = [bar.strip() for bar in chords.split("|") if bar.strip()]
+    result: list[list[str]] = [[] for _ in range(groups)]
+    for index, bar in enumerate(parts):
+        last = index == len(parts) - 1
+        for group in range(groups):
+            if group == index % groups:
+                # The group starts. In the last bar it also closes the crescendo.
+                result[group].append(_swell(bar, soft + r"\<", level if last else ""))
+            elif index > 0 and group == (index - 1) % groups:
+                result[group].append(_swell(bar, level + r"\>", soft))
+            else:
+                result[group].append(rest)
+    return [" | ".join(bars_of_group) + " |" for bars_of_group in result]
+
+
+def stack(*voices: str) -> str:
+    """Return chords from lines that have the same rhythm. The first line is the lowest voice."""
+    parsed = [music.parse(voice).children for voice in voices]
+    result: list[music.Element] = []
+    for elements in zip(*parsed, strict=True):
+        head = elements[0]
+        if isinstance(head, music.Note):
+            pitches = [pitch for element in elements for pitch in element.pitches]
+            result.append(replace(head, pitches=pitches, chord=True))
+        else:
+            result.append(head)
+    return music.body_to_lilypond(music.Group("sequence", result))
+
+
+def figure(tokens: Sequence[tuple[str, str] | None], grouping: tuple[int, ...] = (2, 2, 3)) -> str:
+    """Return one bar of eighth notes.
+
+    `tokens` has one item for each eighth note of the bar: a note (the text
+    of its pitch and its marks) or None (a rest). Adjacent rests in one
+    beat group become one rest. `grouping` gives the beat groups of the bar.
+    """
+    if sum(grouping) != len(tokens):
+        raise ValueError(f"{len(tokens)} eighth notes for the grouping {grouping}")
+    if all(token is None for token in tokens):
+        return f"R1*{len(tokens)}/8 |"
+    parts: list[str] = []
+    position = 0
+    for size in grouping:
+        group = tokens[position : position + size]
+        index = 0
+        while index < size:
+            token = group[index]
+            if token is None:
+                run = 1
+                while index + run < size and group[index + run] is None:
+                    run += 1
+                parts.append({1: "r8", 2: "r4", 3: "r4."}[run])
+                index += run
+            else:
+                parts.append(f"{token[0]}8{token[1]}")
+                index += 1
+        position += size
+    return " ".join(parts) + " |"
 
 
 def bars(count: int, rest: str, entries: dict[int, str]) -> str:

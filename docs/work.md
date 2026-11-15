@@ -81,7 +81,7 @@ The column "Share" gives the position as a part of the length of the work.
 | | J | 107 to 122 | 6:42 | 0.215 | | E | Sudden silence. Short calls above a soft ostinato. |
 | | K | 123 to 130 | 7:06 | 0.228 | | C, E-flat | The chase theme in the metres 7/8, 7/8, 9/8, and 5/8. |
 | | L | 131 to 142 | 7:18 | 0.234 | | F | Three voices with the same line, one bar apart. |
-| | M | 143 to 182 | 7:36 | 0.244 | Pesante e feroce (eighth note = 276) | B, D, F, A-flat | The heavy section: the low instruments hammer a riff of the motto notes. The drums, the horns, and the high strings play in the gaps. Then hammer strokes of the full orchestra. |
+| | M | 143 to 182 | 7:36 | 0.244 | Pesante e feroce (eighth note = 276) | B, D, F, A-flat | The heavy section: the low instruments hammer a riff of the motto notes. The riff has four forms, and it changes in each unit of two bars. The drums, the horns, and the high strings play in its gaps. In the last phrase, the horns answer the theme of the trumpets with its mirror form. Then hammer strokes of the full orchestra. |
 | | N | 183 to 194 | 8:37 | 0.276 | Pesante (72) | D, F, A-flat | The motto in long notes, three times. |
 | | O | 195 to 210 | 9:17 | 0.298 | Meno mosso, molto espressivo (58) | B | The song theme in the strings. Then it goes up by minor thirds. |
 | | P | 211 to 238 | 10:24 | 0.333 | Agitato (72 to 100) | A to C-sharp | The way up. The bass goes up by semitones. The calls of the brass come nearer together. |
@@ -92,7 +92,7 @@ The column "Share" gives the position as a part of the length of the work.
 | | U | 275 to 284 | 15:07 | 0.484 | | A-flat | The motto as a distant chorale in four octaves: dark, then twilight. |
 | | V | 285 to 294 | 16:07 | 0.516 | | E-flat | One cello sings above a drone. The harmony goes to E-flat minor. |
 | 4 | W | 295 to 298 | 17:11 | 0.550 | Molto adagio, luminoso (52) | D | The turn: E-flat minor goes down one semitone to D major. |
-| | X | 299 to 314 | 17:29 | 0.560 | | D | The warm theme: cellos, then violins. |
+| | X | 299 to 314 | 17:29 | 0.560 | | D | The warm theme in the cellos, with notes that are not in the chords. Then a variation: horn 1 and the English horn have the plain theme, the violins have a decorated form, and the bass holds the note A. The chords go from one group of instruments to the subsequent group. |
 | | Y | 315 to 338 | 18:43 | 0.600 | Più mosso, scintillante (66) | F-sharp | The song theme in a major key, with interlocking bells. |
 | | Z | 339 to 362 | 20:11 | 0.647 | Largamente, con calore (58) | B-flat, then to D-flat | The warm theme in the four horns, then in the violins. |
 | | AA | 363 to 390 | 21:50 | 0.700 | Con moto (60 to 76) | D-flat | The way up: the walking theme in a major key. Calls with the light state of the motto. |
@@ -126,8 +126,8 @@ The loudness of a moment is the loudest dynamic mark in effect at that moment.
 
 | Value | Target | The work |
 | --- | --- | --- |
-| Share of the time: p or softer | 0.55 to 0.68 | 0.53 |
-| Share of the time: mp or mf | 0.08 to 0.14 | 0.14 |
+| Share of the time: p or softer | 0.55 to 0.68 | 0.51 |
+| Share of the time: mp or mf | 0.08 to 0.14 | 0.15 |
 | Share of the time: f or louder | 0.18 to 0.28 | 0.34 |
 | Bars for each tempo mark | 5 to 13 | 10.3 |
 

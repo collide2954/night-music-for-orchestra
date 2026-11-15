@@ -18,7 +18,20 @@ Style profile: "Transfigured", after the turn.
 
 from __future__ import annotations
 
-from ..compose.tools import Block, bars, double, dyn, fill, first, lines, rests, tr
+from ..compose.tools import (
+    Block,
+    bars,
+    double,
+    dyn,
+    fill,
+    first,
+    lines,
+    octave,
+    relay,
+    rests,
+    stack,
+    tr,
+)
 from ..notation.work import Work
 
 # The warm theme (8 bars), in D major.
@@ -117,51 +130,149 @@ def _turn(work: Work) -> None:
 
 
 def _warm_theme(work: Work) -> None:
-    """Mark X: the warm theme, two times."""
+    """Mark X: the warm theme, two times. The second time is a variation of the first time.
+
+    The first time (8 bars):
+    - The cellos sing the theme with notes that are not in the chords: an
+      appoggiatura (B above the chord of D), an escape tone, and suspensions.
+    - The harp (harmonics) and then the celesta play the plain notes of the
+      theme: two forms of one line at the same time (heterophony).
+    - The chords are a chain of colours: violins, woodwinds, and horns pass
+      each chord from one group to the subsequent group.
+
+    The second time (3 bars and 5 bars):
+    - Horn 1 and the English horn have the plain theme. Its first phrase
+      has no last bar, and its last note is long.
+    - The first violins have a decorated form: it starts late, it fills the
+      leaps, and it goes higher than the theme.
+    - The bass holds the note A below all chords.
+
+    The harmony changes two times in each bar. Between the triads there are
+    vagrant chords: augmented triads, half-diminished seventh chords, a
+    diminished seventh chord, a French sixth on B-flat, and a dominant with
+    a lowered fifth. Their notes B-flat and E-flat come from the dark half
+    of the work.
+    """
     structure = work.structure
     s = work.section(16, 4, 4)
     structure.mark(s.bar(1), "X")
     eight = rests(4, 4, 8)
     block = Block(s, eight, eight)
 
-    # The first time: the cellos sing. The violins are a soft light above.
-    theme = first(WARM, r"\p\espr\tutti\senzasord\ord\vib", note=True)
-    block.add("vc", 1, theme)
-    block.add("hn1", 1, r"R1*4 | " + dyn(WARM.split("|", 4)[4], r"\p\dolce"))
+    # ------------------------------------------------------------ the first time
+    # Chords: D, D augmented | G-sharp half-diminished, A | D, F-sharp 7 |
+    # French sixth on B-flat, A | D, D-sharp diminished 7 | G-sharp half-diminished,
+    # E half-diminished | A (suspension), A 7 with a raised fifth | D, G above A.
+    theme = r"""
+        d'2( e'2 | gis'2 a'2) | b'4.( cis''8 a'4 fis'4 ~ | fis'2 e'2) |
+        d'2( e'4. fis'8 | gis'4 a'4 d''2 ~ | d''4 cis''4 b'4 a'4) | fis'2.( e'8 es'8) |
+    """
+    block.add("vc", 1, first(theme, r"\p\espr\tutti\senzasord\ord\vib", note=True))
+    # The plain notes of the theme, one and two octaves higher: first the harp, then the celesta.
+    block.add(
+        "harp.rh", 1,
+        r"d''2\pp\flageolet\lv e''2\flageolet | gis''2\flageolet a''2\flageolet | "
+        r"b''2\flageolet a''4\flageolet fis''4\flageolet | e''1\flageolet | R1*4 |",
+    )  # fmt: skip
+    block.add(
+        "cel.rh", 1,
+        r"R1*4 | d'''2\pp e'''2 | gis'''4 a'''4 d''''2 | cis''''2 b'''4 a'''4 | fis'''2. e'''4 |",
+    )  # fmt: skip
+    chords = r"""
+        <a' d'' fis'' a''>2 <ais' d'' fis'' ais''>2 | <b' d'' fis'' gis''>2 <a' cis'' e'' a''>2 |
+        <a' d'' fis'' a''>2. <ais' cis'' e'' fis''>4 | <bes' d'' e'' gis''>2 <a' cis'' e'' a''>2 |
+        <a' d'' fis'' a''>2 <a' c'' dis'' fis''>2 | <gis' b' d'' fis''>2 <g' bes' d'' e''>2 |
+        <a' b' e'' a''>2 <g' cis'' eis'' a''>2 | <a' d'' fis'' a''>2 <g' b' d'' g''>2 |
+    """
+    strings, woodwinds, horns = relay(chords, 3)
+    voices = lines(strings)
+    block.add("vn2", 1, stack(voices[0], voices[1]), r"\sultasto")
+    block.add("vn1", 1, stack(voices[2], voices[3]), r"\sultasto")
+    block.spread("cl2 cl1 fl2 fl1", 1, woodwinds)
+    block.spread("hn4 hn3 hn2 hn1", 1, octave(horns, -1))
     block.add(
         "va", 1,
-        r"<fis a>1\pp( | <gis b>2 <fis a>2) | <g b>1( | <a d'>2 <a cis'>2) | "
-        r"<a d'>1( | <gis d'>2 <fis d'>2) | <g b>1( | <g d'>2 <g cis'>2) |",
+        r"fis2\pp( a4 ais4 | b2 a4 g4) | a2( g4 fis4 | e2 d4 cis4) | "
+        r"d2( dis2 | fis2 g2) | e2( eis2 | fis2 g2) |",
+        r"\ord\vib",
     )  # fmt: skip
     block.add(
-        "vn2", 1,
-        r"<a' d''>1\pp( | <b' e''>2 <a' d''>2) | <b' d''>1( | <a' e''>1) | "
-        r"<a' d''>1( | <b' e''>2 <a' d''>2) | <b' d''>1( | <a' d''>2 <a' cis''>2) |",
+        "cb", 1,
+        r"d,1\pp( | gis,,2 a,,2) | d,2.( fis,4 | bes,,2 a,,2) | "
+        r"fis,1( | b,,2 bes,,2 | a,,1) | d,2( a,,2) |",
     )  # fmt: skip
+    # The vibraphone marks the vagrant chords.
     block.add(
-        "vn1", 1,
-        r"<fis'' a''>1\pp( | <gis'' b''>2 <fis'' a''>2) | <g'' b''>1( | <e'' a''>1) | "
-        r"<fis'' a''>1( | <gis'' b''>2 <fis'' a''>2) | <g'' b''>1( | <e'' g''>1) |",
+        "perc2", 1,
+        r"r2 <ais' d'' fis''>2\pp\lv | R1*2 | <bes' d'' e'' gis''>2\lv r2 | R1 | "
+        r"<gis' b' d'' fis''>2\lv <g' bes' d'' e''>2\lv | r2 <g' cis'' eis'' a''>2\lv | R1 |",
     )  # fmt: skip
-    block.add("cb", 1, r"d,1\pp( | d,1) | g,,1( | a,,1) | fis,1( | b,,2 a,,2) | g,,1( | a,,1) |")
-    block.add("cel.rh", 1, dyn(BELLS_ON_BEAT * 2, r"\ppp") + r"R1*2 | "
-              + dyn(BELLS_ON_BEAT * 2, r"\ppp") + r"R1*2 |")  # fmt: skip
-    block.add("harp.rh", 1, dyn(BELLS_OFF_BEAT * 2, r"\ppp") + r"R1*2 | "
-              + dyn(BELLS_OFF_BEAT * 2, r"\ppp") + r"R1*2 |")  # fmt: skip
 
-    # The second time: the violins sing in octaves. Horns and bassoons give the harmony.
-    block.add("vn1:1 vn2", 2, dyn(WARM, r"\p\espr"))
-    second_half = WARM.split("|", 4)[4]
-    block.add("fl1:1 ob1", 2, r"R1*4 | " + dyn(second_half, r"\p\dolce"))
-    block.spread("hn4 hn3 hn2 hn1", 2, dyn(WARM_CHORDS, r"\p"))
-    block.add("bn1 bn2 cb:-1", 2, dyn(WARM_BASS, r"\p"))
-    block.add("vc", 2, fill(WARM_WAVES, {4: WAVE, 2: HALF_WAVE}), r"\p")
+    # ----------------------------------------------------------- the second time
+    # Chords above the bass note A: D, F-sharp minor 7 | G-sharp half-diminished, A |
+    # B minor, D | E half-diminished, diminished 7 | G-sharp half-diminished,
+    # B-flat augmented | A, F-sharp minor | B minor, G major 7 | A 7, A 7 with a lowered fifth.
+    plain_theme = r"""
+        d'2( e'2 | gis'2 a'2 | b'2 a'4 fis'4) |
+        d'2( e'2 | gis'4 a'4 d''2 | cis''2 b'4 a'4 | fis'1 ~ | fis'2. es'4) |
+    """
+    block.add("hn1", 2, first(plain_theme, r"\mp\espr\solo", note=True))
+    block.add("ob3", 2, first(plain_theme, r"\p\dolce", note=True))
+    decorated = r"""
+        r4 d''4\p\espr( e''4. fis''8 | gis''4. b''8 a''4) r8 a''8( |
+        b''4 cis'''8 b'' a''4 fis''8 e'' | d''2) r8 d''8\<( e'' fis'' |
+        gis''4 a''4 d'''4.\mp fis'''8 | fis'''2\> e'''4) cis'''8( b'' |
+        a''4\p fis''4) fis''2 ~ | fis''2.\>( es''4)\pp |
+    """
+    block.add("vn1", 2, decorated, r"\ord")
+    chords = r"""
+        <a d' fis' a'>2 <a cis' e' fis'>2 | <b d' fis' gis'>2 <a cis' e' a'>2 |
+        <b d' fis' b'>2 <a d' fis' a'>2 | <bes d' e' g'>2 <bes cis' e' g'>2 |
+        <b d' fis' gis'>2 <bes d' fis' bes'>2 | <a cis' e' a'>2 <a cis' fis' a'>2 |
+        <b d' fis' b'>2 <b d' fis' g'>2 | <g cis' e' a'>2 <g cis' es' a'>2 |
+    """
+    horns, strings, woodwinds = relay(chords, 3)
+    block.spread("bn1 hn4 hn3 hn2", 2, horns)
+    voices = lines(strings)
+    block.add("va", 2, stack(voices[0], voices[1]))
+    block.add("vn2", 2, stack(voices[2], voices[3]), r"\ord")
+    block.spread("cl2 cl1 fl2 fl1", 2, octave(woodwinds, 1))
+    # The cellos: a line of their own below the theme, with passing notes.
     block.add(
-        "va", 2,
-        r"a2\p( b2 | b2 a2) | g2( b4 d'4 | d'2 cis'2) | "
-        r"a2( ais2 | b2 a2) | b2( cis'4 d'4 | d'2 cis'2) |",
+        "vc", 2,
+        r"fis4\p( a4 cis'4 b4 | b4 d'4 cis'4 e'4) | fis'2( d'2) | d'4( e'4 e'4 cis'4 | "
+        r"d'4 b4 bes4 d'4) | e'2( fis'2) | fis'2( g'4 fis'4) | e'2( es'2) |",
     )  # fmt: skip
-    block.add("perc2", 2, r"<d' fis' a'>1\p\lv | R1*3 | <d' fis' a'>1\lv | R1*3 |")
+    # The bass holds the note A. The timpani make it louder at the highest point.
+    block.add("cb", 2, r"a,,1\p ~ | " + r"a,,1 ~ | " * 6 + r"a,,1\pp |")
+    block.add(
+        "timp", 2,
+        r"R1*4 | a,1:32\ppp\< ~ | a,1:32\p\> ~ | a,1:32 ~ | a,1:32\ppp |",
+    )  # fmt: skip
+    block.add(
+        "harp.rh", 2,
+        r"<d' fis' a' d''>1\p\arpeggio | R1*2 | <bes d' e' g'>1\arpeggio | "
+        r"r2 <bes d' fis' bes'>2\arpeggio | R1*2 | r2 <cis' es' g' a'>2\pp\arpeggio |",
+    )  # fmt: skip
+    block.add(
+        "harp.lh", 2,
+        r"<a, e a>1\p\arpeggio | R1*2 | <a, g>1\arpeggio | R1*3 | r2 <a, g>2\pp\arpeggio |",
+    )  # fmt: skip
+    block.add(
+        "cel.rh", 2,
+        r"R1*4 | r2 d''''16\pp( bes''' fis''' d''' bes'' fis'' d'' bes') | "
+        r"fis'''8( e''' cis''' b'' a''4) r4 | R1*2 |",
+    )  # fmt: skip
+    block.add("perc4", 2, r"R1*4 | r2 r4 fis'''4\pp\lv | R1*3 |")
+    block.add(
+        "perc2", 2,
+        r"R1 | <b d' fis' gis'>2\p\lv r2 | R1 | <bes d' e' g'>2\lv <bes cis' e' g'>2\lv | "
+        r"r2 <bes d' fis' bes'>2\lv | R1*2 | r2 <g cis' es' a'>2\pp\lv |",
+    )  # fmt: skip
+    block.add(
+        "perc1", 2,
+        r"""\switch "suspended cymbals" R1*4 | c'1:32\ppp\< | c'2:32\pp\> r2\! | R1*2 |""",
+    )  # fmt: skip
     block.close()
 
 

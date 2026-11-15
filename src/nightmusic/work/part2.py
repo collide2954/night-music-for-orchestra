@@ -18,8 +18,10 @@ from ..compose.tools import (
     bars,
     double,
     dyn,
+    figure,
     fill,
     first,
+    invert,
     lines,
     octave,
     plain,
@@ -594,18 +596,36 @@ def _chase_end(work: Work) -> None:
     s.close()
 
     # ------------------------------------------------ the heavy section (32 bars)
-    # The low instruments hammer a riff of the motto notes (B, C, F). The high
-    # strings and the horns play in the gaps of the riff: together they fill
-    # all eighth notes. Each phrase of 8 bars is a minor third higher.
+    # The low instruments hammer a riff of the motto notes. The riff has four
+    # forms of two bars, and each phrase has the forms in a different sequence:
+    # no unit of two bars comes two times. All other parts come from the riff:
+    # - The high strings, the horns, and the piano play where the riff has a rest.
+    #   Together they fill all eighth notes.
+    # - The taiko has the rhythm of the riff. The bass drum and the timpani have
+    #   its accents. The snare drum and the tom-toms play in its rests.
+    # Each phrase of 8 bars is a minor third higher. In phrases 3 and 4 the
+    # leaps of the riff become larger. All notes are in the scale of the chase.
     s = work.section(32, *seven)
     structure.mark(s.bar(1), "M")
     structure.tempo(s.bar(1), 1, 276, "Pesante e feroce", unit="8")
     eight = rests(7, 8, 8)
     block = Block(s, eight, eight, eight, eight)
 
-    riff = r"b,,8-> r b,,8-> r f,8-> es,8 c,8 | b,,8-> b,,8 r c,8-> r b,,8-> f,8 |"
-    # The answer in the gaps of the riff (2 bars): the letter X is the chord.
-    gaps = r"r8 X8-> r X8-> r4 X8-> | r4 X8-> r X8-> r4 |"
+    # R = the root. L, M, H = the low, the middle, and the high note of the cell.
+    # ">" = an accent. "." = a rest.
+    forms = {
+        "A": "R> . R> . H> M L | R> R . L> . R> H",
+        "B": "R> R . H> . M> L | R> . L R> . H> M",
+        "C": "R> . H R> . L M> | . R> R . H> . R>",
+        "D": "R> L M H> . R> . | H> M L R> R . R>",
+    }
+    orders = ["ABCD", "BDAC", "CADB", "DCBA"]
+    cells = [
+        {"R": "b,,", "L": "c,", "M": "es,", "H": "f,"},
+        {"R": "b,,", "L": "c,", "M": "es,", "H": "f,"},
+        {"R": "b,,", "L": "c,", "M": "f,", "H": "fis,"},
+        {"R": "b,,", "L": "d,", "M": "fis,", "H": "gis,"},
+    ]
     # The theme in long notes (8 bars), on F: the cell of the walking theme, four times.
     theme = r"""
         f4-> ges4-> as4.-> | a4-> b4-> a4.-> | as4-> a4-> b4.-> | c'4-> d'4-> c'4.-> |
@@ -613,50 +633,103 @@ def _chase_end(work: Work) -> None:
     """
     levels = [r"\f", r"\f", r"\ff", r"\ff"]
     roots = ["b,", "d", "f", "as,"]  # the notes of the timpani
-    for phrase, (level, root) in enumerate(zip(levels, roots, strict=True), start=1):
+    tom_notes = ["a", "c'", "e'", "c'"]
+    for phrase in (1, 2, 3, 4):
+        level, root, cell = levels[phrase - 1], roots[phrase - 1], cells[phrase - 1]
         shift = 3 * (phrase - 1)
-        low = times(tr(riff, shift), 4)
-        block.add("cb tuba btbn bn3 cbcl cl3 vc:1 bn1:1 bn2:1 cimb.lh:1", phrase, low, level)
+        music_of: dict[str, list[str]] = {
+            name: [] for name in ("low", "gaps", "taiko", "bass drum", "timp", "toms", "snare")
+        }
+        chords: dict[str, list[str]] = {name: [] for name in ("va", "vn2", "vn1", "pno", "one")}
+        tom = 0
+        for unit, letter in enumerate(orders[phrase - 1]):
+            for bar_text in forms[letter].split("|"):
+                marks = bar_text.split()
+                riff = [
+                    None if m == "." else (cell[m[0]], "->" if m.endswith(">") else "")
+                    for m in marks
+                ]
+                music_of["low"].append(tr(figure(riff), shift))
+                music_of["gaps"].append(figure([("X", "->") if m == "." else None for m in marks]))
+                music_of["taiko"].append(
+                    figure(
+                        [
+                            None if m == "." else ("c'", "->" if m.endswith(">") else "")
+                            for m in marks
+                        ]
+                    )
+                )
+                # The bass drum: the accents of the root at the start of a beat group.
+                beat = [
+                    ("c'", "->") if m == "R>" and i in (0, 2, 4) else None
+                    for i, m in enumerate(marks)
+                ]
+                music_of["bass drum"].append(figure(beat))
+                music_of["timp"].append(
+                    figure([(root, "->") if m == "R>" else None for m in marks])
+                )
+                # The tom-toms: the rests of the riff in the last beat group.
+                # The snare drum: the other rests.
+                toms: list[tuple[str, str] | None] = []
+                snare: list[tuple[str, str] | None] = []
+                for index, mark in enumerate(marks):
+                    free = mark == "."
+                    toms.append((tom_notes[tom % 4], "") if free and index >= 4 else None)
+                    snare.append(("c'", "->") if free and index < 4 else None)
+                    tom += 1 if free and index >= 4 else 0
+                music_of["toms"].append(figure(toms))
+                music_of["snare"].append(figure(snare))
+            # The chords: a different position of the same notes in each second unit.
+            lift = shift + (3 if unit % 2 else 0)
+            gap_bars = " ".join(music_of["gaps"][-2:])
+            chords["va"].append(fill(tr(r"<f b>1", lift), gap_bars))
+            chords["vn2"].append(fill(tr(r"<d' gis'>1", lift), gap_bars))
+            chords["vn1"].append(fill(tr(r"<b' f''>1", lift), gap_bars))
+            chords["pno"].append(fill(tr(r"<f b d' gis'>1", lift), gap_bars))
+        text = {name: " ".join(parts) for name, parts in music_of.items()}
+        block.add(
+            "cb tuba btbn bn3 cbcl cl3 vc:1 bn1:1 bn2:1 cimb.lh:1", phrase, text["low"], level
+        )
         if phrase <= 2:
             # The trombones make the riff heavier, until they get the theme.
-            block.add("tbn1:1 tbn2:1", phrase, low, level)
-        block.add("pno.lh", phrase, double(low, -1), level)
-        for player, chord in [("va", r"<f b>1"), ("vn2", r"<d' gis'>1"), ("vn1", r"<b' f''>1")]:
-            block.add(player, phrase, times(fill(tr(chord, shift), gaps), 4), level)
-        block.add("pno.rh", phrase, times(fill(tr(r"<f b d' gis'>1", shift), gaps), 4), level)
-        block.add(
-            "timp", phrase,
-            times(fill(f"<{root}>1", r"A8-> r A8-> r r4. | A8-> A8 r4 r8 A8-> r |"), 4), level,
-        )  # fmt: skip
-        block.add("perc3", phrase, times(r"c'8-> r r4 c'8-> r4 | c'8-> r r4 r4. |", 4), level)
-        block.add(
-            "perc6", phrase,
-            times(r"c'8-> r c'8-> r c'8-> r4 | c'8-> c'8 r c'8-> r c'8-> r |", 4), level,
-        )  # fmt: skip
-        block.add("perc5", phrase, times(r"r4 r4 r8 a8 c'8 | r4 r8 e'8 r c'8 a8 |", 4), level)
+            block.add("tbn1:1 tbn2:1", phrase, text["low"], level)
+        block.add("pno.lh", phrase, double(text["low"], -1), level)
+        for player in ("va", "vn2", "vn1"):
+            block.add(player, phrase, " ".join(chords[player]), level)
+        block.add("pno.rh", phrase, " ".join(chords["pno"]), level)
+        block.add("timp", phrase, text["timp"], level)
+        block.add("perc3", phrase, text["bass drum"], level)
+        block.add("perc6", phrase, text["taiko"], level)
+        block.add("perc5", phrase, text["toms"], level)
+        gaps = text["gaps"]
+        if phrase >= 2:
+            # The snare drum, with a roll in the last bar of the phrase.
+            bars_of_snare = music_of["snare"][:7] + [r"c'2..:32\< |"]
+            block.add("perc4", phrase, " ".join(bars_of_snare), level)
+        if phrase in (2, 3):
+            # The horns play with the high strings.
+            block.spread("hn4 hn3 hn2 hn1", phrase, fill(r"<as b d' f'>1", gaps), level)
+        if phrase == 3:
+            block.spread("tpt3 tpt2 tpt1", phrase, fill(r"<as' b' d''>1", gaps), level)
+        if phrase >= 3:
+            note = r"<f''>1" if phrase == 3 else r"<as''>1"
+            players = (
+                "fl1:1 fl2:1 ob1 ob2 cl1 cl2"
+                if phrase == 3
+                else "fl1:1 fl2:1 fl3:1 ob1 ob2 cl1 cl2"
+            )
+            block.add(players, phrase, fill(note, gaps.replace("X", "A")), level)
     block.start("perc6", r'\switch "taiko"')
     block.start("perc5", r'\switch "tom-toms"')
-
-    # From the second phrase: the horns with the high strings, and the snare drum.
-    snare = r"r4 c'8-> r r4 c'8-> | r4 c'8-> r r4. |"
-    roll = r"r4 c'8-> r r4 c'8-> | c'2..:32\< |"
-    horns = times(fill(r"<as b d' f'>1", gaps), 4)
-    for phrase in (2, 3, 4):
-        if phrase < 4:
-            block.spread("hn4 hn3 hn2 hn1", phrase, horns, levels[phrase - 1])
-        block.add("perc4", phrase, times(snare, 3) + roll, levels[phrase - 1])
     block.add("perc4", 1, r'\switch "snare drum" ' + eight)
 
-    # The third phrase: the theme in the trombones, bassoons, and violas' register.
+    # The third phrase: the theme in the trombones.
     block.add("tbn1 tbn2", 3, theme, r"\ff")
-    high = times(fill(r"<as' b' d''>1", gaps), 4)
-    block.spread("tpt3 tpt2 tpt1", 3, high, r"\ff")
-    block.add("fl1:1 fl2:1 ob1 ob2 cl1 cl2", 3, times(fill(r"<f''>1", gaps.replace("X", "A")), 4),
-              r"\ff")  # fmt: skip
-    # The fourth phrase: the theme one octave higher in the trumpets, with horns and trombones.
-    block.add("tpt1:1 tpt2:1 tpt3:1 hn1 hn2 hn3 hn4 tbn1 tbn2 perc2:2", 4, theme, r"\ff")
-    block.add("fl1:1 fl2:1 fl3:1 ob1 ob2 cl1 cl2", 4,
-              times(fill(r"<as''>1", gaps.replace("X", "A")), 4), r"\ff")  # fmt: skip
+    # The fourth phrase: the theme one octave higher in the trumpets. The horns
+    # answer one bar later with the mirror form of the theme (a canon).
+    block.add("tpt1:1 tpt2:1 tpt3:1 tbn1 tbn2 perc2:2", 4, theme, r"\ff")
+    mirror = [bar.strip() for bar in invert(theme, "bes").split("|") if bar.strip()]
+    block.add("hn1 hn2 hn3 hn4", 4, rest + " " + " | ".join(mirror[:7]) + " |", r"\ff")
     block.add("perc1", 2, rests(7, 8, 6) + r"c'2..:32\p\< ~ | c'2..:32\f |")
     block.add("perc1", 4, rests(7, 8, 6) + r"c'2..:32\mf\< ~ | c'2..:32\ff |")
     block.close()

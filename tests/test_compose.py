@@ -170,3 +170,30 @@ def test_a_short_passage_goes_to_the_adjacent_passage_with_the_nearer_mark():
     )
     section.close()
     assert stats.passages(work) == [0.0, 16.0]
+
+
+def test_relay_makes_a_chain_of_colours():
+    from nightmusic.compose.tools import relay
+
+    first_group, second_group = relay(r"<c' e'>1 | <d' f'>2 <e' g'>2 | <c' e'>1 |", 2)
+    # Group 1 starts, becomes softer in bar 2, and starts again in bar 3.
+    assert _flat(first_group) == (
+        r"<c' e'>1\ppp\< | <d' f'>2\p\> <e' g'>2\ppp | <c' e'>2\ppp\<~ <c' e'>2\p |"
+    )
+    # Group 2 has a rest, starts in bar 2, and becomes softer in bar 3.
+    assert _flat(second_group) == r"R1 | <d' f'>2\ppp\< <e' g'>2 | <c' e'>2\p\>~ <c' e'>2\ppp |"
+
+
+def test_figure_makes_a_bar_of_eighth_notes_with_joined_rests():
+    from nightmusic.compose.tools import figure
+
+    bar = figure([("c'", "->"), None, None, ("d'", ""), None, None, ("e'", "")])
+    assert bar == "c'8-> r8 r8 d'8 r4 e'8 |"
+    assert figure([None, None, ("c'", ""), None, None, None, None]) == "r4 c'8 r8 r4. |"
+    assert figure([None] * 7) == "R1*7/8 |"
+
+
+def test_stack_makes_chords_from_lines():
+    from nightmusic.compose.tools import stack
+
+    assert _flat(stack(r"c'2\p d'2 |", r"e'2 f'2 |")) == r"<c' e'>2\p <d' f'>2 |"
