@@ -132,6 +132,18 @@ def draw_chart() -> None:
     print(f"chart: {loudness_chart(build(), audio, Path('docs') / 'loudness.svg')}")
 
 
+def update_documents() -> None:
+    """Write the bar numbers, the times, and the measured values of the work into the documents."""
+    from . import documents
+    from .work import build
+
+    changed = documents.update_files(build())
+    for path in changed:
+        print(f"docs: updated {path}")
+    if not changed:
+        print("docs: the documents are up to date")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="nightmusic", description="Build Night Music.")
     parser.add_argument(
@@ -147,6 +159,7 @@ def main(argv: list[str] | None = None) -> int:
             "publish-audio",
             "video",
             "chart",
+            "docs",
             "all",
         ],
     )
@@ -176,6 +189,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "chart":
         draw_chart()
+        return 0
+    if args.command == "docs":
+        update_documents()
         return 0
     if args.command == "fetch-audio":
         return fetch_audio()

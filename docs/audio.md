@@ -17,6 +17,7 @@ The project can make the audio from two sources of sound.
 1. The code writes the work as a MusicXML file ([`notation/musicxml.py`](../src/nightmusic/notation/musicxml.py)).
    - Each instrument of each player is one part, at sounding pitch.
    - The file gives the tempo at each bar line. Thus the time of each bar is the same as in the tempo plan.
+   - The file changes some notes, to make the start and the end of the sounds more natural (see "How the notes start and stop").
 2. MuseScore changes the MusicXML file into its own format.
 3. The code changes two items in that file ([`audio/musescore.py`](../src/nightmusic/audio/musescore.py)):
    - The words of the playing techniques (for example "sul pont.") become marks that MuseScore plays.
@@ -31,6 +32,20 @@ MuseScore renders five groups of the orchestra as five files (stems): woodwinds,
 - Three MuseScore programs run at the same time. Thus the render is faster.
 - A stem stays from the last render if its music did not change.
 - The table `STEM_GAIN_DB` in the code gives the level of each stem. A change of the balance between the groups needs no new render.
+
+## How the notes start and stop
+
+A score gives the length of a note, but a player does not stop each sound at that moment.
+The MusicXML file is for the audio only. Thus it can give MuseScore the sound that a player makes:
+
+| Item in the score | Item in the MusicXML file | Effect |
+| --- | --- | --- |
+| A note of an instrument that rings (harp, piano, celesta, bells, gongs, cymbals, drums, timpani) | The note continues to the subsequent note of that player, or for the ring time of the instrument | The sound decays. It does not stop at the end of the written note. |
+| A soft long note before a rest (mf or softer, two quarter notes or longer) | A decrease of loudness on the note, then the dynamic mark again | The end of a phrase becomes soft. It does not stop suddenly. |
+| A short bow stroke (spiccato) | A staccato note | The stroke is short and has a clear start. |
+| A roll on a percussion instrument | A tremolo note | The instrument plays a roll. |
+
+The table `RING_SECONDS` in the code gives the ring time of each instrument.
 
 ## How the build server gets the audio
 
