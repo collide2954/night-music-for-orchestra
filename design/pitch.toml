@@ -1,0 +1,55 @@
+# Night Music for Orchestra: pitch plan.
+#
+# All themes of the work grow from one motto of three notes.
+# The motto has four states. The work goes from the dark state to the light state.
+# This change is the "transfiguration" of the work. The method is Bartók's
+# interval expansion: a small interval becomes a larger interval.
+
+[motto]
+# Each state is three notes: the tonic, a second above it, and an outer note.
+# The numbers are semitones above the tonic.
+dark = [0, 1, 6]      # Minor second and tritone. On D: D, E-flat, A-flat.
+twilight = [0, 1, 7]  # Minor second and fifth. On D: D, E-flat, A.
+shimmer = [0, 2, 6]   # Major second and tritone. On D: D, E, G-sharp.
+light = [0, 2, 7]     # Major second and fifth. On D: D, E, A.
+sequence = ["dark", "twilight", "shimmer", "light"]
+
+# Why this motto:
+# - The dark state is the set (0 1 6). The study found it in all three composers:
+#   Schoenberg's semitone-and-tritone themes, Bartók's tritone-and-seventh chord,
+#   and Corigliano's pitch centres.
+# - The light state is the set (0 2 7): open fifths and fourths, the base of the
+#   pentatonic scales.
+
+# The scale field of each state. A field is the set of notes that a passage uses.
+[fields]
+dark = { name = "octatonic", steps = [0, 1, 3, 4, 6, 7, 9, 10] }
+twilight = { name = "Phrygian", steps = [0, 1, 3, 5, 7, 8, 10] }
+shimmer = { name = "acoustic (Lydian with minor seventh)", steps = [0, 2, 4, 6, 7, 9, 10] }
+light = { name = "pentatonic", steps = [0, 2, 4, 7, 9] }
+
+# The key centres. The three notes around the tonic and the two outer notes of
+# the motto states give all centres of the work.
+[centres]
+tonic = "D"
+dominant = "A"            # Outer note of the twilight and light states.
+tritone_pole = "A-flat"   # Outer note of the dark state. Centre of part 3.
+upper_neighbour = "E-flat"  # Second note of the dark state. It goes down to D at the turn.
+lower_neighbour = "C-sharp" # Written as D-flat major before the main climax. It goes up to D.
+
+# The key plan.
+# Before the turn, the keys move by minor thirds (the axis of the tonic): D, F, A-flat, B.
+# After the turn, the keys move by major thirds: D, F-sharp, B-flat.
+[key_plan]
+before_the_turn = ["D", "F", "B", "A-flat", "E-flat"]
+at_the_turn = "E-flat minor goes down one semitone to D major"
+after_the_turn = ["D", "F-sharp", "B-flat", "D-flat", "D"]
+before_the_main_climax = "D-flat major goes up one semitone to D major"
+
+# The processes that the work uses in all parts.
+[processes]
+expanding_pitch_space = "A line adds its notes one at a time. The first note in a new octave is a strong event."
+long_song = "A free solo line with long notes on the fourth or the fifth and with ornaments between them."
+cycle = "Low gongs mark a slow cycle. Each level of the cycle divides the level above it."
+shimmer = "Two instruments play the same line a quarter-tone apart, or bells play interlocked patterns."
+calls = "Many solo players play the same call in different tempos. The calls meet on one chord."

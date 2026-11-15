@@ -1,0 +1,83 @@
+# Night Music for Orchestra: form plan.
+#
+# This file gives the shape of the work before the notes.
+# The positions are shares of the full duration (0 = start, 1 = end).
+# Each position comes from a style profile in research/tables/profiles.csv.
+# The composition code reads this file. The check code compares the finished
+# score with this file.
+
+[work]
+duration_seconds = 1800
+tonic = "D"
+
+# The events that give the work its shape.
+[events]
+first_climax = 0.39      # End of the development. Verklärte Nacht: bars 175 to 181.
+far_point = 0.48         # Key centre A-flat, a tritone from the tonic. Music for Strings I: 0.50.
+turn = 0.54              # Arrival of D major. Verklärte Nacht: 0.54.
+main_climax = 0.77       # Largest climax, fff. Verklärte Nacht: 0.77.
+final_arrival = 0.975    # Start of the last statement on D major, fff, to the end.
+
+# The five parts. The parts follow each other with no pause.
+[[part]]
+number = 1
+start = 0.000
+end = 0.115
+character = "Very slow. A walk in the dark. One lonely melody."
+profile = "Transfigured (before the turn)"
+tempo_quarter = [44, 48]
+key_centres = ["D"]
+motto_state = "dark"
+dynamic_range = ["pppp", "mp"]
+
+[[part]]
+number = 2
+start = 0.115
+end = 0.400
+character = "Agitation and development. A chase in uneven metres. The first climax, then a collapse."
+profile = "Transfigured (before the turn), with Theatre at the climax"
+tempo_quarter = [63, 132]
+key_centres = ["D", "F", "B"]
+motto_state = "dark"
+dynamic_range = ["pp", "fff"]
+
+[[part]]
+number = 3
+start = 0.400
+end = 0.540
+character = "The still centre. Night music: a soft cluster, calls, a slow cycle of gongs."
+profile = "Night"
+tempo_quarter = [60, 66]
+key_centres = ["A-flat", "E-flat"]
+motto_state = "dark, then twilight"
+dynamic_range = ["pppp", "mf"]
+
+[[part]]
+number = 4
+start = 0.540
+end = 0.855
+character = "The turn to the light. Broad warm themes. A shimmer of bells. The main climax, then calm."
+profile = "Transfigured (after the turn)"
+tempo_quarter = [52, 76]
+key_centres = ["D", "F-sharp", "B-flat", "D-flat", "D"]
+motto_state = "shimmer, then light"
+dynamic_range = ["ppp", "fff"]
+
+[[part]]
+number = 5
+start = 0.855
+end = 1.000
+character = "The themes come back together. Many calls meet on one chord. The last statement, fff."
+profile = "Theatre, then Transfigured (after the turn)"
+tempo_quarter = [50, 72]
+key_centres = ["D"]
+motto_state = "light"
+dynamic_range = ["ppp", "fff"]
+
+# Targets for the full work (profile "All").
+[targets]
+share_p_or_softer = [0.55, 0.68]   # The fff ending moves a small share of time to the loud levels.
+share_mp_or_mf = [0.08, 0.14]
+share_f_or_louder = [0.18, 0.28]
+bars_for_each_tempo_mark = [5, 13]
+fastest_bar_divided_by_slowest_bar = [2.5, 3.5]

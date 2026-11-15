@@ -7,8 +7,9 @@
 [work]
 title = "Night Music for Orchestra"
 form = "one arch in five linked parts"
-parts = ["dusk", "night voices", "crisis", "transfiguration", "dawn"]  # working names
 duration_minutes = 30
+programme = "none"  # No titles for the time of night. No region tied to a part.
+ending = "full orchestra on D major, fff"
 decided = 2026-11-15
 
 [style]
@@ -23,12 +24,14 @@ profiles = "research/tables/profiles.csv"
 [orchestra]
 size = "large plus colours"
 winds = "triple, with auxiliary instruments"
+auxiliaries = ["piccolo", "alto flute", "English horn", "E-flat clarinet", "bass clarinet", "contrabass clarinet", "contrabassoon"]
 horns = "4 to 6"
 percussion_players = "4 to 5"
+percussion_colours = ["tuned gongs", "singing bowls"]
 keyboards_and_harp = ["harp", "celesta", "piano"]
-unconventional_colours = "3 to 5"
-# The list of unconventional instruments is not final.
-# Each instrument must have a free sample library that sounds real.
+colours = ["cimbalom", "accordion", "mandolin", "ocarinas"]
+# Four wind players play the ocarinas.
+# No free sample library for the cimbalom is known. The audio stage must find one or use a substitute.
 
 [world]
 traditions = [
@@ -37,8 +40,12 @@ traditions = [
     "Hindustani night ragas",
     "Javanese gamelan and Japanese gagaku",
 ]
-role = "voices of the night inside the five parts"
-rule = "Research each tradition from primary sources before use."
+role = "voices of the night, used freely in all parts"
+rule = "Use the processes and the colours of a tradition. Do not quote its melodies. Research each tradition before use."
+
+[licence]
+music_and_documents = "CC BY 4.0"
+code = "MIT"
 
 [deliverables]
 score = "conductor score"

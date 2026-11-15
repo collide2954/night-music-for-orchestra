@@ -33,6 +33,17 @@ The study measured the complete *Verklärte Nacht* (418 bars) and two sets of pi
 It also contains sourced tables for form, harmony, rhythm, orchestration, and orchestra sizes.
 The style profiles in the report give the target ranges for the new work.
 
+## Design
+
+The directory [`design`](design) contains the decisions and the plan of the work.
+
+| File | Contents |
+| --- | --- |
+| [`brief.toml`](design/brief.toml) | The decisions of the owner of the project |
+| [`form.toml`](design/form.toml) | The five parts, the positions of the main events, and the targets |
+| [`pitch.toml`](design/pitch.toml) | The motto, its four states, the key centres, and the processes |
+| [`orchestra.toml`](design/orchestra.toml) | The players, the instruments, and their ranges |
+
 ## Requirements
 
 - [uv](https://docs.astral.sh/uv/) 0.5 or later
@@ -53,3 +64,12 @@ The style profiles in the report give the target ranges for the new work.
    ```
 
 The `make study` command downloads the open data files, measures them, and writes the report.
+
+## Licence
+
+- The code is under the MIT License. See [`LICENSE`](LICENSE).
+- The music, the score, the parts, the audio, the video, and the documents are under the
+  Creative Commons Attribution 4.0 International licence (CC BY 4.0).
+  See [`LICENSE-CC-BY-4.0`](LICENSE-CC-BY-4.0).
+- The style study measures open data from other authors. These data have their own licences.
+  See [`research/README.md`](research/README.md).
