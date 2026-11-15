@@ -90,6 +90,7 @@ SOUNDS: dict[str, Sound] = {
         lead=0.06,
         ensemble=3,
         lowcut_hz=170,
+        eq=(("high", 2500.0, 2.0),),
     ),
     "viola": Sound(
         {
@@ -116,6 +117,7 @@ SOUNDS: dict[str, Sound] = {
         lead=0.07,
         ensemble=3,
         lowcut_hz=110,
+        eq=(("high", 2500.0, 2.0),),
     ),
     "violoncello": Sound(
         {
@@ -331,6 +333,7 @@ SOUNDS: dict[str, Sound] = {
         release=0.16,
         lead=0.05,
         lowcut_hz=60,
+        eq=(("peak", 620.0, -2.5, 1.2),),
     ),
     "trumpet in C": Sound(
         {

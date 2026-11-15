@@ -325,7 +325,7 @@ def _song(work: Work) -> None:
     s = work.section(8, 4, 4)
     structure.change(s.bar(5), 1, "stringendo molto")
 
-    first_half = r"""c''2\mp\dolce( bes'4 as'4 | g'2. f'4) | ges'2( f'4 es'4 | f'1) |"""
+    first_half = r"""c''2\p\dolce( bes'4 as'4 | g'2. f'4) | ges'2( f'4 es'4 | f'1) |"""
     s.write("ob1", first_half + r" R1*4 |")
     s.write("fl1", octave(first_half, 1) + r" R1*4 |")
     s.write(
@@ -791,22 +791,22 @@ def _ascent(work: Work) -> None:
     rush = r"r2 c''16\<( des'' es'' e'' fis'' g'' a'' bes''\!) |"
     pedals = [-3, -3, -2, -1, 0, 1, 1]  # the bass of each unit, in semitones from C
     tones = [4, 7, 10, 13]  # the chord notes above the bass
-    levels = [r"\mp", r"\mp", r"\mf", r"\mf", r"\f", r"\f", r"\ff"]
+    levels = [r"\p", r"\p", r"\mp", r"\mf", r"\mf", r"\f", r"\ff"]
 
     # The head of the agitated theme: one time in each bar, then two times.
     def line(pedal: int) -> str:
         return " ".join(tr(head, pedal + tone) for tone in tones)
 
-    block.add("va:-1 vc:-1", 1, line(-3), r"\mp")
-    block.add("vn2 va vc:-1", 2, line(-3), r"\mp")
-    block.add("vn1:1 vn2 va vc:-1", 3, line(-2), r"\mf")
+    block.add("va:-1 vc:-1", 1, line(-3), r"\p")
+    block.add("vn2 va vc:-1", 2, line(-3), r"\p")
+    block.add("vn1:1 vn2 va vc:-1", 3, line(-2), r"\mp")
     block.add("vn1:1 vn2:1 va vc", 4, line(-1), r"\mf")
     halves = [tr(fast, tone) for tone in (4, 7, 10, 13, 16, 19, 22, 25)]
     double_speed = " ".join(
         f"{first_half} {second_half} |"
         for first_half, second_half in zip(halves[0::2], halves[1::2], strict=True)
     )
-    block.add("vn1 vn2 va:-1 vc:-2", 5, double_speed, r"\f")
+    block.add("vn1 vn2 va:-1 vc:-2", 5, double_speed, r"\mf")
     rise = r"d'2:32 f'2:32 | as'2:32 b'2:32 | d''2:32 f''2:32 | as''2:32 b''2:32 |"
     block.add("vn1:1 vn2 va:-1 vc:-1", 6, rise, r"\f\<")
     hold = r"X1:32\ff\< ~ | X1:32 ~ | X1:32 ~ | X1:32\fff |"

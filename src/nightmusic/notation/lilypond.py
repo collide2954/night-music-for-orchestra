@@ -79,12 +79,16 @@ PART_LAYOUT = r"""
     \override RehearsalMark.padding = #2.5
     \override MultiMeasureRest.expand-limit = #1
     \override Hairpin.minimum-length = #5
+    \override SpacingSpanner.common-shortest-duration = #(ly:make-moment 1/16)
     skipBars = ##t
   }
   \context {
     \Staff
     \override TextScript.font-size = #-0.5
     \override DynamicTextSpanner.style = #'none
+    % A page turn is permitted where the player has a rest of two bars or more.
+    \consists Page_turn_engraver
+    pageTurnMinimumRestLength = #2
   }
 }
 """
@@ -114,6 +118,7 @@ PART_PAPER = r"""
   indent = 0\mm
   ragged-last-bottom = ##t
   print-page-number = ##t
+  page-breaking = #ly:page-turn-breaking
 }
 """
 

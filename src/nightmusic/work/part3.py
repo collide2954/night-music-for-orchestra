@@ -138,10 +138,10 @@ def _lonely_melody(work: Work) -> None:
     block.add(
         "fl2", 1,
         r"""\switch "alto flute"
-        r2 as'1\p\espr\<( ~ | as'2\mp\> beseh'4 as'4 ges'2 | as'1.)\pp |
+        r2 as'1\pp\espr\<( ~ | as'2\p\> beseh'4 as'4 ges'2 | as'1.)\pp |
         r2 as'4\p( beseh'4 ces''2 | \grace { des''16 } ces''4 des''4 ces''4 beseh'4 as'2 ~ |
         as'1) r2 |
-        r2 ces''4\mp\<( des''4 es''2 ~ | es''1\mf ~ es''4 fes''4 |
+        r2 ces''4\p\<( des''4 es''2 ~ | es''1\mp ~ es''4 fes''4 |
         \grace { fes''16 } es''4\> des''4 ces''2 beseh'4 as'4 | beseh'2 as'1)\pp |
         R1*3/2*2 |""",
     )  # fmt: skip
@@ -205,9 +205,9 @@ def _drone_and_song(work: Work) -> None:
     block.add(
         "vc", 1,
         r"""R1*3/2 |
-        r2 es1\p\espr\<( ~ | es2\mp des4 es4 ges2 ~ |
+        r2 es1\pp\espr\<( ~ | es2\p des4 es4 ges2 ~ |
         ges4\> geseh4 ges4 geseh4 ges2\glissando | es1.)\p |
-        r2 ges4\mp\<( as4 ces'2 ~ | ces'2\mf des'4 ces'4 as2 ~ |
+        r2 ges4\p\<( as4 ces'2 ~ | ces'2\mp des'4 ces'4 as2 ~ |
         as2\> ges4 es4 des2 | es1.\pp ~ | es1.)\fermata |""",
         r"\solo\senzasord\ord\vib",
     )  # fmt: skip

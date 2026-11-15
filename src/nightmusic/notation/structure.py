@@ -142,6 +142,28 @@ class Structure:
         quarter_bpm = bpm * float(_unit_quarters(unit))
         self._add(TempoPoint(self.position(bar, beat), quarter_bpm))
 
+    def ritardando(
+        self,
+        bar: int,
+        beat: float | Fraction,
+        slow: float,
+        text: str = "poco rit.",
+        resume: str = "a tempo",
+    ) -> None:
+        """Go slower from a beat of a bar to the end of that bar. Then the tempo comes back.
+
+        `slow` is the tempo at the end of the bar (quarter notes in a minute).
+        If `resume` is empty, the tempo does not come back: the subsequent
+        tempo mark of the work gives the new tempo.
+        """
+        position = self.position(bar, beat)
+        before = self.bpm_at(position)
+        self._add(TempoPoint(position, before, True, text, "", True))
+        end = self.bar(bar).end
+        self._add(TempoPoint(end - Fraction(1, 8), slow))
+        if resume:
+            self._add(TempoPoint(end, before, False, resume, "", True))
+
     def _add(self, point: TempoPoint) -> None:
         self.tempo_points = [p for p in self.tempo_points if p.position != point.position]
         self.tempo_points.append(point)

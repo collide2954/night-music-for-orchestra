@@ -29,10 +29,10 @@ Each build of the repository publishes the results in the release
 | Part | Bars | Start | Contents |
 | --- | --- | --- | --- |
 | 1 | 1 to 38 | 0:00 | Very slow. A walk in the dark. One lonely melody. |
-| 2 | 39 to 220 | 3:30 | Agitation and development. A chase in uneven metres. The first climax, then a collapse. |
+| 2 | 39 to 220 | 3:29 | Agitation and development. A chase in uneven metres. The first climax, then a collapse. |
 | 3 | 221 to 262 | 12:00 | The still centre. A soft cluster, a cycle of gongs, calls of the night. |
 | 4 | 263 to 398 | 16:13 | The turn to D major. Broad warm themes. A shimmer of bells. The main climax, then calm. |
-| 5 | 399 to 457 | 25:36 | First light. The themes sound together. The last statement, fff. |
+| 5 | 399 to 457 | 25:37 | First light. The themes sound together. The last statement, fff. |
 
 One idea of three notes (the motto) is in all parts.
 It starts as D, E-flat, A-flat (dark) and ends as D, E, A (light).

@@ -108,7 +108,7 @@ def loudness_range(values: np.ndarray) -> tuple[float, np.ndarray]:
 HOLD_SECONDS = 3.0  # the level follows the loudest sound in this time before and after
 SMOOTH_SECONDS = 8.0  # the level changes in this time
 KNEE_BELOW_LOUDEST = 8.0  # passages that are less than this below the loud level do not change
-LARGEST_GAIN_DB = 14.0  # a soft passage does not get more gain than this
+LARGEST_GAIN_DB = 18.0  # a soft passage does not get more gain than this
 LARGEST_RATIO = 3.0
 
 

@@ -86,10 +86,19 @@ def build_video() -> None:
     print(f"video: {path}")
 
 
+def show_stats() -> None:
+    """Print the numbers of the work as a table."""
+    from .compose.stats import measure
+    from .work import build
+
+    for name, value in measure(build()).rows():
+        print(f"{name:45s} {value}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="nightmusic", description="Build Night Music.")
     parser.add_argument(
-        "command", choices=["check", "ly", "score", "parts", "audio", "video", "all"]
+        "command", choices=["check", "stats", "ly", "score", "parts", "audio", "video", "all"]
     )
     parser.add_argument(
         "--bars", metavar="FIRST-LAST", help="render only these bars (command: audio)"
@@ -101,6 +110,9 @@ def main(argv: list[str] | None = None) -> int:
         bars = (int(first), int(last or first))
     if args.command == "check":
         return 1 if check_work() else 0
+    if args.command == "stats":
+        show_stats()
+        return 0
     if args.command == "ly":
         for path in write_lilypond():
             print(path)

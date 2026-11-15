@@ -243,7 +243,7 @@ def target_balance() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
 
 
 def matching_filter(
-    audio: np.ndarray, strength: float = 0.8, limit_db: float = 6.0
+    audio: np.ndarray, strength: float = 0.9, limit_db: float = 6.0
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Return a linear-phase filter that moves the tone balance of a mix to the target.
 
@@ -255,8 +255,9 @@ def matching_filter(
     centres, mean, _low, _high = target_balance()
     _centres, measured = tone_balance(audio)
     difference = np.clip((mean - measured) * strength, -limit_db, limit_db)
-    # A smooth curve: mean of each band and its two adjacent bands.
-    smooth = np.convolve(np.pad(difference, 1, mode="edge"), np.ones(3) / 3, mode="valid")
+    # A smooth curve: each band with a part of its two adjacent bands.
+    weights = np.array([0.25, 0.5, 0.25])
+    smooth = np.convolve(np.pad(difference, 1, mode="edge"), weights, mode="valid")
     smooth[(centres < 48) | (centres > 8200)] = 0.0
     frequencies = np.concatenate(([0.0], centres, [dsp.RATE / 2]))
     gains = np.concatenate(([smooth[0]], smooth, [smooth[-1]]))

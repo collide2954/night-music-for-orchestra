@@ -124,7 +124,7 @@ def _warm_theme(work: Work) -> None:
     block = Block(s, eight, eight)
 
     # The first time: the cellos sing. The violins are a soft light above.
-    theme = first(WARM, r"\mp\espr\tutti\senzasord\ord\vib", note=True)
+    theme = first(WARM, r"\p\espr\tutti\senzasord\ord\vib", note=True)
     block.add("vc", 1, theme)
     block.add("hn1", 1, r"R1*4 | " + dyn(WARM.split("|", 4)[4], r"\p\dolce"))
     block.add(
@@ -149,7 +149,7 @@ def _warm_theme(work: Work) -> None:
               + dyn(BELLS_OFF_BEAT * 2, r"\ppp") + r"R1*2 |")  # fmt: skip
 
     # The second time: the violins sing in octaves. Horns and bassoons give the harmony.
-    block.add("vn1:1 vn2", 2, dyn(WARM, r"\mf\espr"))
+    block.add("vn1:1 vn2", 2, dyn(WARM, r"\p\espr"))
     second_half = WARM.split("|", 4)[4]
     block.add("fl1:1 ob1", 2, r"R1*4 | " + dyn(second_half, r"\p\dolce"))
     block.spread("hn4 hn3 hn2 hn1", 2, dyn(WARM_CHORDS, r"\p"))
@@ -157,7 +157,7 @@ def _warm_theme(work: Work) -> None:
     block.add("vc", 2, fill(WARM_WAVES, {4: WAVE, 2: HALF_WAVE}), r"\p")
     block.add(
         "va", 2,
-        r"a2\mp( b2 | b2 a2) | g2( b4 d'4 | d'2 cis'2) | "
+        r"a2\p( b2 | b2 a2) | g2( b4 d'4 | d'2 cis'2) | "
         r"a2( ais2 | b2 a2) | b2( cis'4 d'4 | d'2 cis'2) |",
     )  # fmt: skip
     block.add("perc2", 2, r"<d' fis' a'>1\p\lv | R1*3 | <d' fis' a'>1\lv | R1*3 |")
@@ -229,11 +229,11 @@ def _shimmer(work: Work) -> None:
     block.add("perc3", 3, r"fis'1\p\lv | R1*3 | fis'1\lv | R1*3 |")
 
     # Phrase 4 (8 bars): the song theme in the violins and the oboe. The horns answer.
-    block.add("ob1 fl1:1", 4, first(SONG_MAJOR, r"\mf\cantabile", note=True))
-    block.add("vn1 vn2", 4, first(SONG_MAJOR, r"\mf\cantabile\senzasord", note=True))
+    block.add("ob1 fl1:1", 4, first(SONG_MAJOR, r"\p\cantabile", note=True))
+    block.add("vn1 vn2", 4, first(SONG_MAJOR, r"\p\cantabile\senzasord", note=True))
     block.add(
         "hn1 hn3", 4,
-        r"fis'2\mp( gis'2 | b'1) | gis'2( eis'2 | fis'1) | "
+        r"fis'2\p( gis'2 | b'1) | gis'2( eis'2 | fis'1) | "
         r"cis''2( b'2 | ais'2 gis'2) | gis'2( eis'2 | fis'1) |",
     )  # fmt: skip
     block.add(
@@ -244,17 +244,17 @@ def _shimmer(work: Work) -> None:
             r"<fis, cis ais>1 |",
             {4: WAVE, 2: HALF_WAVE},
         ),
-        r"\mp",
+        r"\p",
     )  # fmt: skip
     block.add(
         "va", 4,
-        r"<ais cis'>1\mp( | <b dis'>1) | <b eis'>1( | <ais cis'>1) | "
+        r"<ais cis'>1\p( | <b dis'>1) | <b eis'>1( | <ais cis'>1) | "
         r"<cis' eis'>1( | <b dis'>1) | <b dis'>2( <b eis'>2 | <ais cis'>1) |",
     )  # fmt: skip
     block.add(
         "cb",
         4,
-        r"fis,1\mp\arco( | b,,1) | cis,1( | fis,1) | ais,,1( | b,,1) | gis,,2( cis,2 | fis,1) |",
+        r"fis,1\p\arco( | b,,1) | cis,1( | fis,1) | ais,,1( | b,,1) | gis,,2( cis,2 | fis,1) |",
     )
     block.add("bn1", 4, r"ais1\p( | b1) | b1( | ais1) | cis'1( | b1) | b2( b2 | ais1) |")
     block.add("bn2", 4, r"fis1\p( | dis1) | eis1( | fis1) | eis1( | fis1) | dis2( eis2 | cis1) |")
@@ -306,16 +306,16 @@ def _broad(work: Work) -> None:
     throb = {4: r"r8 X4 X4 X4 X8", 2: r"r8 X4 X8"}
 
     # Phrase 1 (8 bars): the theme in the four horns and the cellos.
-    block.add("hn1 hn2 hn3 hn4 vc", 1, dyn(theme, r"\f\espr"))
-    block.add("vn1", 1, fill(tr(WARM_HIGH, -4), throb), r"\mp")
-    block.add("vn2", 1, fill(tr(WARM_MIDDLE, -4), throb), r"\mp")
-    block.add("va", 1, fill(tr(WARM_LOW, 8), throb), r"\mp")
-    block.add("cb:-1 bn1 bn2 bn3:-1", 1, dyn(bass, r"\mf"))
+    block.add("hn1 hn2 hn3 hn4 vc", 1, dyn(theme, r"\mf\espr"))
+    block.add("vn1", 1, fill(tr(WARM_HIGH, -4), throb), r"\p")
+    block.add("vn2", 1, fill(tr(WARM_MIDDLE, -4), throb), r"\p")
+    block.add("va", 1, fill(tr(WARM_LOW, 8), throb), r"\p")
+    block.add("cb:-1 bn1 bn2 bn3:-1", 1, dyn(bass, r"\mp"))
     low, middle, upper, _top = lines(chords)
-    block.add("btbn tuba:-1", 1, dyn(low, r"\mp"))
-    block.add("tbn2", 1, dyn(middle, r"\mp"))
-    block.add("tbn1", 1, dyn(upper, r"\mp"))
-    block.add("timp", 1, r"bes,2:32\mf\> r2\! | R1*7 |")
+    block.add("btbn tuba:-1", 1, dyn(low, r"\p"))
+    block.add("tbn2", 1, dyn(middle, r"\p"))
+    block.add("tbn1", 1, dyn(upper, r"\p"))
+    block.add("timp", 1, r"bes,2:32\mp\> r2\! | R1*7 |")
 
     # Phrase 2 (8 bars): the theme in the violins and woodwinds. The agitated
     # theme of part 2 is now a warm line in the cellos.
@@ -395,21 +395,21 @@ def _approach(work: Work) -> None:
     block.add("timp", 1, r"des4\pp r r2 | R1 | des4 r r2 | R1 |")
 
     # Unit 2: the theme a fourth higher. The woodwinds have the song theme.
-    block.add("va cl1", 2, tr(walk, 5), r"\mp\espr")
+    block.add("va cl1", 2, tr(walk, 5), r"\p\espr")
     block.add("vc", 2, fill(r"<des bes>1", held), r"\p")
     block.spread("hn4 hn3 hn2 hn1", 2, fill(r"<des ges bes des'>1", held), r"\p")
     block.add("cb", 2, fill(r"<des,>1", pedal), r"\p")
     block.add("timp", 2, r"des4\p r r2 | R1 | des4 r r2 | R1 |")
-    block.add("fl1 ob1:-1", 2, r"R1*2 | " + song, r"\mp")
+    block.add("fl1 ob1:-1", 2, r"R1*2 | " + song, r"\p")
 
     # Unit 3: the theme on E-flat. The first calls.
-    block.add("vn2 va", 3, walk_on_e_flat, r"\mf\espr")
+    block.add("vn2 va", 3, walk_on_e_flat, r"\mp\espr")
     block.add("vc", 3, fill(r"<ges bes>1", held), r"\mp")
     block.spread("hn4 hn3 hn2 hn1", 3, fill(r"<des ges bes es'>1", held), r"\mp")
     block.add("cb bn3", 3, fill(r"<des,>1", pedal), r"\mp")
     block.add("timp", 3, r"des4\mp r des4 r | des4 r des4 r | des4 r des4 r | des4 r des4 r |")
-    block.add("tpt1", 3, bars(4, "R1 |", {3: tr(call, 7)}), r"\mf")
-    block.add("tbn1", 3, bars(4, "R1 |", {4: tr(call, -10)}), r"\mf")
+    block.add("tpt1", 3, bars(4, "R1 |", {3: tr(call, 7)}), r"\mp")
+    block.add("tbn1", 3, bars(4, "R1 |", {4: tr(call, -10)}), r"\mp")
 
     # Unit 4: the theme in the violins, on A-flat. A call in each bar.
     block.add("vn1:1 vn2", 4, walk_on_a_flat, r"\mf\<")
@@ -575,7 +575,7 @@ def _calm(work: Work) -> None:
     block.add("harp.rh", 1, bars(8, "R1 |", {1: chime, 3: chime, 5: chime, 7: chime}))
 
     # Phrase 2 (8 bars): one horn has the song theme.
-    block.add("hn1", 2, first(tr(SONG_MAJOR, -4), r"\mp\dolce\solo", note=True))
+    block.add("hn1", 2, first(tr(SONG_MAJOR, -4), r"\p\dolce\solo", note=True))
     block.add(
         "vn1", 2,
         r"<fis'' a''>1\pp\tutti( | <g'' b''>1) | <e'' g''>1( | <fis'' a''>1) | "

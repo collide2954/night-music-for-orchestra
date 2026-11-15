@@ -128,8 +128,8 @@ def _themes_together(work: Work) -> None:
     block = Block(s, eight, eight)
 
     # The first time: soft.
-    block.add("hn1 hn3 vc", 1, dyn(WARM, r"\mp\espr"))
-    block.add("vn1:1", 1, first(SONG_TOGETHER, r"\mp\dolce", note=True))
+    block.add("hn1 hn3 vc", 1, dyn(WARM, r"\p\espr"))
+    block.add("vn1:1", 1, first(SONG_TOGETHER, r"\p\dolce", note=True))
     block.add("fl1:1", 1, r"R1*4 | " + dyn(SONG_TOGETHER.split("|", 4)[4], r"\p"))
     block.add("va cl1", 1, dyn(WALK_TOGETHER, r"\p"))
     block.add("vn2", 1, dyn(WARM_MIDDLE, r"\p"))
