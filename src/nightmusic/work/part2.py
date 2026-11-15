@@ -27,6 +27,7 @@ from ..compose.tools import (
     plain,
     put,
     rests,
+    run,
     times,
     tr,
 )
@@ -951,10 +952,32 @@ def _ascent(work: Work) -> None:
     rise = r"d'2:32 f'2:32 | as'2:32 b'2:32 | d''2:32 f''2:32 | as''2:32 b''2:32 |"
     block.add("vn1:1 vn2 va:-1 vc:-1", 6, rise, r"\f\<")
     hold = r"X1:32\ff\< ~ | X1:32 ~ | X1:32 ~ | X1:32\fff |"
-    block.add("vn1", 7, fill(r"<b'' d'''>1", hold))
-    block.add("vn2", 7, fill(r"<f'' as''>1", hold))
-    block.add("va", 7, fill(r"<f' as'>1", hold))
     block.add("vc", 7, fill(r"<d b>1", hold))
+
+    # The last unit: the woodwinds and the high strings trade fast figures (a decision of
+    # the owner of the project: trades of sixteenth notes and of short groups of
+    # thirty-second notes before a transition with a strong stroke of the bass drum).
+    # The figures go up through the scale of the chord (semitone, whole tone). Each trade
+    # is shorter than the trade before it: two beats, one beat, then all players together.
+    scale = "cis d e f g as bes b"
+
+    def burst(start: str, count: int, value: int = 16, marks: str = "") -> str:
+        notes = run(scale, start, count, value).split()
+        return f"{notes[0]}{marks}( {' '.join(notes[1:])})"
+
+    together = burst("d''", 16, 32)
+    winds = (
+        burst("d''", 8, marks=r"\ff") + " r2 | " + burst("as''", 8) + " r2 | "
+        + burst("d'''", 4) + " r4 " + burst("as'''", 4) + " r4 | "
+        + burst("d'''", 8, 32, r"\fff") + " r4 " + together + " |"
+    )  # fmt: skip
+    strings = (
+        "r2 " + burst("f''", 8, marks=r"\ff") + " | r2 " + burst("b''", 8) + " | "
+        "r4 " + burst("f'''", 4) + " r4 " + burst("b'''", 4) + " | "
+        "r4 " + burst("d'''", 8, 32, r"\fff") + " " + together + " |"
+    )  # fmt: skip
+    block.add("fl1 fl2 fl3 ob1:-1 ob2:-1 cl1:-1 cl2:-1", 7, winds)
+    block.add("vn1 vn2:-1 va:-2", 7, strings)
 
     # The bass, and the pulse of the timpani that gets faster.
     held = r"A1 ~ | A1 ~ | A1 ~ | A1 |"
@@ -1019,6 +1042,8 @@ def _ascent(work: Work) -> None:
         voices = lines(fill(tr(r"<e g bes cis'>1", pedal), swell))
         for player, voice in zip(["hn4", "hn3", "hn2", "hn1"], voices, strict=True):
             block.add(player, unit, voice)
+        if unit == 7:
+            continue  # the woodwinds have the trades
         if unit >= 3:
             block.add("cl1:1", unit, voices[1])
             block.add("ob2:1", unit, voices[2])

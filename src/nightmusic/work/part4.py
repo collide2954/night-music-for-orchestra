@@ -31,6 +31,7 @@ from ..compose.tools import (
     octave,
     relay,
     rests,
+    run,
     stack,
     tr,
 )
@@ -547,10 +548,44 @@ def _approach(work: Work) -> None:
 
     # Unit 7: the dominant of D-flat, then all voices one semitone up: the dominant of D.
     lift = r"X1:32 ~ | X1:32 |"
-    for players, chord in [("vn1", r"<c''' ges'''>1"), ("vn2", r"<es'' as''>1"),
-                           ("va", r"<ges' c''>1"), ("vc", r"<as es'>1")]:  # fmt: skip
-        block.add(players, 7, first(fill(chord, lift), r"\ff\<", note=True)
-                  + first(fill(tr(chord, 1), lift), r"\fff", note=True))  # fmt: skip
+    chord = r"<as es'>1"
+    block.add("vc", 7, first(fill(chord, lift), r"\ff\<", note=True)
+              + first(fill(tr(chord, 1), lift), r"\fff", note=True))  # fmt: skip
+
+    # The woodwinds and the high strings trade fast figures (a decision of the owner of
+    # the project). The woodwinds go down, the strings answer and go up. The trades are
+    # two beats long, then one beat. After the lift, the same trades are one semitone
+    # higher. In the last two beats, all players go up together to the main climax.
+    flat = "des es f ges as bes c"
+
+    def burst(start: str, count: int, *, down: bool = False, marks: str = "") -> str:
+        notes = run(flat, start, count, down=down).split()
+        return f"{notes[0]}{marks}( {' '.join(notes[1:])})"
+
+    winds_long = burst("c''''", 8, down=True) + " r2 |"
+    strings_long = "r2 " + burst("es'''", 8) + " |"
+    winds_short = burst("as'''", 4, down=True) + " r4 " + burst("ges'''", 4, down=True) + " r4 |"
+    strings_short = "r4 " + burst("c'''", 4) + " r4 " + burst("es'''", 4) + " |"
+    sharp = "d e fis g a b cis"
+    notes = run(sharp, "a'", 16, 32).split()
+    together = f"{notes[0]}( {' '.join(notes[1:])})"
+    # The piccolo and the oboes cannot play the low notes of the last figure: they play
+    # its second half.
+    half = f"r4 {notes[8]}32( {' '.join(notes[9:])})"
+
+    def winds(last: str) -> str:
+        return (
+            first(winds_long + " " + winds_short, r"\ff", note=True) + " "
+            + first(tr(winds_long, 1, 0), r"\fff", note=True) + " "
+            + tr(burst("as'''", 4, down=True) + " r4", 1, 0) + " " + last + " |"
+        )  # fmt: skip
+
+    strings = (
+        first(strings_long + " " + strings_short, r"\ff", note=True) + " "
+        + first(tr(strings_long, 1, 0), r"\fff", note=True) + " "
+        + "r4 " + tr(burst("c'''", 4), 1, 0) + " " + together + " |"
+    )  # fmt: skip
+    block.add("vn1 vn2:-1 va:-1", 7, strings)
     brass = r"<as, es ges c' es' as' c''>1-^ ~ | <as, es ges c' es' as' c''>1 |"
     voices_flat, voices_up = lines(brass), lines(tr(brass, 1))
     names = ["btbn", "tbn2", "tbn1", "hn2", "tpt3", "tpt2", "tpt1"]
@@ -564,11 +599,8 @@ def _approach(work: Work) -> None:
         "cb tuba bn3 cbcl bn2:1 bn1:1 cl3:1", 7, r"as,,1\ff\< ~ | as,,1 | a,,1\fff ~ | a,,1 |"
     )
     block.add("timp", 7, r"as,1:32\ff\< ~ | as,1:32 | a,1:32\fff ~ | a,1:32 |")
-    block.add(
-        "fl1 fl2 fl3 ob1:-1 ob2:-1 cl1:-1 cl2:-1", 7,
-        r"c'''1\ff\< ~ | c'''1 | cis'''1\fff ~ | cis'''2 "
-        r"a''16( b'' cis''' d''' e''' fis''' g''' a''') |",
-    )  # fmt: skip
+    block.add("fl1 fl2 cl1:-1 cl2:-1", 7, winds(together))
+    block.add("fl3 ob1:-1 ob2:-1", 7, winds(half))
     block.add("perc3", 7, r"c'1:32\f\< ~ | c'1:32 ~ | c'1:32 ~ | c'1:32\fff |")
     block.add("perc5", 7, r"R1*2 | c'4\fff\lv r4 r2 | R1 |")
     # The roll of the snare drum stops at the lift. Then the player goes to the tam-tam.
@@ -628,7 +660,8 @@ def _main_climax(work: Work) -> None:
         "perc1", 1,
         r"c'4\fff\lv r4 r2 | c'1:32\mf\< | " + r"c'4\ff\lv r4 r2 | c'1:32\mf\< | " * 3,
     )  # fmt: skip
-    block.add("perc3", 1, r"r4 c'4->\fff r4 c'4-> | " + r"r4 c'4-> r4 c'4-> | " * 7)
+    # The roll of the bass drum before this mark ends with a stroke on the first beat.
+    block.add("perc3", 1, r"c'4->\fff c'4-> r4 c'4-> | " + r"r4 c'4-> r4 c'4-> | " * 7)
     block.start("perc4", r'\switch "glockenspiel"')
 
     # Phrase 2 (4 bars): the tonic. The motto in its light form, in long notes.
