@@ -49,7 +49,9 @@ jobs:
           restore-keys: samples-v1-
 
       - name: Install the Python environment
-        run: uv sync --locked
+        run: |
+          uv python install 3.13
+          uv sync --locked
 
       - name: Build the score and the parts
         run: uv run nightmusic parts
