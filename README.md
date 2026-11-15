@@ -23,6 +23,7 @@ Each build of the repository publishes the results in the release
 | `night-music.flac` | The audio master (24 bit, 48 kHz) |
 | `night-music.mp3` | The audio master (MP3) |
 | `night-music.mp4` | The score video: the score, a cursor, and a ribbon that shows which instruments play |
+| `night-music-mobile.mp4` | The score video for a telephone: an upright picture (1080 x 1920) with larger notes |
 
 ## The work
 
@@ -136,6 +137,12 @@ The directory [`design`](design) contains the decisions and the plan of the work
 
    ```bash
    uv run nightmusic video
+   ```
+
+6. Build the video for a telephone (an upright picture):
+
+   ```bash
+   uv run nightmusic video --mobile
    ```
 
 The results are in the directory `build`.

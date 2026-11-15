@@ -52,7 +52,9 @@ def staff_size(staves: int, mobile: bool = False) -> float:
     screen. The screen of a telephone is tall: the staves can be larger.
     """
     if mobile:
-        return float(np.clip(360.0 / (staves + 1.5), 6.5, 24.0))
+        # A measurement of the pages gave the height of a system: about 3.6 pixels for
+        # each staff and each point of the staff size. The score area is 1500 pixels.
+        return float(np.clip(400.0 / (staves + 0.5), 6.5, 30.0))
     return float(np.clip(215.0 / (staves + 1.5), 5.5, 15.0))
 
 
