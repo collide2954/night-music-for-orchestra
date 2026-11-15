@@ -114,7 +114,7 @@ The directory [`design`](design) contains the decisions and the plan of the work
    uv sync
    ```
 
-2. Make sure that the players can play the music (the range of each instrument, and the time for each change of instrument):
+2. Make sure that the players can play the music (the range of each instrument, the time for each change of instrument, and the time for each change of tuning of the timpani):
 
    ```bash
    uv run nightmusic check

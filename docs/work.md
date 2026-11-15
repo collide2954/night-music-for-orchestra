@@ -180,7 +180,8 @@ The orchestra has one timpani player and six percussion players.
 | The last statement (mark GG) | Hand cymbals, suspended cymbal, tam-tam, bass drum, taiko, tubular bells, glockenspiel, timpani. |
 
 A player who goes to a different instrument has 4 seconds or more for the change.
-The command `nightmusic check` makes sure of this.
+The timpani player has 5 seconds or more to tune a drum to a different note (the check uses four drums).
+The command `nightmusic check` makes sure of these two items.
 
 ## How the code makes the music
 
@@ -199,7 +200,7 @@ Functions make the other forms of a theme:
 | `Block` | Collect the music of a section phrase by phrase. |
 
 The command `nightmusic check` finds notes that are out of the range of an instrument.
-It also finds a change of instrument for which the player has too little time.
+It also finds a change of instrument, and a change of tuning of the timpani, for which the player has too little time.
 
 The command `nightmusic docs` writes the bar numbers, the times, and the measured values of the work into this document and into the file `README.md`.
 A test makes sure that these values are up to date.

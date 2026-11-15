@@ -138,3 +138,19 @@ def test_passages_follow_the_dynamic_marks():
     section.write("tpt1", r"R1 | r2 c''2\f | R1*10 |")
     section.close()
     assert stats.passages(work) == [0.0, 16.0, 32.0]
+
+
+def test_a_change_of_tuning_of_the_timpani_needs_time():
+    from nightmusic.compose.check import check
+    from nightmusic.notation.work import Work, load_orchestra
+
+    work = Work("Test", load_orchestra())
+    section = work.section(4, 4, 4)
+    work.structure.tempo(section.bar(1), 1, 60, "Lento")
+    # Four drums have the notes D, F, G, and A. The note C comes 4 s after the stroke on D:
+    # the player must tune that drum. The note F in bar 4 needs no change.
+    section.write("timp", r"d,4\f f,4 g,4 a,4 | c4 r4 r2 | R1 | f,4 r4 r2 |")
+    section.close()
+    assert [str(problem) for problem in check(work)] == [
+        "timp, bar 2: only 4.0 s to tune a drum from d, to c"
+    ]
