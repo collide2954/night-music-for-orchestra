@@ -205,19 +205,28 @@ def _shifted(pitch: Pitch, marks: str) -> str:
     return moved.name
 
 
-def fill(chords: str, pattern: str) -> str:
+def fill(chords: str, pattern: str | dict[int, str]) -> str:
     """Make a figure from each chord of a progression.
 
     In the pattern, the letters A to H are the notes of the chord from the
     lowest to the highest, and X is the full chord. A `'` or a `,` after a
     letter moves the note by an octave. The marks of each chord go on the
     first note of its figure. Rests and bar checks of the progression stay.
+
+    The pattern can be a table: the length of the chord in quarter notes
+    selects the pattern. Thus a progression with long and short chords can
+    have a figure for each length.
     """
     parsed = music.parse(chords)
     parts: list[str] = []
+    patterns = pattern
     for element in parsed.children:
         if isinstance(element, music.Note):
             pitches = [p.pitch for p in element.pitches]
+            if isinstance(patterns, dict):
+                if element.duration not in patterns:
+                    raise ValueError(f"no pattern for a chord of {element.duration} quarter notes")
+                pattern = patterns[int(element.duration)]
 
             def substitute(match: re.Match[str], pitches: list[Pitch] = pitches) -> str:
                 letter, marks = match.group(1), match.group(2)

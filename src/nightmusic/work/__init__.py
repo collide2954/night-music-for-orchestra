@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ..notation.work import Work, load_orchestra
-from . import part1, part2, part3
+from . import part1, part2, part3, part4
 
 TITLE = "Night Music for Orchestra"
 COMPOSER = "Brett Gilio"
@@ -15,5 +15,6 @@ def build() -> Work:
     part1.write(work)
     part2.write(work)
     part3.write(work)
+    part4.write(work)
     work.check_complete()
     return work
