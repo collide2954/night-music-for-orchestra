@@ -54,6 +54,8 @@ def test_orchestra():
         "singing bowls",
         "tam-tams",
         "suspended cymbals",
+        "crash cymbals",
+        "triangle",
         "bass drum",
         "snare drum",
         "tom-toms",

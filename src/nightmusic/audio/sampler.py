@@ -83,6 +83,10 @@ class Voicebank:
             by_pitch: dict[int, list[Sample]] = {}
             for source in sources:
                 samples = build_index(source)
+                if sound.unpitched and source.layers:
+                    # One instrument with loudness layers: the written pitch has no effect.
+                    by_pitch.setdefault(60, []).extend(samples)
+                    continue
                 if sound.unpitched:
                     # The written notes c', d', e' ... select the samples in sequence.
                     steps = [60, 62, 64, 65, 67, 69, 71, 72, 74, 76]
@@ -102,7 +106,9 @@ class Voicebank:
 
     def pitches(self, key: str, midi: float) -> list[int]:
         """Return the sampled pitches of a key, nearest to the target first."""
-        return sorted(self.groups[key], key=lambda nominal: abs(nominal - midi))
+        return sorted(self.groups[key], key=lambda nominal: abs(nominal - midi))[
+            : 1 if self.sound.unpitched else None
+        ]
 
     def choose(self, key: str, nominal: int, level: float) -> list[_Choice]:
         """Return one or two samples (loudness layers) for a loudness level."""

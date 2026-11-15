@@ -169,7 +169,8 @@ family = "percussion"
 count = 4
 instruments = [
     "vibraphone", "marimba", "glockenspiel", "crotales", "xylophone", "tubular bells",
-    "tuned gongs", "singing bowls", "tam-tams", "suspended cymbals", "bass drum",
+    "tuned gongs", "singing bowls", "tam-tams", "suspended cymbals", "crash cymbals", "bass drum",
+    "triangle",
     "snare drum", "tom-toms", "frame drum", "wood blocks", "temple blocks", "claves",
     "guiro", "cowbells", "finger cymbals", "wind chimes", "waterphone",
 ]

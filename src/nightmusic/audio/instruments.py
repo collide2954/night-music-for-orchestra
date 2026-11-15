@@ -600,6 +600,22 @@ SOUNDS: dict[str, Sound] = {
     ),
 }
 
+_HIT = {"pitched": False, "held": False}
+
+
+def _unpitched(
+    source: Source, *, loud_db: float, lowcut_hz: float, tremolo: Source | None = None
+) -> Sound:
+    """Return the sound of a percussion instrument with no pitch."""
+    sources = {"sustain": (source,)}
+    if tremolo is not None:
+        sources["tremolo"] = (tremolo,)
+    return Sound(
+        sources, "percussion", loud_db=loud_db, range_db=40, decays=True, lowcut_hz=lowcut_hz,
+        unpitched=True,
+    )  # fmt: skip
+
+
 SOUNDS.update(
     {
         "tam-tams": Sound(
@@ -611,14 +627,75 @@ SOUNDS.update(
             lowcut_hz=30,
             unpitched=True,
         ),
-        "bass drum": Sound(
-            {"sustain": (sso("Percussion", r"bass_drum-.*", pitched=False, held=False),)},
-            "percussion",
-            loud_db=-3,
-            range_db=42,
-            decays=True,
+        "bass drum": _unpitched(
+            vcsl(
+                "Membranophones/Struck Membranophones/Bass Drum 2",
+                r"bassdrum_hit_(?P<layer>mp|mf|f|ff)(?P<rr>\d)?",
+                SOFT_LOUD,
+                **_HIT,
+            ),
+            loud_db=-2,
             lowcut_hz=25,
-            unpitched=True,
+        ),
+        "suspended cymbals": _unpitched(
+            vcsl(
+                VCSL_STRUCK + "Suspended Cymbal 1",
+                r"susCymb1_hit_(?P<layer>pp|mp|f|fff)1",
+                (("pp", 0.25), ("mp", 0.5), ("f", 0.75), ("fff", 0.95)),
+                **_HIT,
+            ),
+            loud_db=-6,
+            lowcut_hz=200,
+            tremolo=vcsl(
+                VCSL_STRUCK + "Suspended Cymbal 1",
+                r"susCymb1_roll_(?P<layer>mp|f|ff)\d_nloop",
+                (("mp", 0.45), ("f", 0.72), ("ff", 0.9)),
+                pitched=False,
+            ),
+        ),
+        "crash cymbals": _unpitched(
+            vcsl(
+                VCSL_STRUCK + "Clash Cymbals 1",
+                r"cymbal_crash1_(?P<layer>pp|mp|mf|ff)(?P<rr>\d)",
+                SOFT_LOUD,
+                **_HIT,
+            ),
+            loud_db=-3,
+            lowcut_hz=200,
+        ),
+        "wood blocks": _unpitched(
+            vcsl(
+                VCSL_STRUCK + "Woodblock", r"wood_click_(?P<layer>pp|mp|f|ff).*", SOFT_LOUD, **_HIT
+            ),
+            loud_db=-12,
+            lowcut_hz=300,
+        ),
+        "claves": _unpitched(
+            vcsl(
+                VCSL_STRUCK + "Claves", r"Claves1_Hit_(?P<layer>v\d)_rr(?P<rr>\d)_Mid", V3, **_HIT
+            ),
+            loud_db=-12,
+            lowcut_hz=400,
+        ),
+        "frame drum": _unpitched(
+            vcsl(
+                "Membranophones/Struck Membranophones/Frame Drum",
+                r"HDrumL_Hit_(?P<layer>v\d)_rr(?P<rr>\d)_Sum",
+                (("v2", 0.5), ("v3", 0.8)),
+                **_HIT,
+            ),
+            loud_db=-10,
+            lowcut_hz=60,
+        ),
+        "triangle": _unpitched(
+            vcsl(
+                VCSL_STRUCK + "Triangles",
+                r"Triangle1_Hit_(?P<layer>v\d)_rr(?P<rr>\d)_Mid",
+                V3,
+                **_HIT,
+            ),
+            loud_db=-16,
+            lowcut_hz=800,
         ),
     }
 )
