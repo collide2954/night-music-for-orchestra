@@ -165,6 +165,8 @@ class _State:
     short: bool = False
     plucked: bool = False
     techniques: dict[str, str] = field(default_factory=dict)  # state -> technique name
+    # The changes of the sustain pedal: the position, and "start" or "stop".
+    pedals: list[tuple[Fraction, str]] = field(default_factory=list)
 
 
 def _walk(
@@ -185,9 +187,11 @@ def _walk(
                 state.techniques = {}
         elif isinstance(element, music.Rest):
             _read_marks(element.posts, state)
+            _read_pedal(element.posts, position, state)
             position += element.duration * scale
         elif isinstance(element, music.Note):
             _read_marks(element.posts, state)
+            _read_pedal(element.posts, position, state)
             length = Fraction(0) if grace else element.duration * scale
             events.append(
                 _Event(position, length, element.duration, scale, element, voice, grace,
@@ -218,6 +222,16 @@ def _walk(
             else:
                 position = _walk(element.children, position, scale, voice, state, events)
     return position
+
+
+PEDAL_COMMANDS = {"sustainOff": "stop", "sustainOn": "start"}
+
+
+def _read_pedal(posts: list[music.Post], position: Fraction, state: _State) -> None:
+    """Keep the changes of the sustain pedal (the pedal marks of a piano part)."""
+    for post in posts:
+        if post.kind == "command" and post.value in PEDAL_COMMANDS:
+            state.pedals.append((position, PEDAL_COMMANDS[post.value]))
 
 
 def _read_marks(posts: list[music.Post], state: _State) -> None:
@@ -616,12 +630,15 @@ def score(
     # The parts: one for each instrument of each player (and one for a solo player).
     parts: dict[tuple[str, str, bool], list[_Event]] = {}
     starts: dict[tuple[str, str, bool], _State] = {}
+    # The pedal marks of an instrument with two staves are for its two hands.
+    pedals: dict[str, list[tuple[Fraction, str]]] = {}
     for player in work.orchestra.players:
         if players is not None and player.id not in players:
             continue
         state = _State(player.instruments[0])
         events: list[_Event] = []
         _walk(work.music_of(player.id).children, Fraction(0), Fraction(1), 0, state, events)
+        pedals.setdefault(player.id.split(".")[0], []).extend(state.pedals)
         running = _State(player.instruments[0])
         for event in events:
             key = (player.id, event.instrument, event.solo)
@@ -679,9 +696,17 @@ def score(
         _shape(events, work)
         brass = work.orchestra.player(player_id).family == "brass"
         _calibrate(events, levels.get(name), brass)
-        bodies.append(
-            _part_xml(number, events, measures, tempos if number == 1 else {}, starts[key], drums)
+        marks = sorted(
+            (position, kind)
+            for position, kind in pedals.get(player_id.split(".")[0], [])
+            if begin <= position < end
         )
+        bodies.append(
+            _part_xml(
+                number, events, measures, tempos if number == 1 else {}, starts[key], drums,
+                marks,
+            )
+        )  # fmt: skip
     text = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" '
@@ -695,7 +720,7 @@ def score(
 
 
 def _part_xml(
-    number: int, events: list[_Event], measures, tempos, start: _State, drums=None
+    number: int, events: list[_Event], measures, tempos, start: _State, drums=None, pedals=()
 ) -> str:
     lines = [f'<part id="P{number}">']
     clef = (
@@ -771,6 +796,18 @@ def _part_xml(
                 moved = offset
             lines.append(f'<direction><direction-type><words></words></direction-type>'
                          f'<sound tempo="{tempos[position]:.4f}"/></direction>')  # fmt: skip
+        if moved:
+            lines.append(_backup(moved))
+        # The changes of the sustain pedal in this bar. A release comes before a new
+        # push at the same moment.
+        moved = Fraction(0)
+        for position, kind in pedals:
+            if bar.start <= position < bar.end:
+                offset = position - bar.start
+                if offset > moved:
+                    lines.append(_forward(offset - moved))
+                    moved = offset
+                lines.append(_direction(f'<pedal type="{kind}" line="yes"/>'))
         if moved:
             lines.append(_backup(moved))
         bar_length = bar.end - bar.start

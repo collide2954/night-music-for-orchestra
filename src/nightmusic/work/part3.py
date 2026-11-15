@@ -13,6 +13,8 @@ Material of this part:
 - The motto as a distant chorale in four octaves: first with the tritone
   (the dark form), then with the fifth (the twilight form).
 - A slow melody for one cello above a drone on E-flat and A-flat.
+- The first half of the piano interlude (mark W): the piano takes the night
+  music. The module `interlude.py` has this music.
 
 Style profile: "Night".
 """
@@ -21,6 +23,7 @@ from __future__ import annotations
 
 from ..compose.tools import Block, fill, scatter, times
 from ..notation.work import Work
+from . import interlude
 
 BARS = 42  # the part has 42 bars of 3/2
 
@@ -91,6 +94,7 @@ def write(work: Work) -> None:
     _lonely_melody(work)
     _distant_chorale(work)
     _drone_and_song(work)
+    interlude.write_night_piano(work)
 
 
 def _night_begins(work: Work) -> None:
@@ -219,18 +223,18 @@ def _drone_and_song(work: Work) -> None:
         r2 es1\pp\espr\<( ~ | es2\p des4 es4 ges2 ~ |
         ges4\> geseh4 ges4 geseh4 ges2\glissando | es1.)\p |
         r2 ges4\p\<( as4 ces'2 ~ | ces'2\mp des'4 ces'4 as2 ~ |
-        as2\> ges4 es4 des2 | es1.\pp ~ | es1.)\fermata |""",
+        as2\> ges4 es4 des2 | es1.\pp ~ | es1.) |""",
         r"\solo\senzasord\ord\vib",
     )  # fmt: skip
     block.add("fl2", 1, rest(4) + r"r2 ces''4\pp( beseh'4 as'2 ~ | as'1.) | " + rest(4))
 
     block.add("va", 1, r"as1.\ppp ~ | as1. ~ | as1. ~ | as1. | " + rest(1)
               + r"<bes es'>1.\ppp\< ~ | <bes es'>1. ~ | <bes es'>1.\pp ~ | <bes es'>1.\> ~ | "
-              r"<bes es'>1.\ppp\fermata |")  # fmt: skip
+              r"<bes es'>1.\ppp ~ |")  # fmt: skip
     block.add("vn2", 1, rest(5) + r"ges'1.\ppp\< ~ | ges'1. ~ | ges'1.\pp ~ | ges'1.\> ~ | "
-              r"ges'1.\ppp\fermata |")  # fmt: skip
+              r"ges'1.\ppp ~ |")  # fmt: skip
     block.add("cb", 1, rest(5) + r"es,1.\ppp\< ~ | es,1. ~ | es,1.\pp ~ | es,1.\> ~ | "
-              r"es,1.\ppp\fermata |", r"\consord\arco")  # fmt: skip
+              r"es,1.\ppp ~ |", r"\consord\arco")  # fmt: skip
     _add_cycle(block, 33, 10, skip=("harp.lh", "acc.rh", "pno.lh"))
 
     block.add("cl1", 1, scatter(10, 3, 2, {(5, 4): BIRD}))

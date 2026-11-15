@@ -69,6 +69,7 @@ TECHNIQUES: dict[str, Technique] = {
         _T("lv", "l.v.", "ring", "on"),
         _T("damp", "damp", "ring", "off"),
         _T("bowed", "with a bow", "attack", "bowed"),
+        _T("mallets", "with mallets", "attack", "arco"),
         _T("softmallets", "soft mallets", "mallet", "soft"),
         _T("hardmallets", "hard mallets", "mallet", "hard"),
         _T("motoron", "motor on", "motor", "on"),

@@ -1,12 +1,12 @@
 measure,complete,before the turn,after the turn,part 1,part 2,part 3,part 4,part 5
-chords: share built from thirds,0.4412,0.3935,0.4927,0.4842,0.5187,0.06195,0.5618,0.3424
-chords: share with a semitone clash,0.5027,0.6945,0.296,0.5902,0.6178,0.9204,0.2691,0.3544
-chords: share with a 3-semitone cluster,0.1523,0.2648,0.03095,0.1329,0.05364,0.8142,0.0009217,0.09639
-chords: share in one whole-tone scale,0.01474,0.02021,0.008844,0.02848,0.0273,0,0.0129,0
-chords: mean pitch classes,4.366,4.67,4.037,4.191,4.181,6.024,4.025,4.063
-share of sounding time: major and minor triads,0.1539,0.09202,0.2409,0.1316,0.1073,0.01984,0.2665,0.1961
-share of sounding time: vagrant chords,0.05368,0.08101,0.0152,0.1184,0.09944,0,0.02298,0.001608
-share of sounding time: dominant chords,0.0753,0.06419,0.09094,0.009868,0.09475,0,0.1167,0.04582
-share of sounding time: other seventh and ninth chords,0.07165,0.04175,0.1137,0.07566,0.03721,0.03571,0.1613,0.03055
-mean pitch classes that sound together,3.814,3.792,3.845,3.364,3.31,5.581,4.02,3.539
-mean distinct pitch classes in one window,4.806,4.933,4.625,4.389,5.38,3.806,4.854,4.244
+chords: share built from thirds,0.444,0.3923,0.4948,0.4842,0.5187,0.1091,0.552,0.3424
+chords: share with a semitone clash,0.4997,0.6893,0.3137,0.5902,0.6178,0.8681,0.2984,0.3544
+chords: share with a 3-semitone cluster,0.1408,0.2571,0.02685,0.1329,0.05364,0.7035,0.0007536,0.09639
+chords: share in one whole-tone scale,0.01619,0.0204,0.01205,0.02848,0.0273,0.003742,0.01658,0
+chords: mean pitch classes,4.344,4.611,4.081,4.191,4.181,5.618,4.088,4.063
+share of sounding time: major and minor triads,0.1489,0.09062,0.2275,0.1316,0.1073,0.03862,0.2421,0.1961
+share of sounding time: vagrant chords,0.04957,0.07347,0.01729,0.1184,0.09944,0,0.02455,0.001608
+share of sounding time: dominant chords,0.07013,0.05897,0.0852,0.009868,0.09475,0.002663,0.1034,0.04582
+share of sounding time: other seventh and ninth chords,0.08052,0.04138,0.1334,0.07566,0.03721,0.0364,0.1809,0.03055
+mean pitch classes that sound together,3.745,3.633,3.896,3.364,3.31,4.429,4.061,3.539
+mean distinct pitch classes in one window,4.685,4.728,4.625,4.389,5.38,3.484,4.809,4.244

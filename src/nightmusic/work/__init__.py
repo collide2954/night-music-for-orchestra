@@ -29,12 +29,12 @@ RITARDANDI = [
     ("A", 12, 3, 38),  # part 1: the end of the long song
     ("F", 8, 3, 52),  # part 2: the end of the song theme
     ("O", 8, 3, 50),  # part 2: the song theme in B minor
-    ("X", 8, 3, 44),  # part 4: the warm theme, the first time
-    ("Y", 20, 3, 56),  # part 4: the song theme in F-sharp major
-    ("Z", 16, 3, 50),  # part 4: the warm theme in B-flat major
-    ("CC", 8, 3, 44),  # part 4: the solo of the violin
-    ("CC", 16, 3, 44),  # part 4: the solo of the horn
-    ("EE", 8, 3, 52),  # part 5: the themes together, the first time
+    ("Y", 8, 3, 44),  # part 4: the warm theme, the first time
+    ("Z", 20, 3, 56),  # part 4: the song theme in F-sharp major
+    ("AA", 16, 3, 50),  # part 4: the warm theme in B-flat major
+    ("DD", 8, 3, 44),  # part 4: the solo of the violin
+    ("DD", 16, 3, 44),  # part 4: the solo of the horn
+    ("FF", 8, 3, 52),  # part 5: the themes together, the first time
 ]
 
 
@@ -43,8 +43,8 @@ RITARDANDI = [
 FERMATAS = [
     ("D", 3.0),  # the end of part 1: the note A
     ("S", 3.0),  # the end of part 2: the note A-flat
-    ("W", 3.0),  # the end of part 3: E-flat minor
-    ("DD", 3.0),  # the end of part 4: D major, very soft
+    ("X", 3.0),  # the end of part 3: the last notes of the piano, in E-flat minor
+    ("EE", 3.0),  # the end of part 4: D major, very soft
 ]
 LAST_FERMATA = 5.0  # the last chord of the work
 
@@ -56,7 +56,7 @@ def _inflections(work: Work) -> None:
     for label, number, beat, slow in RITARDANDI:
         structure.ritardando(marks[label] + number - 1, beat, slow)
     # The end of the warm theme (second time): the tempo of the subsequent section follows.
-    structure.ritardando(marks["X"] + 15, 3, 44, resume="")
+    structure.ritardando(marks["Y"] + 15, 3, 44, resume="")
     # The fermatas: the last bar before each of these marks, and the last bar of the work.
     for label, seconds in FERMATAS:
         structure.fermata(marks[label] - 1, seconds)

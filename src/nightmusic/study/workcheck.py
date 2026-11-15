@@ -127,13 +127,13 @@ def parts_of(work: Work) -> dict[str, tuple[int, int]]:
     last = len(work.structure.bars)
     return {
         "complete": (1, last),
-        "before the turn": (1, marks["W"] - 1),
-        "after the turn": (marks["W"], last),
+        "before the turn": (1, marks["X"] - 1),
+        "after the turn": (marks["X"], last),
         "part 1": (1, marks["D"] - 1),
         "part 2": (marks["D"], marks["S"] - 1),
-        "part 3": (marks["S"], marks["W"] - 1),
-        "part 4": (marks["W"], marks["DD"] - 1),
-        "part 5": (marks["DD"], last),
+        "part 3": (marks["S"], marks["X"] - 1),
+        "part 4": (marks["X"], marks["EE"] - 1),
+        "part 5": (marks["EE"], last),
     }
 
 

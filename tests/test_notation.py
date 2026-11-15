@@ -151,9 +151,9 @@ def test_the_notes_of_the_score_have_the_bar_numbers_of_the_music():
     work = build()
     marks = {label: number for number, label in work.structure.marks.items()}
     notes = " ".join(lilypond.score_notes(work))
-    # The harmonic series on D is the section at the mark DD.
-    assert f"the woodwinds (bars {marks['DD']} to {marks['EE'] - 1})" in notes
-    # The ocarinas play in part 3 only: between the mark S and the mark W.
+    # The harmonic series on D is the section at the mark EE.
+    assert f"the woodwinds (bars {marks['EE']} to {marks['FF'] - 1})" in notes
+    # The ocarinas play in the night music only: between the mark S and the mark W.
     found = re.search(r"an ocarina in C \(bars (\d+) to (\d+)\)", notes)
     assert found is not None
     assert marks["S"] <= int(found[1]) < int(found[2]) < marks["W"]

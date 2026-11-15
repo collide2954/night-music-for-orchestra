@@ -71,11 +71,11 @@ def write(work: Work) -> None:
 
 
 def _first_light(work: Work) -> None:
-    """Mark DD: the harmonic series on D, from the lowest note up."""
+    """Mark EE: the harmonic series on D, from the lowest note up."""
     structure = work.structure
     count = 10
     s = work.section(count, 4, 4)
-    structure.mark(s.bar(1), "DD")
+    structure.mark(s.bar(1), "EE")
     structure.tempo(s.bar(1), 1, 50, "Lento, come un'alba")
     block = Block(s, rests(4, 4, count))
 
@@ -121,10 +121,10 @@ def _first_light(work: Work) -> None:
 
 
 def _themes_together(work: Work) -> None:
-    """Mark EE: the warm theme and the song theme at the same time."""
+    """Mark FF: the warm theme and the song theme at the same time."""
     structure = work.structure
     s = work.section(16, 4, 4)
-    structure.mark(s.bar(1), "EE")
+    structure.mark(s.bar(1), "FF")
     structure.tempo(s.bar(1), 1, 60, "Andante, con moto")
     eight = rests(4, 4, 8)
     block = Block(s, eight, eight)
@@ -167,7 +167,7 @@ def _engine(work: Work) -> None:
     structure = work.structure
     seven = (7, 8, (2, 2, 3))
     s = work.section(32, *seven)
-    structure.mark(s.bar(1), "FF")
+    structure.mark(s.bar(1), "GG")
     structure.tempo(s.bar(1), 1, 264, "Con slancio", unit="8")
     eight = rests(7, 8, 8)
     one = rests(7, 8)
@@ -298,10 +298,10 @@ def _engine(work: Work) -> None:
 
 
 def _last_statement(work: Work) -> None:
-    """Mark GG: the chorale in D major, and the last chord."""
+    """Mark HH: the chorale in D major, and the last chord."""
     structure = work.structure
     s = work.section(21, 4, 4)
-    structure.mark(s.bar(1), "GG")
+    structure.mark(s.bar(1), "HH")
     structure.tempo(s.bar(1), 1, 50, "Maestoso")
     block = Block(s, rests(4, 4, 11), rests(4, 4, 10))
 

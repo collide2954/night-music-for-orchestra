@@ -14,7 +14,7 @@ from dataclasses import replace
 from fractions import Fraction
 
 from ..notation import music
-from ..notation.pitch import STEP_SEMITONES, Interval, Pitch
+from ..notation.pitch import NAMES, STEP_SEMITONES, Interval, Pitch
 from ..notation.work import Section
 
 
@@ -71,6 +71,37 @@ def invert(text: str, axis: str) -> str:
         ).simplified()
 
     return _apply(text, mirror)
+
+
+def run(scale: str, start: str, count: int, value: int = 16, *, down: bool = False) -> str:
+    """Return a fast line through the notes of a scale, one step for each note.
+
+    `scale` has the note names of the scale in one octave, for example
+    "d e fis gis a b cis". `start` is the first note, with its octave marks:
+    it must be a note of the scale. `value` is the note value (16 = sixteenth
+    notes). The line goes up, or down if `down` is true.
+    """
+    degrees = sorted(NAMES[name] for name in scale.split())
+    first_pitch = Pitch.parse(start)
+    places = [
+        index
+        for index, (step, alter) in enumerate(degrees)
+        if (step, alter) == (first_pitch.step, first_pitch.alter)
+    ]
+    if not places:
+        raise ValueError(f"the note {start} is not in the scale {scale}")
+    index, octave_number = places[0], first_pitch.octave
+    notes = []
+    for number in range(count):
+        step, alter = degrees[index]
+        name = Pitch(step, alter, octave_number).name
+        notes.append(name + (str(value) if number == 0 else ""))
+        index += -1 if down else 1
+        if index >= len(degrees):
+            index, octave_number = 0, octave_number + 1
+        elif index < 0:
+            index, octave_number = len(degrees) - 1, octave_number - 1
+    return " ".join(notes)
 
 
 def times(text: str, count: int) -> str:
