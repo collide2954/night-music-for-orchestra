@@ -112,6 +112,7 @@ def _turn(work: Work) -> None:
     block.add("cl1", 1, r"""\switch "clarinet in B-flat" R1*4 |""")
     block.add("ob2", 1, r"""\switch "oboe" R1*4 |""")
     block.add("fl2", 1, r"""\switch "flute" R1*4 |""")
+    block.add("bn2", 1, r"""\switch "bassoon" R1*4 |""")
     block.close()
 
 
@@ -268,6 +269,7 @@ def _shimmer(work: Work) -> None:
         r"<eis' ais'>1 | <fis' b'>1 | <gis' b'>1 | <fis' ais'>1 |",
     )  # fmt: skip
     block.add("perc3", 4, r"fis'1\mp\lv | R1*3 | fis'1\lv | R1*3 |")
+    block.add("cimb.lh", 4, r"<fis cis'>1:32\pp ~ | <fis cis'>1:32 | R1*2 | " * 2)
     high = r"<cis''' cis''''>4\p r4 r2 |"
     block.add("pno.rh", 4, bars(8, "R1 |", {1: high, 3: high, 5: high, 7: high}))
     block.add(
@@ -322,7 +324,7 @@ def _broad(work: Work) -> None:
     high_theme = tr(WARM, 8)
     block.add("vn1 vn2 fl1:1 fl2:1 ob1 ob2 cl1 cl2", 2, dyn(high_theme, r"\f\espr"))
     block.add(
-        "vc bn1 cl3:-1", 2,
+        "vc bn1 ob3 cl3:-1", 2,
         r"r8 bes8\mf\espr( c'4 ~ c'8 f'8 d'4) | r8 c'8( e'4 ~ e'8 d'8 bes4) | "
         r"r8 bes8( c'4 ~ c'8 g'8 es'4) | r8 c'8( d'4 ~ d'8 c'8 a4) | "
         r"r8 d'8( f'4 ~ f'8 bes'8 f'4) | r8 e'8( g'4) r8 d'8( f'4) | "
@@ -406,7 +408,7 @@ def _approach(work: Work) -> None:
     block.add("vn2 va", 3, walk_on_e_flat, r"\mp\espr")
     block.add("vc", 3, fill(r"<ges bes>1", held), r"\mp")
     block.spread("hn4 hn3 hn2 hn1", 3, fill(r"<des ges bes es'>1", held), r"\mp")
-    block.add("cb bn3", 3, fill(r"<des,>1", pedal), r"\mp")
+    block.add("cb bn3 cbcl", 3, fill(r"<des,>1", pedal), r"\mp")
     block.add("timp", 3, r"des4\mp r des4 r | des4 r des4 r | des4 r des4 r | des4 r des4 r |")
     block.add("tpt1", 3, bars(4, "R1 |", {3: tr(call, 7)}), r"\mp")
     block.add("tbn1", 3, bars(4, "R1 |", {4: tr(call, -10)}), r"\mp")
@@ -416,7 +418,7 @@ def _approach(work: Work) -> None:
     block.add("va", 4, fill(r"<ges c'>1", held), r"\mf\<")
     block.add("vc", 4, fill(r"<as es'>1", held), r"\mf\<")
     block.spread("hn4 hn3 hn2 hn1", 4, fill(r"<as c' es' ges'>1", held), r"\mf\<")
-    block.add("cb bn3 tuba", 4, fill(r"<des,>1", pedal), r"\mf\<")
+    block.add("cb bn3 cbcl tuba", 4, fill(r"<des,>1", pedal), r"\mf\<")
     block.add("timp", 4, r"des1:32\mp\< ~ | des1:32 ~ | des1:32 ~ | des1:32 |")
     block.add("tpt1 tpt2", 4, bars(4, "R1 |", {1: tr(call, 7), 3: tr(call, 14)}), r"\mf")
     block.add("tbn1 tbn2", 4, bars(4, "R1 |", {2: tr(call, -10), 4: tr(call, -5)}), r"\mf")
@@ -432,7 +434,7 @@ def _approach(work: Work) -> None:
         song + r"f''2( es''4 des''4 | c''2. des''4) |", r"\f",
     )  # fmt: skip
     block.spread("hn4 hn3 hn2 hn1", 5, fill(r"<des as des' f'>1", held), r"\f")
-    block.add("tuba bn3 bn2:1 bn1:1", 5, fill(r"<des,>1", pedal), r"\f")
+    block.add("tuba bn3 cbcl bn2:1 bn1:1", 5, fill(r"<des,>1", pedal), r"\f")
     block.add("timp", 5, r"des1:32\f ~ | des1:32 ~ | des1:32 ~ | des1:32 |")
     block.add("tpt1 tpt2 tpt3", 5, bars(4, "R1 |", {1: tr(call, 12), 3: tr(call, 7)}), r"\f")
     block.add("tbn1 tbn2 hn5 hn6", 5, bars(4, "R1 |", {2: tr(call, -5), 4: call}), r"\f")
@@ -446,7 +448,7 @@ def _approach(work: Work) -> None:
     block.add("fl1:2 fl2:2 fl3:2 ob1:1 ob2:1 cl1:1 cl2:1", 6, fast, r"\ff")
     chords = fill(r"<ges, des ges bes>1", held)
     block.spread("hn4 hn3 hn2 hn1", 6, chords, r"\ff")
-    block.add("tuba bn3 bn2:1 bn1:1 btbn", 6, r"ges,1 ~ | ges,1 | es,1 ~ | es,1 |", r"\ff")
+    block.add("tuba bn3 cbcl bn2:1 bn1:1 btbn", 6, r"ges,1 ~ | ges,1 | es,1 ~ | es,1 |", r"\ff")
     block.add("timp", 6, r"ges,1:32\f ~ | ges,1:32 | es1:32 ~ | es1:32 |")
     block.add("tpt1 tpt2 tpt3", 6, bars(4, "R1 |", {1: tr(call, 5), 3: tr(call, 9)}), r"\ff")
     block.add("tbn1 tbn2 hn5 hn6", 6, bars(4, "R1 |", {2: tr(call, -7), 4: tr(call, -3)}), r"\ff")
@@ -467,7 +469,9 @@ def _approach(work: Work) -> None:
               + first(voices_up[4], r"\fff", note=True))  # fmt: skip
     block.add("hn4 hn5 hn6", 7, first(voices_flat[2], r"\ff\<", note=True)
               + first(voices_up[2], r"\fff", note=True))  # fmt: skip
-    block.add("cb tuba bn3 bn2:1 bn1:1 cl3:1", 7, r"as,,1\ff\< ~ | as,,1 | a,,1\fff ~ | a,,1 |")
+    block.add(
+        "cb tuba bn3 cbcl bn2:1 bn1:1 cl3:1", 7, r"as,,1\ff\< ~ | as,,1 | a,,1\fff ~ | a,,1 |"
+    )
     block.add("timp", 7, r"as,1:32\ff\< ~ | as,1:32 | a,1:32\fff ~ | a,1:32 |")
     block.add(
         "fl1 fl2 fl3 ob1:-1 ob2:-1 cl1:-1 cl2:-1", 7,
@@ -495,7 +499,7 @@ def _main_climax(work: Work) -> None:
     block.add("vn1:1 vn2:1 va vc tpt1 tpt2 hn5 hn6", 1, theme)
     block.add("fl1:2 fl2:2 fl3:2 ob1:1 ob2:1 cl1:1 cl2:1 perc4:2", 1, theme)
     bass, tenor, alto, top = lines(dyn(WARM_CHORDS, r"\fff"))
-    block.add("hn4 btbn bn1 bn2 cl3 tuba:-1 bn3:-1 cb:-1", 1, bass)
+    block.add("hn4 btbn bn1 bn2 cl3 tuba:-1 bn3:-1 cbcl:-1 cb:-1", 1, bass)
     block.add("hn3 tbn2", 1, tenor)
     block.add("hn2 tbn1", 1, alto)
     block.add("hn1 tpt3", 1, top)
@@ -504,6 +508,7 @@ def _main_climax(work: Work) -> None:
     rolled = {4: full[4] + r"\arpeggio", 2: full[2] + r"\arpeggio"}
     block.add("pno.rh", 1, fill(dyn(WARM_CHORDS, r"\fff"), full))
     block.add("harp.rh", 1, fill(dyn(WARM_CHORDS, r"\ff"), rolled))
+    block.add("acc.rh", 1, fill(dyn(WARM_CHORDS, r"\ff"), full))
     block.add(
         "timp", 1,
         r"d,1:32\fff | d,1:32 | g,1:32 | a,1:32 | d,1:32 | a,1:32 | g,1:32 | a,1:32 |",
@@ -526,7 +531,9 @@ def _main_climax(work: Work) -> None:
     block.add("va", 2, fill(r"<d' a'>1", fade))
     block.add("vc", 2, fill(r"<d a>1", fade))
     block.add(
-        "cb btbn tuba bn3 bn1:1 bn2:1", 2, fill(r"<d,>1", r"A1\fff ~ | A1\> ~ | A1 ~ | A1\mf |")
+        "cb btbn tuba bn3 cbcl bn1:1 bn2:1",
+        2,
+        fill(r"<d,>1", r"A1\fff ~ | A1\> ~ | A1 ~ | A1\mf |"),
     )
     block.add("timp", 2, r"d,1:32\fff ~ | d,1:32\> ~ | d,1:32 ~ | d,1:32\mp |")
     block.add("fl1:1 fl2:1 fl3:1 ob1 ob2 cl1 cl2", 2, r"d''1\fff ~ | d''1\> ~ | d''1 ~ | d''1\mf |")
@@ -571,6 +578,11 @@ def _calm(work: Work) -> None:
         r"<d a>1\pp( | <d g>1) | <d a>1( | <d g>1) | <d a>1( | <d g>1) | <d a>1 ~ | <d a>1 |",
     )  # fmt: skip
     block.add("cb", 1, r"d,1\pp ~ | " + r"d,1 ~ | " * 6 + r"d,1 |")
+    block.add(
+        "acc.rh", 1,
+        r"<fis' a'>1\pp( | <g' b'>1) | <fis' a'>1( | <e' g'>1) | "
+        r"<fis' a'>1( | <g' b'>1) | <fis' a'>1 ~ | <fis' a'>1 |",
+    )  # fmt: skip
     chime = r"<d'' a''>4\pp r r2 |"
     block.add("harp.rh", 1, bars(8, "R1 |", {1: chime, 3: chime, 5: chime, 7: chime}))
 

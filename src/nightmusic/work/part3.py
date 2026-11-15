@@ -40,6 +40,8 @@ DROP = r"d''''8\pp( es''''8)"
 INSECT = r"as'16\pp as' as' as' as'8-. r8"
 DISTANT = r"d'4\pp\stopped ~ d'8 r8"
 FLICKER = r"<d''' es'''>4:32\ppp"
+FROG_LOW = r"\grace { d,16 } es,8-.\p r8"
+BIRD_HIGH = r"\grace { g''16 } as''8-.\p as''8-. as''4--"
 
 # One breath of the accordion (2 bars): a high chord of five notes, as the
 # mouth organ of the Japanese court music plays it.
@@ -116,6 +118,9 @@ def _night_begins(work: Work) -> None:
     block.start("ob2", r'\switch "ocarina"')
     calls("cl3", {(5, 2): FROG, (8, 1): FROG, (10, 5): FROG})
     calls("fl3", {(5, 4): FLUTTER, (8, 5): FLUTTER})
+    calls("cbcl", {(6, 2): FROG_LOW, (9, 1): FROG_LOW})
+    calls("bn2", {(8, 2): BIRD_HIGH})
+    block.start("bn2", r'\switch "ocarina"')
     calls("perc4", {(3, 3): CRICKET, (6, 3): CRICKET, (9, 5): CRICKET})
     block.start("perc4", r'\switch "wood blocks"')
     calls("cel.rh", {(4, 5): DROP, (7, 5.5): DROP})
@@ -156,6 +161,8 @@ def _lonely_melody(work: Work) -> None:
     block.add("ob2", 1, scatter(12, 3, 2, {(6, 5): BIRD_LOW, (12, 4): BIRD_LOW}))
     block.add("perc4", 1, scatter(12, 3, 2, {(1, 3): CRICKET, (7, 1): CRICKET, (11, 4): CRICKET}))
     block.add("cl3", 1, scatter(12, 3, 2, {(3, 2): FROG, (11, 5): FROG}))
+    block.add("cbcl", 1, scatter(12, 3, 2, {(7, 4): FROG_LOW}))
+    block.add("bn2", 1, scatter(12, 3, 2, {(9, 5): BIRD_HIGH}))
     block.add("cel.rh", 1, scatter(12, 3, 2, {(6, 3): DROP, (12, 2): DROP}))
     block.add("vn1", 1, scatter(12, 3, 2, {(3, 5): FLICKER, (10, 5): FLICKER}))
     block.close()
@@ -184,6 +191,7 @@ def _distant_chorale(work: Work) -> None:
     _add_cycle(block, 23, 10)
 
     block.add("cl1", 1, scatter(10, 3, 2, {(4, 3): BIRD, (10, 3): BIRD}))
+    block.add("bn2", 1, scatter(10, 3, 2, {(7, 4): BIRD_HIGH}))
     block.add("perc4", 1, scatter(10, 3, 2, {(3, 5): CRICKET, (7, 5): CRICKET}))
     block.add("cel.rh", 1, scatter(10, 3, 2, {(7, 2): DROP}))
     block.close()
@@ -201,6 +209,8 @@ def _drone_and_song(work: Work) -> None:
     # The drone: the fourth and the tonic, as the lute of the Indian night music plays it.
     block.add("harp.lh", 1, times(r"as,4\pp es4 es4 es,2. |", 10))
     block.add("cimb.lh", 1, r"es1.:32\ppp ~ | " + times(r"es1.:32 ~ |", 8) + r" es1.:32 |")
+    block.add("mand", 1, rest(5) + r"es'1.:32\ppp ~ | " + times(r"es'1.:32 ~ |", 3)
+              + r" es'1.:32 |")  # fmt: skip
 
     block.add(
         "vc", 1,

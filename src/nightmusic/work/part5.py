@@ -91,13 +91,14 @@ def _first_light(work: Work) -> None:
         parts.append(rf"{letter}1\mf |")
         block.add(players, 1, fill(f"<{chord}>1", " ".join(parts)), marks)
 
-    enter("cb bn3", 1, 1, "d,,")
+    enter("cb bn3 cbcl", 1, 1, "d,,")
     enter("vc", 1, 2, "d, a,", r"\tutti\ord")
     enter("va", 2, 1, "d fis", r"\ord")
     enter("hn3 hn4", 2, 2, "a")
     enter("hn2", 3, 1, "c'")
     enter("vn2", 3, 2, "d' e'", r"\ord")
     enter("cl1", 4, 1, "fis'")
+    enter("acc.rh", 4, 1, "d' a'")
     enter("cl2", 4, 2, "gih'")
     enter("ob1", 5, 1, "a'")
     enter("ob2", 5, 2, "beh'")
@@ -131,7 +132,7 @@ def _themes_together(work: Work) -> None:
     block.add("hn1 hn3 vc", 1, dyn(WARM, r"\p\espr"))
     block.add("vn1:1", 1, first(SONG_TOGETHER, r"\p\dolce", note=True))
     block.add("fl1:1", 1, r"R1*4 | " + dyn(SONG_TOGETHER.split("|", 4)[4], r"\p"))
-    block.add("va cl1", 1, dyn(WALK_TOGETHER, r"\p"))
+    block.add("va cl1 ob3", 1, dyn(WALK_TOGETHER, r"\p"))
     block.add("vn2", 1, dyn(WARM_MIDDLE, r"\p"))
     block.add("bn1 bn2 cb:-1", 1, dyn(WARM_BASS, r"\p"))
     quiet = {3: "R1 |", 4: "R1 |", 7: "R1 |", 8: "R1 |"}
@@ -141,7 +142,7 @@ def _themes_together(work: Work) -> None:
     # The second time: loud, with the chase theme in a major key.
     block.add("tpt1 tpt2 hn1 hn2 hn3 hn4 vc va", 2, dyn(WARM, r"\f\espr"))
     block.add("vn1:1 vn2:1 fl1:2 fl2:2 ob1:1 ob2:1", 2, first(SONG_TOGETHER, r"\f", note=True))
-    block.add("cl1 cl2 fl3:1 perc2:1 pno.rh:1", 2, dyn(RUN_TOGETHER, r"\f"))
+    block.add("cl1 cl2 mand cimb.rh fl3:1 perc2:1 pno.rh:1", 2, dyn(RUN_TOGETHER, r"\f"))
     block.start("perc2", r'\switch "xylophone"')
     bass, tenor, alto, _top = lines(dyn(WARM_CHORDS, r"\mf"))
     block.add("btbn bn1 bn2 tuba:-1 bn3:-1 cb:-1", 2, bass)
@@ -205,7 +206,7 @@ def _calls(work: Work) -> None:
         block.add(player, 1, scatter(9, 4, 4, events))
         chord = tr(r"<d' e' a'>1", 12 * shift) if shift else r"<d' e' a'>1"
         block.add(player, 2, fill(chord, together))
-    extra = "hn5 hn6 btbn:-1 tuba:-2 bn2:-1 bn3:-2 pno.rh:1 pno.lh:-1"
+    extra = "hn5 hn6 btbn:-1 tuba:-2 bn2:-1 bn3:-2 cbcl:-2 cimb.rh mand:1 acc.rh pno.rh:1 pno.lh:-1"
     block.add(extra, 2, fill(r"<d' e' a'>1", together))
 
     # The chord of fifths (D, A, E) in the strings: it grows through the section.
@@ -236,9 +237,10 @@ def _last_statement(work: Work) -> None:
     block.add("tpt1:1 tpt2 ob1:1 ob2:1 fl1:2 fl2:2 fl3:2 vn1:2 vn2:1 hn5 hn6 perc4:2", 1, top)
     block.add("tpt3 hn1 hn3 cl1:1 cl2:1 tbn1", 1, alto)
     block.add("hn2 hn4 tbn2 va", 1, tenor)
-    block.add("btbn bn1 bn2 cl3 vc tuba:-1 bn3:-1 cb:-1", 1, bass)
+    block.add("btbn bn1 bn2 cl3 vc tuba:-1 bn3:-1 cbcl:-1 cb:-1", 1, bass)
     block.add("pno.lh", 1, double(bass, -1))
     block.add("pno.rh", 1, fill(dyn(CHORALE, r"\fff"), r"<B C D B' C' D'>1"))
+    block.add("acc.rh", 1, fill(dyn(CHORALE, r"\ff"), r"<B C D B' C' D'>1"))
     block.add(
         "timp", 1,
         r"d,1:32\fff | R1 | d,1:32 | R1 | g,1:32 | a,1:32 ~ | a,1:32 | d,1:32 | "
@@ -269,7 +271,10 @@ def _last_statement(work: Work) -> None:
                           ("vc", "d a")]:  # fmt: skip
         block.add(player, 2, fill(f"<{chord}>1", hold))
     plain_hold = hold.replace(":32", "").replace("X", "A")
-    block.add("cb btbn tuba bn3 bn1:1 bn2:1 cl3:1", 2, fill(r"<d,>1", plain_hold))
+    block.add("cb btbn tuba bn3 cbcl bn1:1 bn2:1 cl3:1", 2, fill(r"<d,>1", plain_hold))
+    block.add("acc.rh", 2, fill(r"<d' fis' a' d''>1", plain_hold))
+    block.add("cimb.lh", 2, fill(r"<d d'>1", hold))
+    block.add("mand", 2, fill(r"<fis'' a''>1", hold))
     block.add("fl1 fl2:-1 fl3 ob1:-1 ob2:-1 cl1:-1 cl2:-2", 2, fill(r"<d'''>1", plain_hold))
     block.add(
         "timp", 2,

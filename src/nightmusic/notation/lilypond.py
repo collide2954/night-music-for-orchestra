@@ -363,6 +363,96 @@ def _score_staves(work: Work) -> str:
     return "\n".join(blocks)
 
 
+FAMILY_TITLES = {
+    "woodwinds": "Woodwinds",
+    "brass": "Brass",
+    "percussion": "Percussion",
+    "plucked": "Harp and plucked instruments",
+    "keyboards": "Keyboards",
+    "strings": "Strings",
+}
+
+SCORE_NOTES = [
+    "The score is in C. The parts are transposed.",
+    "Piccolo, celesta, and glockenspiel sound higher than written, by one or two octaves. "
+    "Contrabassoon, contrabass clarinet, and double basses sound one octave lower than written.",
+    "An accidental is for one bar and one octave only.",
+    "Quarter-tones: the alto flute (bars 231 to 257), one cello (bar 256), and the "
+    "woodwinds in bars 399 to 408 have quarter-tones. In bars 399 to 408, these are "
+    "the notes of the harmonic series on D: play them with no vibrato.",
+    "l.v.: let the sound ring.",
+    "Three players have an ocarina in C (bars 221 to 262): oboe 2, clarinet 1, and bassoon 2.",
+    "Seating: the first violins are on the left of the conductor, the second violins on the right.",
+    "Duration: 30 minutes.",
+]
+
+
+def _instrument_lines(work: Work) -> dict[str, list[str]]:
+    """Return the list of the players for the first page: one line for each player."""
+    from ..perform.events import perform
+
+    lines: dict[str, list[str]] = {family: [] for family in FAMILY_ORDER}
+    for player in work.orchestra.players:
+        if player.id.endswith(".lh"):
+            continue
+        hands = [player.id]
+        if player.id.endswith(".rh"):
+            hands.append(player.id[: -len(".rh")] + ".lh")
+        used: list[str] = []
+        for hand in hands:
+            for note in perform(work, hand):
+                if note.instrument not in used:
+                    used.append(note.instrument)
+        if not used:
+            continue
+        first = player.instruments[0]
+        if player.family == "percussion" and len(player.instruments) > 1:
+            line = f"{player.name}: {', '.join(used)}"
+        else:
+            others = [name for name in used if name != first]
+            also = "also " if first in used else ""
+            line = player.name + (f" ({also}{', '.join(others)})" if others else "")
+        if player.count > 1 and player.family == "strings":
+            line += f" ({player.count} players)"
+        lines[player.family].append(line)
+    return lines
+
+
+def _front_page(work: Work) -> str:
+    """Return the first page of the score: the list of the players and the notes."""
+
+    def text(value: str) -> str:
+        return '"' + value.replace("\\", "").replace('"', "'") + '"'
+
+    def wrapped(value: str) -> str:
+        words = " ".join(text(word) for word in value.split())
+        return f"\\wordwrap {{ {words} }}"
+
+    families = _instrument_lines(work)
+    columns: list[list[str]] = [[], []]
+    for family in FAMILY_ORDER:
+        if not families[family]:
+            continue
+        target = columns[0] if family in ("woodwinds", "brass") else columns[1]
+        target.append(f"\\vspace #1 \\line {{ \\bold {text(FAMILY_TITLES[family])} }}")
+        target.extend(f"\\line {{ {text(line)} }}" for line in families[family])
+    left = "\n      ".join(columns[0])
+    right = "\n      ".join(columns[1])
+    notes = "\n    ".join(f"\\vspace #0.4 {wrapped(note)}" for note in SCORE_NOTES)
+    return (
+        "\\markup \\fontsize #4 \\column {\n"
+        '  \\vspace #2 \\line { \\bold \\fontsize #2 "Orchestra" }\n'
+        "  \\line {\n"
+        f"    \\column {{\n      {left}\n    }}\n"
+        "    \\hspace #14\n"
+        f"    \\column {{\n      {right}\n    }}\n"
+        "  }\n"
+        '  \\vspace #2 \\line { \\bold \\fontsize #2 "Notes for the performance" }\n'
+        f"  \\override #'(line-width . 110) \\column {{\n    {notes}\n  }}\n"
+        "}\n\n\\pageBreak"
+    )
+
+
 def score_breaks(work: Work, capacity: float = 56.0, most_bars: int = 10) -> set[int]:
     """Return the bars after which the conductor score starts a new system.
 
@@ -402,6 +492,7 @@ def score_file(work: Work) -> str:
                 "#(set-global-staff-size 13)",
                 SCORE_PAPER.strip(),
                 _header(work, "Score in C"),
+                _front_page(work),
                 _definitions(work, work.orchestra.players, for_part=False, breaks=breaks),
                 "\\score {\n<<\n" + _score_staves(work) + "\n>>\n" + SCORE_LAYOUT.strip() + "\n}",
             ]

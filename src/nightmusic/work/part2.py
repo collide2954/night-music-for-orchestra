@@ -226,7 +226,7 @@ def _agitation(work: Work) -> None:
     s.write("cl2", r"""d''1\ff( | c''1 | bes'1 | a'1) | R1*2 |""")
     s.write("bn1", r"""d1\ff( | c1 | bes,1 | a,1) | R1*2 |""")
     s.write("bn2", r"""d1\ff( | c1 | bes,1 | a,1) | R1*2 |""")
-    s.write("bn3", r"""d,1\ff( | c,1 | bes,,1 | a,,1) | R1*2 |""")
+    put(s, "bn3 cbcl", r"""d,1\ff( | c,1 | bes,,1 | a,,1) | R1*2 |""")
     s.write(
         "vn1",
         r"""
@@ -439,9 +439,9 @@ def _chase_start(work: Work) -> None:
     structure.mark(s.bar(1), "H")
     theme, answer = tr(CHASE, 3), tr(ANSWER, 3)
     put(s, "vn1:1 fl1:1 fl2:1 vn2", dyn(theme, r"\f") + rests(7, 8, 4))
-    put(s, "tpt1 tpt2 perc2:1 va", rests(7, 8, 4) + dyn(answer, r"\f"))
+    put(s, "tpt1 tpt2 perc2:1 mand:1 va", rests(7, 8, 4) + dyn(answer, r"\f"))
     ostinato = tr(OSTINATO, 3)
-    put(s, "vc bn1 bn2 cl3", dyn(times(ostinato, 8), r"\mf"))
+    put(s, "vc bn1 bn2 cl3 cimb.lh", dyn(times(ostinato, 8), r"\mf"))
     s.write("cb", dyn(times(tr(STEPS, 3), 8), r"\mf"))
     s.write("pno.lh", times(r"<d,, d,>8-.\mf r <es,, es,>8-. r <d,, d,>8-. r4 |", 8))
     s.write("perc4", times(r"c'8\mf r d'8 r c'8 r d'8 |", 8))
@@ -463,10 +463,10 @@ def _chase_episode(work: Work) -> None:
     theme, answer = tr(CHASE, 6), tr(ANSWER, 6)
     high_ostinato = dyn(times(tr(OSTINATO, 18), 4), r"\mf")
     put(s, "vn1:1 vn2", dyn(theme, r"\ff") + high_ostinato)
-    put(s, "fl1:1 fl2:1 fl3:1 cl2:1 ob1 ob2 cl1", dyn(theme, r"\ff") + rests(7, 8, 4))
+    put(s, "fl1:1 fl2:1 fl3:1 cl2:1 mand:1 ob1 ob2 cl1", dyn(theme, r"\ff") + rests(7, 8, 4))
     s.write("va", dyn(theme, r"\ff") + dyn(answer, r"\ff"))
     put(s, "tpt1 tpt2 tpt3 perc2:1", rests(7, 8, 4) + dyn(answer, r"\ff"))
-    put(s, "vc bn1 bn2 cl3", dyn(times(tr(OSTINATO, -6), 8), r"\f"))
+    put(s, "vc bn1 bn2 cl3 cimb.lh", dyn(times(tr(OSTINATO, -6), 8), r"\f"))
     s.write("cb", dyn(times(tr(STEPS, -6), 8), r"\f"))
     s.write("pno.lh", dyn(times(double(tr(STEPS, -6), 1), 8), r"\f"))
     s.write("perc4", times(r"c'8\f r d'8 r c'8 r d'8 |", 8))
@@ -552,7 +552,7 @@ def _chase_end(work: Work) -> None:
     s.write("vn2", MIXED_REST + first(dyn(higher, r"\ff"), r"\ord", note=True))
     put(s, "fl1:1 fl2:1 fl3:1 cl2:1 perc2:1 ob1 ob2", MIXED_REST + dyn(higher, r"\ff"))
     ostinato = dyn(tr(MIXED_OSTINATO, 1), r"\f") + dyn(tr(MIXED_OSTINATO, 4), r"\ff")
-    put(s, "bn1 bn2 cl3", ostinato)
+    put(s, "bn1 bn2 cl3 cimb.lh", ostinato)
     s.write("vc", first(ostinato, r"\arco\spicc", note=True))
     steps = dyn(tr(MIXED_STEPS, 1), r"\f") + dyn(tr(MIXED_STEPS, 4), r"\ff")
     s.write("cb", steps)
@@ -615,7 +615,7 @@ def _chase_end(work: Work) -> None:
         return text
 
     voices = lines(hammer(HAMMER_CHORD))  # 8 voices, from the lowest to the highest
-    put(s, "cb tuba bn3", voices[0])
+    put(s, "cb tuba bn3 cbcl", voices[0])
     put(s, "btbn bn2", voices[1])
     put(s, "tbn2 bn1 cl3", voices[2])
     put(s, "tbn1 hn4 hn2", voices[3])
@@ -655,7 +655,7 @@ def _broad_motto(work: Work) -> None:
     figure = r"d'16 as' es' as' d' es' as' d' as' es' as' d' es' as' d' as' |"
 
     # Phrase 1, on D: the motto in the low instruments, the fast notes above it.
-    low = "tuba:-2 btbn:-2 bn3:-2 cl3:-2 vc:-2 cb:-2 tbn1:-1 tbn2:-1 bn1:-1 bn2:-1"
+    low = "tuba:-2 btbn:-2 bn3:-2 cbcl:-2 cl3:-2 vc:-2 cb:-2 tbn1:-1 tbn2:-1 bn1:-1 bn2:-1"
     block.add(low + " hn1 hn2 hn3 hn4", 1, motto, r"\ff")
     block.add("va:-1 vn2 vn1:1", 1, times(figure, 4), r"\ff")
     block.add("cb", 2, r"f,4\f\pizz r f,4 r | f,4 r f,4 r | f,4 r f,4 r | f,4 r f,4 r |")
@@ -826,7 +826,8 @@ def _ascent(work: Work) -> None:
         r"\tuplet 3/2 { A8 A A } |",
     ]
     for unit, (pedal, level) in enumerate(zip(pedals, levels, strict=True), start=1):
-        low = "cb bn3 bn1:1 bn2:1" + (" tuba btbn" if unit >= 5 else "")
+        low = "cb bn3 bn1:1 bn2:1" + (" cbcl" if unit >= 3 else "")
+        low += " tuba btbn" if unit >= 5 else ""
         marks = level + (r"\arco" if unit == 1 else "")
         block.add("cb", unit, fill(tr(r"<c,>1", pedal), held), marks)
         block.add(low.replace("cb ", ""), unit, fill(tr(r"<c,>1", pedal), held), level)
@@ -912,7 +913,7 @@ def _first_climax(work: Work) -> None:
     block.add("tpt1 ob1 fl1:1 fl2:1 fl3:1 cl2:1 hn5:-1 hn6:-1 perc2:-1", 1, top, r"\fff")
     block.add("tpt2 ob2 cl1 hn1 hn3:-1", 1, alto, r"\fff")
     block.add("tpt3 hn2 hn4:-1 tbn1:-1", 1, tenor, r"\fff")
-    block.add("tbn2 bn1 bn2 cl3 btbn:-1 tuba:-1 bn3:-1", 1, bass, r"\fff")
+    block.add("tbn2 bn1 bn2 cl3 btbn:-1 tuba:-1 bn3:-1 cbcl:-1", 1, bass, r"\fff")
     block.add("vn1", 1, fill(double(top, 1), r"X1:32"), r"\fff")
     block.add("vn2", 1, fill(double(alto, 1), r"X1:32"), r"\fff")
     walking = dyn(WALKING_LOUD, r"\fff")
@@ -947,7 +948,7 @@ def _collapse(work: Work) -> None:
     stroke = r"d'8-^\sffz r8 r4 r2 | R1*5 |"
     block.add(
         "tpt1:1 tpt2 tpt3 hn1 hn2 hn3 hn4 hn5 hn6 tbn1:-1 tbn2:-1 btbn:-2 tuba:-2 "
-        "fl1:2 fl2:2 fl3:2 ob1:1 ob2:1 cl1:1 cl2:1 bn1:-1 bn2:-1 bn3:-2 vn2:1 cb:-2",
+        "fl1:2 fl2:2 fl3:2 ob1:1 ob2:1 cl1:1 cl2:1 bn1:-1 bn2:-1 bn3:-2 cbcl:-2 vn2:1 cb:-2",
         1, stroke,
     )  # fmt: skip
     block.add("perc3 perc1", 1, r"c'4\sffz\lv r4 r2 | R1*5 |")
