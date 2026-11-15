@@ -48,15 +48,30 @@ def build_pdfs(*, parts: bool = True) -> None:
         list(pool.map(lambda path: compile_pdf(path, BUILD_DIR / "parts"), others))
 
 
-def build_audio() -> None:
-    """Render the audio master."""
+def build_audio(bars: tuple[int, int] | None = None) -> None:
+    """Render the audio master, or an excerpt of it."""
     from .audio import mix
     from .work import build
 
-    audio, report = mix.render(build())
-    for path in mix.write(audio, BUILD_DIR / "audio"):
+    audio, report = mix.render(build(), bars=bars)
+    name = "night-music" if bars is None else f"excerpt-{bars[0]}-{bars[1]}"
+    for path in mix.write(audio, BUILD_DIR / "audio", name):
         print(f"audio: {path}")
     print(report)
+
+
+def check_work() -> int:
+    """Find music that a player cannot play. Return the number of problems."""
+    from .compose.check import check
+    from .work import build
+
+    work = build()
+    problems = check(work)
+    for problem in problems:
+        print(problem)
+    seconds = work.structure.duration_seconds
+    print(f"{len(work.structure.bars)} bars, {seconds / 60:.1f} minutes, {len(problems)} problems")
+    return len(problems)
 
 
 def build_video() -> None:
@@ -73,8 +88,19 @@ def build_video() -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="nightmusic", description="Build Night Music.")
-    parser.add_argument("command", choices=["ly", "score", "parts", "audio", "video", "all"])
+    parser.add_argument(
+        "command", choices=["check", "ly", "score", "parts", "audio", "video", "all"]
+    )
+    parser.add_argument(
+        "--bars", metavar="FIRST-LAST", help="render only these bars (command: audio)"
+    )
     args = parser.parse_args(argv)
+    bars = None
+    if args.bars:
+        first, _, last = args.bars.partition("-")
+        bars = (int(first), int(last or first))
+    if args.command == "check":
+        return 1 if check_work() else 0
     if args.command == "ly":
         for path in write_lilypond():
             print(path)
@@ -83,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "parts":
         build_pdfs(parts=True)
     elif args.command == "audio":
-        build_audio()
+        build_audio(bars)
     elif args.command == "video":
         build_video()
     else:

@@ -128,6 +128,7 @@ def _walk(
                 voice.instrument = element.arguments[0].strip('"')
                 voice.state = dict(DEFAULT_STATE)
         elif isinstance(element, music.Rest):
+            _rest(element, voice, notes)
             position += element.duration * scale
             voice.open_ties.clear()
         elif isinstance(element, music.Note):
@@ -211,6 +212,20 @@ def _close_hairpin(voice: _Voice, notes: list[PerfNote], target: float | None) -
     voice.level = target
     voice.hairpin = None
     voice.hairpin_notes = []
+
+
+def _rest(element: music.Rest, voice: _Voice, notes: list[PerfNote]) -> None:
+    """Apply the marks on a rest: a dynamic mark, the end of a hairpin, a technique."""
+    for post in element.posts:
+        if post.kind == "dynamic" and post.value in DYNAMIC_LEVEL:
+            _close_hairpin(voice, notes, DYNAMIC_LEVEL[post.value])
+            voice.level = DYNAMIC_LEVEL[post.value]
+        elif post.kind == "hairpin" and post.value == "!":
+            _close_hairpin(voice, notes, None)
+        elif post.kind == "command":
+            technique = TECHNIQUES.get(post.value)
+            if technique and technique.state:
+                voice.state[technique.state] = technique.value
 
 
 def _play(

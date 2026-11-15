@@ -19,6 +19,7 @@ see `research/measured/reference_recordings.csv`.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import lru_cache
 
 import numpy as np
 from scipy import signal
@@ -135,11 +136,21 @@ def taps(seat: Seat) -> list[tuple[int, int, float, bool]]:
 class Stage:
     """Collect the sound of all players at the microphones."""
 
-    def __init__(self, length: int) -> None:
+    def __init__(self, length: int = 0) -> None:
         self.length = length
         self.direct = np.zeros((length, 2), dtype=np.float32)
         self.reflected = np.zeros((length, 2), dtype=np.float32)
         self.send = np.zeros(length, dtype=np.float32)
+
+    def _grow(self, length: int) -> None:
+        """Make the stage longer, if a signal needs more time."""
+        if length <= self.length:
+            return
+        extra = max(length - self.length, self.length // 4, 4 * dsp.RATE)
+        self.direct = np.concatenate([self.direct, np.zeros((extra, 2), np.float32)])
+        self.reflected = np.concatenate([self.reflected, np.zeros((extra, 2), np.float32)])
+        self.send = np.concatenate([self.send, np.zeros(extra, np.float32)])
+        self.length += extra
 
     def add(self, stem: np.ndarray, seat: Seat) -> None:
         """Add a one-channel signal that comes from a seat."""
@@ -148,20 +159,23 @@ class Stage:
             return
         first, last = int(sounding[0]), int(sounding[-1]) + 1
         active = stem[first:last]
-        for delay, channel, gain, is_reflection in taps(seat):
+        paths = taps(seat)
+        self._grow(last + max(delay for delay, _, _, _ in paths))
+        for delay, channel, gain, is_reflection in paths:
             target = self.reflected if is_reflection else self.direct
-            start = first + delay
-            stop = min(self.length, last + delay)
-            if stop > start:
-                target[start:stop, channel] += np.float32(gain) * active[: stop - start]
+            target[first + delay : last + delay, channel] += np.float32(gain) * active
         self.send[first:last] += np.float32(reverb_send(seat)) * active
 
     def mix(self, reverb_gain: float) -> np.ndarray:
-        """Return the two-channel mix: direct sound, first reflections, and reverberation."""
+        """Return the two-channel mix: direct sound, first reflections, and reverberation.
+
+        The result is longer than the stage: it contains the end of the reverberation.
+        """
         # A reflection loses high frequencies at the wall and in the air.
         reflected = signal.sosfilt(dsp.lowpass(5500.0, 1), self.reflected, axis=0)
-        wet = reverberate(self.send)
-        return (self.direct + reflected + np.float32(reverb_gain) * wet).astype(np.float32)
+        result = np.float32(reverb_gain) * reverberate(self.send)
+        result[: self.length] += self.direct + reflected.astype(np.float32)
+        return result
 
 
 def reverb_send(seat: Seat) -> float:
@@ -209,10 +223,18 @@ def hall_response(seconds: float = 3.6, seed: int = 20261115) -> np.ndarray:
     return response.astype(np.float32)
 
 
+@lru_cache(maxsize=1)
+def _default_response() -> np.ndarray:
+    return hall_response()
+
+
 def reverberate(send: np.ndarray, response: np.ndarray | None = None) -> np.ndarray:
-    """Return the two-channel reverberation of a one-channel send signal."""
+    """Return the two-channel reverberation of a one-channel send signal.
+
+    The result is longer than the send signal by the length of the hall response.
+    """
     if response is None:
-        response = hall_response()
-    left = signal.oaconvolve(send, response[:, 0])[: len(send)]
-    right = signal.oaconvolve(send, response[:, 1])[: len(send)]
+        response = _default_response()
+    left = signal.oaconvolve(send, response[:, 0])
+    right = signal.oaconvolve(send, response[:, 1])
     return np.stack([left, right], axis=1).astype(np.float32)

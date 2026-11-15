@@ -128,7 +128,7 @@ def write(work: Work) -> None:
         "fl2",
         r"""
         R1*5 |
-        r4 r8 bes8\pp( a8 g8 f8 es8 | d2.) r4 | R1*5 |
+        r4 r8 bes'8\pp( a'8 g'8 f'8 es'8 | d'2.) r4 | R1*5 |
     """,
     )
     s.write(
@@ -255,7 +255,7 @@ def write(work: Work) -> None:
     s.write(
         "ob3",
         r"""
-        r2 a2\pp( ~ | a4. gis8 f4 e4 | es2.) r4 | R1*7 |
+        r2 a'2\pp( ~ | a'4. gis'8 f'4 e'4 | es'2.) r4 | R1*7 |
     """,
     )
     s.write(

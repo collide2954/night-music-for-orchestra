@@ -99,7 +99,6 @@ class Voicebank:
                 self.groups[key] = by_pitch
         if "sustain" not in self.groups:
             raise RuntimeError("an instrument has no sustain samples")
-        self.counter = 0
 
     def has(self, key: str) -> bool:
         return key in self.groups
@@ -110,15 +109,18 @@ class Voicebank:
             : 1 if self.sound.unpitched else None
         ]
 
-    def choose(self, key: str, nominal: int, level: float) -> list[_Choice]:
-        """Return one or two samples (loudness layers) for a loudness level."""
+    def choose(self, key: str, nominal: int, level: float, number: int = 0) -> list[_Choice]:
+        """Return one or two samples (loudness layers) for a loudness level.
+
+        If the instrument has more than one recording of a note, `number`
+        selects the recording. Thus repeated notes do not sound the same.
+        """
         samples = self.groups[key][nominal]
         layers = sorted({sample.layer for sample in samples})
-        self.counter += 1
 
         def take(layer: float) -> Sample:
             takes = [sample for sample in samples if sample.layer == layer]
-            return takes[self.counter % len(takes)]
+            return takes[number % len(takes)]
 
         lower = [layer for layer in layers if layer <= level]
         upper = [layer for layer in layers if layer >= level]
@@ -210,34 +212,67 @@ def _sounding_seconds(note: PerfNote, seconds: float) -> float:
     return max(0.06, seconds - min(0.05, 0.1 * seconds))
 
 
-def render_player(
-    notes: list[PerfNote], structure: Structure, total_seconds: float
-) -> list[np.ndarray]:
-    """Return the sound of one player for the full work.
+@dataclass
+class Prepared:
+    """The notes of one player, ready for the sampler."""
 
-    The result is a list of one-channel signals. A string section gives one
-    signal for each group of players in the section, thus the mixer can put
-    the groups at different places on the stage.
-    """
-    length = int(np.ceil(total_seconds * dsp.RATE))
-    groups: dict[int, np.ndarray] = {}
-    banks: dict[str, Voicebank] = {}
+    player: str
+    notes: list[PerfNote]  # in the sequence of the voices, with rolls as single strokes
+    starts: np.ndarray  # start of each note in seconds
+    ends: np.ndarray
+    banks: dict[str, Voicebank]
+
+
+def prepare(notes: list[PerfNote], structure: Structure) -> Prepared | None:
+    """Put the notes of one player in sequence and calculate their times."""
     if not notes:
-        return []
-    random = np.random.default_rng(zlib.crc32(notes[0].player.encode()))
-
+        return None
+    banks: dict[str, Voicebank] = {}
     for note in notes:
         if note.instrument not in banks:
             banks[note.instrument] = Voicebank(sound_of(note.instrument))
     ordered = sorted(
         _expand_rolls(notes, structure, banks), key=lambda n: (n.voice, n.start, -n.grace)
     )
-    for index, note in enumerate(ordered):
+    starts = np.array([structure.seconds(note.start) for note in ordered])
+    ends = np.array([structure.seconds(note.start + note.duration) for note in ordered])
+    return Prepared(notes[0].player, ordered, starts, ends, banks)
+
+
+def render_player(
+    prepared: Prepared,
+    window: tuple[float, float] | None = None,
+    origin: int = 0,
+) -> list[np.ndarray]:
+    """Return the sound of one player.
+
+    The result is a list of one-channel signals. A string section gives one
+    signal for each group of players in the section, thus the mixer can put
+    the groups at different places on the stage.
+
+    If `window` is given, the function plays only the notes that start in
+    this time (seconds). The first sample of each signal is the sample
+    `origin` of the work. A signal continues until its last note stops: the
+    signals can have different lengths. The result does not change if the
+    work is rendered in one window or in many windows.
+    """
+    pieces: dict[int, list[tuple[int, np.ndarray]]] = {}
+    banks = prepared.banks
+    ordered = prepared.notes
+    seed = zlib.crc32(prepared.player.encode())
+    if window is None:
+        selected = np.arange(len(ordered))
+    else:
+        selected = np.flatnonzero((prepared.starts >= window[0]) & (prepared.starts < window[1]))
+
+    for index in selected:
+        note = ordered[index]
+        random = np.random.default_rng([seed, int(index)])
         bank = banks[note.instrument]
         sound = bank.sound
 
-        start = structure.seconds(note.start)
-        end = structure.seconds(note.start + note.duration)
+        start = float(prepared.starts[index])
+        end = float(prepared.ends[index])
         if note.grace:
             start -= note.grace * GRACE_SECONDS
             end = start + GRACE_SECONDS
@@ -276,7 +311,7 @@ def render_player(
             jitter = float(np.clip(random.normal(0.0, sound.timing_ms / 1000.0), -0.03, 0.03))
             spread = float(random.uniform(0.0, 0.018)) if voice_number else 0.0
             detune = float(random.normal(0.0, sound.detune_cents if voices > 1 else 2.0))
-            for choice in bank.choose(sample_key, nominal, level):
+            for choice in bank.choose(sample_key, nominal, level, int(index) + voice_number):
                 sample = choice.sample
                 cents = int(round(((note.midi - sample.midi) * 100.0 + detune) / 5.0)) * 5
                 if sound.unpitched:
@@ -333,17 +368,20 @@ def render_player(
                 padded = np.concatenate([body, np.zeros(FILTER_TAIL, dtype=np.float32)])
                 body = dsp.apply(padded, *note_filters)
 
-                offset = int((start - lead + jitter + spread) * dsp.RATE)
+                offset = int(round((start - lead + jitter + spread) * dsp.RATE)) - origin
                 if offset < 0:
                     body = body[-offset:]
                     offset = 0
-                stop = min(length, offset + len(body))
-                if stop > offset:
-                    if voice_number not in groups:
-                        groups[voice_number] = np.zeros(length, dtype=np.float32)
-                    groups[voice_number][offset:stop] += body[: stop - offset]
+                if len(body):
+                    pieces.setdefault(voice_number, []).append((offset, body))
 
-    return [groups[number] for number in sorted(groups)]
+    stems = []
+    for number in sorted(pieces):
+        stem = np.zeros(max(offset + len(body) for offset, body in pieces[number]), np.float32)
+        for offset, body in pieces[number]:
+            stem[offset : offset + len(body)] += body
+        stems.append(stem)
+    return stems
 
 
 ROLL_STROKES_PER_SECOND = 13.0
