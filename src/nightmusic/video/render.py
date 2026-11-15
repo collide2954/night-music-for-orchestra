@@ -1,0 +1,270 @@
+"""Draw the frames of the score video and encode them with the audio.
+
+Each frame shows one system of the score. A cursor shows the present moment.
+A colour band shows each staff that sounds at this moment. A ribbon at the
+bottom shows all instruments of the orchestra: an instrument is lit while it
+plays. Thus the viewer can follow each part.
+"""
+
+from __future__ import annotations
+
+import subprocess
+from dataclasses import dataclass
+from fractions import Fraction
+from functools import lru_cache
+from pathlib import Path
+
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont
+
+from ..notation.structure import Structure
+from ..notation.work import Work
+from ..perform.events import perform
+from .pages import Page
+
+PAPER = np.array([250, 247, 240], dtype=np.float32)
+INK = (38, 38, 44)
+CURSOR = np.array([36, 64, 128], dtype=np.float32)
+FAMILY_COLOURS = {
+    "woodwinds": (70, 148, 92),
+    "brass": (204, 142, 30),
+    "percussion": (142, 98, 172),
+    "plucked": (40, 146, 160),
+    "keyboards": (40, 146, 160),
+    "strings": (188, 74, 62),
+}
+TOP_BAND = 64  # pixels at 1080p
+BOTTOM_BAND = 128
+RING_SECONDS = 0.5  # shortest time that an instrument is lit
+
+
+def _font(bold: bool, size: int) -> ImageFont.FreeTypeFont:
+    pattern = "C059:bold" if bold else "C059"
+    path = subprocess.run(
+        ["fc-match", "-f", "%{file}", pattern], capture_output=True, text=True, check=True
+    ).stdout
+    return ImageFont.truetype(path, size)
+
+
+@dataclass
+class _Screen:
+    """A page that is ready for drawing: the picture and the positions on the frame."""
+
+    base: np.ndarray  # float32 picture of the full frame
+    times: np.ndarray
+    xs: np.ndarray
+    staves: dict[str, tuple[int, int]]
+    left: int
+    right: int
+    top: int
+    bottom: int
+
+
+def _prepare(page: Page, width: int, height: int, scale: float) -> _Screen:
+    """Put the system of a page in the centre of the score area of the frame."""
+    picture = np.asarray(Image.open(page.image).convert("RGB"), dtype=np.float32) / 255.0
+    picture = picture[:, :width]  # the page picture can be one pixel wider than the frame
+    top_band, bottom_band = int(TOP_BAND * scale), int(BOTTOM_BAND * scale)
+    area_top, area_bottom = top_band + int(8 * scale), height - bottom_band - int(8 * scale)
+    area_height = area_bottom - area_top
+    crop_top = max(0, int(page.top - 80 * scale))
+    crop_bottom = min(picture.shape[0], int(page.bottom + 60 * scale))
+    crop = picture[crop_top:crop_bottom]
+    factor = min(1.0, area_height / crop.shape[0])
+    if factor < 1.0:
+        size = (int(crop.shape[1] * factor), int(crop.shape[0] * factor))
+        resized = Image.fromarray((crop * 255).astype(np.uint8)).resize(size, Image.LANCZOS)
+        crop = np.asarray(resized, dtype=np.float32) / 255.0
+    offset_x = (width - crop.shape[1]) // 2
+    offset_y = area_top + (area_height - crop.shape[0]) // 2
+    base = np.broadcast_to(PAPER, (height, width, 3)).copy()
+    region = base[offset_y : offset_y + crop.shape[0], offset_x : offset_x + crop.shape[1]]
+    region *= crop  # the white of the page takes the colour of the paper
+
+    def to_x(value: float) -> int:
+        return int(offset_x + value * factor)
+
+    def to_y(value: float) -> int:
+        return int(offset_y + (value - crop_top) * factor)
+
+    return _Screen(
+        base=base,
+        times=page.times,
+        xs=offset_x + page.xs * factor,
+        staves={name: (to_y(a), to_y(b)) for name, (a, b) in page.staves.items()},
+        left=to_x(page.left),
+        right=to_x(page.right),
+        top=to_y(page.top),
+        bottom=to_y(page.bottom),
+    )
+
+
+def _activity(work: Work, fps: int, frames: int) -> dict[str, np.ndarray]:
+    """Return, for each instrument, the frames in which it sounds."""
+    structure = work.structure
+    active: dict[str, np.ndarray] = {}
+    for player in work.orchestra.players:
+        name = player.id.split(".")[0]
+        flags = active.setdefault(name, np.zeros(frames, dtype=bool))
+        for note in perform(work, player.id):
+            start = structure.seconds(note.start)
+            end = max(structure.seconds(note.start + note.duration), start + RING_SECONDS)
+            flags[int(start * fps) : int(end * fps) + 1] = True
+    return active
+
+
+def _positions(structure: Structure, fps: int, frames: int) -> np.ndarray:
+    """Return the position (quarter notes) of each frame."""
+    grid = np.arange(0.0, float(structure.length) + 0.126, 0.125)
+    seconds = np.array([structure.seconds(Fraction(value).limit_denominator(8)) for value in grid])
+    return np.interp(np.arange(frames) / fps, seconds, grid)
+
+
+def render(
+    work: Work,
+    pages: list[Page],
+    audio: Path,
+    output: Path,
+    *,
+    width: int = 1920,
+    height: int = 1080,
+    fps: int = 30,
+) -> Path:
+    """Write the score video."""
+    scale = height / 1080.0
+    structure = work.structure
+    duration = float(
+        subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+             str(audio)],
+            capture_output=True, text=True, check=True,
+        ).stdout
+    )  # fmt: skip
+    frames = int(duration * fps)
+    positions = _positions(structure, fps, frames)
+    activity = _activity(work, fps, frames)
+    names = [name for name in activity]
+    families = {player.id.split(".")[0]: player.family for player in work.orchestra.players}
+    shorts = {player.id.split(".")[0]: player.short for player in work.orchestra.players}
+
+    title_font = _font(True, int(26 * scale))
+    info_font = _font(False, int(24 * scale))
+    label_font = _font(False, int(17 * scale))
+
+    # The ribbon: one label for each instrument, in the sequence of the score.
+    label_boxes: dict[str, tuple[int, int, int, int]] = {}
+    ribbon_top = height - int(BOTTOM_BAND * scale) + int(14 * scale)
+    row_height = int(46 * scale)
+    per_row = (len(names) + 1) // 2
+    gap = int(6 * scale)
+    box_width = (width - int(40 * scale) - gap * (per_row - 1)) // per_row
+    for number, name in enumerate(names):
+        row, column = divmod(number, per_row)
+        x = int(20 * scale) + column * (box_width + gap)
+        y = ribbon_top + row * (row_height + gap)
+        label_boxes[name] = (x, y, x + box_width, y + row_height - gap)
+
+    @lru_cache(maxsize=8)
+    def screen(index: int) -> _Screen:
+        return _prepare(pages[index], width, height, scale)
+
+    band_top = int(TOP_BAND * scale)
+    band_bottom = height - int(BOTTOM_BAND * scale)
+
+    @lru_cache(maxsize=64)
+    def chrome(
+        bar: int, mark: str, tempo: str, second: int, lit: tuple[bool, ...]
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """Return the top band and the ribbon: colour and opacity of each."""
+        layer = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(layer)
+        baseline = int(18 * scale)
+        draw.text((int(24 * scale), baseline), work.title, font=title_font, fill=INK)
+        centre = f"{tempo}     bar {bar}" + (f"     [{mark}]" if mark else "")
+        box = draw.textbbox((0, 0), centre, font=info_font)
+        draw.text(((width - box[2]) // 2, baseline), centre, font=info_font, fill=INK)
+        clock = f"{second // 60}:{second % 60:02d} / {int(duration) // 60}:{int(duration) % 60:02d}"
+        box = draw.textbbox((0, 0), clock, font=info_font)
+        draw.text((width - box[2] - int(24 * scale), baseline), clock, font=info_font, fill=INK)
+        draw.line(
+            [(0, int(TOP_BAND * scale) - 1), (width, int(TOP_BAND * scale) - 1)],
+            fill=(*INK, 60), width=1,
+        )  # fmt: skip
+        for name, is_lit in zip(names, lit, strict=True):
+            x0, y0, x1, y1 = label_boxes[name]
+            colour = FAMILY_COLOURS[families[name]]
+            if is_lit:
+                draw.rounded_rectangle((x0, y0, x1, y1), int(6 * scale), fill=(*colour, 255))
+                text_colour = (255, 255, 255, 255)
+            else:
+                draw.rounded_rectangle(
+                    (x0, y0, x1, y1), int(6 * scale), outline=(*colour, 110), width=1
+                )
+                text_colour = (*INK, 120)
+            box = draw.textbbox((0, 0), shorts[name], font=label_font)
+            draw.text(
+                (x0 + (x1 - x0 - box[2]) // 2, y0 + (y1 - y0 - box[3]) // 2 - int(2 * scale)),
+                shorts[name], font=label_font, fill=text_colour,
+            )  # fmt: skip
+        pixels = np.asarray(layer, dtype=np.float32)
+        upper, lower = pixels[:band_top], pixels[band_bottom:]
+        return upper[:, :, :3], upper[:, :, 3:4] / 255.0, lower[:, :, :3], lower[:, :, 3:4] / 255.0
+
+    marks = sorted(structure.marks.items())
+    tempos = [point for point in structure.tempo_points if point.text]
+    starts = np.array([page.start for page in pages])
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    encoder = subprocess.Popen(
+        ["ffmpeg", "-y", "-loglevel", "error",
+         "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{width}x{height}", "-r", str(fps),
+         "-i", "-", "-i", str(audio),
+         "-c:v", "libopenh264", "-b:v", "6M", "-pix_fmt", "yuv420p",
+         "-c:a", "aac", "-b:a", "256k", "-shortest", "-movflags", "+faststart", str(output)],
+        stdin=subprocess.PIPE,
+    )  # fmt: skip
+    assert encoder.stdin is not None
+    for number in range(frames):
+        position = float(positions[number])
+        index = max(0, int(np.searchsorted(starts, position, side="right")) - 1)
+        current = screen(index)
+        frame = current.base.copy()
+
+        # Colour band on each staff that sounds now.
+        for name, (top, bottom) in current.staves.items():
+            if activity[name][number]:
+                colour = np.array(FAMILY_COLOURS[families[name]], dtype=np.float32)
+                pad = int(7 * scale)
+                band = frame[top - pad : bottom + pad, current.left : current.right]
+                band += 0.13 * (colour - band)
+                marker = frame[
+                    top - pad : bottom + pad,
+                    current.left - int(16 * scale) : current.left - int(7 * scale),
+                ]
+                marker += 0.9 * (colour - marker)
+
+        # The cursor.
+        x = int(np.interp(position, current.times, current.xs)) + int(6 * scale)
+        top, bottom = current.top - int(16 * scale), current.bottom + int(16 * scale)
+        glow = frame[top:bottom, x - int(7 * scale) : x + int(8 * scale)]
+        glow += 0.14 * (CURSOR - glow)
+        line = frame[top:bottom, x - 1 : x + max(2, int(2 * scale))]
+        line += 0.85 * (CURSOR - line)
+
+        # The top band, the ribbon, and the progress line.
+        bar = structure.bar_at(Fraction(position).limit_denominator(64)).number
+        mark = next((label for start, label in reversed(marks) if start <= bar), "")
+        tempo = next(
+            (point.text for point in reversed(tempos) if float(point.position) <= position), ""
+        )
+        lit = tuple(bool(activity[name][number]) for name in names)
+        upper, upper_alpha, lower, lower_alpha = chrome(bar, mark, tempo, number // fps, lit)
+        frame[:band_top] += upper_alpha * (upper - frame[:band_top])
+        frame[band_bottom:] += lower_alpha * (lower - frame[band_bottom:])
+        done = int(width * number / max(frames - 1, 1))
+        frame[height - int(5 * scale) :, :done] = CURSOR
+        encoder.stdin.write(np.clip(frame, 0, 255).astype(np.uint8).tobytes())
+    encoder.stdin.close()
+    if encoder.wait() != 0:
+        raise RuntimeError("the video encoder failed")
+    return output

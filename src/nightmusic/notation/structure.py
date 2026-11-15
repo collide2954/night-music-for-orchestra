@@ -51,6 +51,7 @@ class Structure:
     tempo_points: list[TempoPoint] = field(default_factory=list)
     marks: dict[int, str] = field(default_factory=dict)  # bar number -> rehearsal mark
     double_bars: set[int] = field(default_factory=set)  # double bar line at the END of these bars
+    breaks: set[int] = field(default_factory=set)  # line break at the END of these bars
     final_bar: bool = True
 
     # ------------------------------------------------------------ bars
@@ -210,6 +211,8 @@ def global_to_lilypond(structure: Structure) -> str:
     for bar in structure.bars:
         if bar.number - 1 in structure.double_bars:
             add(bar.start, '\\bar "||"')
+        if bar.number - 1 in structure.breaks:
+            add(bar.start, "\\break")
         changed = previous is None or (
             (bar.numerator, bar.denominator, bar.grouping)
             != (previous.numerator, previous.denominator, previous.grouping)

@@ -59,9 +59,21 @@ def build_audio() -> None:
     print(report)
 
 
+def build_video() -> None:
+    """Render the score video. The audio master must exist."""
+    from .video import pages, render
+    from .work import build
+
+    work = build()
+    screens = pages.build_pages(work, BUILD_DIR / "video" / "pages")
+    audio = BUILD_DIR / "audio" / "night-music.flac"
+    path = render.render(work, screens, audio, BUILD_DIR / "video" / "night-music.mp4")
+    print(f"video: {path}")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="nightmusic", description="Build Night Music.")
-    parser.add_argument("command", choices=["ly", "score", "parts", "audio", "all"])
+    parser.add_argument("command", choices=["ly", "score", "parts", "audio", "video", "all"])
     args = parser.parse_args(argv)
     if args.command == "ly":
         for path in write_lilypond():
@@ -72,9 +84,12 @@ def main(argv: list[str] | None = None) -> int:
         build_pdfs(parts=True)
     elif args.command == "audio":
         build_audio()
+    elif args.command == "video":
+        build_video()
     else:
         build_pdfs(parts=True)
         build_audio()
+        build_video()
     return 0
 
 

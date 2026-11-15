@@ -330,6 +330,199 @@ def part_file(work: Work, part_id: str) -> str:
     )
 
 
+# ----------------------------------------------------------------------------
+# Score pages for the video: one file for each section of the work
+# ----------------------------------------------------------------------------
+
+VIDEO_PAGE_MM = (480.0, 270.0)
+VIDEO_SECONDS_PER_SCREEN = 15.0
+
+VIDEO_SCHEME = r"""
+#(define (tag-when class)
+   (lambda (grob)
+     (let* ((column (ly:item-get-column grob))
+            (when (ly:grob-property column 'when)))
+       (list (cons 'class class)
+             (cons 'data-when
+                   (number->string (exact->inexact (ly:moment-main when))))))))
+"""
+
+VIDEO_LAYOUT = r"""
+\layout {
+  \context {
+    \Score
+    \override NoteHead.output-attributes = #(tag-when "nh")
+    \override Rest.output-attributes = #(tag-when "rest")
+    \override BarLine.output-attributes = #(tag-when "bar")
+    \override BarNumber.font-size = #0
+    \override MetronomeMark.font-size = #2
+    \override MetronomeMark.padding = #2.5
+    \override RehearsalMark.padding = #3
+    \override InstrumentName.self-alignment-X = #RIGHT
+    \override Hairpin.minimum-length = #5
+  }
+  \context {
+    \Staff
+    \RemoveAllEmptyStaves
+    \override TextScript.font-size = #-0.5
+    \override DynamicTextSpanner.style = #'none
+  }
+}
+""".replace("\\\\", "\\")
+
+
+def chunk_count(work: Work) -> int:
+    """Return the number of sections of the work."""
+    return max(len(chunks) for chunks in work.chunks.values())
+
+
+def chunk_bars(work: Work, index: int) -> tuple[int, int]:
+    """Return the first bar and the last bar of a section."""
+    some_player = next(iter(work.chunks.values()))
+    first = some_player[index][0]
+    last = (
+        some_player[index + 1][0] - 1 if index + 1 < len(some_player) else len(work.structure.bars)
+    )
+    return first, last
+
+
+def _instrument_at(work: Work, player: Player, index: int) -> Instrument | None:
+    """Return the instrument that a player has at the start of a section."""
+    name = player.instruments[0]
+    for _first_bar, chunk in work.chunks[player.id][:index]:
+        for element in _walk_commands(chunk.children):
+            if element.name == "switch":
+                name = element.arguments[0].strip('"')
+    return work.orchestra.instruments.get(name)
+
+
+def _walk_commands(elements: list[music.Element]):
+    for element in elements:
+        if isinstance(element, music.Command):
+            yield element
+        elif isinstance(element, music.Group):
+            yield from _walk_commands(element.children)
+
+
+def _is_silent(elements: list[music.Element]) -> bool:
+    """Return True if the music has no notes."""
+    for element in elements:
+        if isinstance(element, music.Note):
+            return False
+        if isinstance(element, music.Group) and not _is_silent(element.children):
+            return False
+    return True
+
+
+def active_players(work: Work, index: int) -> list[Player]:
+    """Return the players that have notes in a section."""
+    return [
+        player
+        for player in work.orchestra.players
+        if not _is_silent(work.chunks[player.id][index][1].children)
+    ]
+
+
+def video_file(work: Work, index: int, staff_size: float) -> str:
+    """Return the LilyPond text of one section, as a page for the video."""
+    from .structure import Structure, global_to_lilypond
+
+    first, last = chunk_bars(work, index)
+    source = work.structure
+    part = Structure(final_bar=last == len(source.bars))
+    for bar in source.bars[first - 1 : last]:
+        part.add_bars(1, bar.numerator, bar.denominator, bar.grouping)
+    start = source.bar(first).start
+    end = source.bar(last).end
+    for point in source.tempo_points:
+        if start <= point.position < end:
+            shifted = type(point)(**{**point.__dict__, "position": point.position - start})
+            part.tempo_points.append(shifted)
+    part.marks = {
+        bar - first + 1: label for bar, label in source.marks.items() if first <= bar <= last
+    }
+    part.double_bars = {bar - first + 1 for bar in source.double_bars if first <= bar <= last}
+    # A screen of the video shows about 15 seconds of music.
+    shown_from = start
+    for bar in source.bars[first - 1 : last - 1]:
+        seconds = source.seconds(bar.end) - source.seconds(shown_from)
+        if seconds >= VIDEO_SECONDS_PER_SCREEN:
+            part.breaks.add(bar.number - first + 1)
+            shown_from = bar.end
+
+    blocks = [
+        "global = {\n\\accidentalStyle Score.modern\n\\numericTimeSignature\n"
+        f"\\set Score.currentBarNumber = #{first}\n" + global_to_lilypond(part) + "\n}"
+    ]
+    staves: dict[str, list[str]] = {family: [] for family in FAMILY_ORDER}
+    players = work.orchestra.players
+    shown = {player.id for player in active_players(work, index)}
+    # A keyboard instrument shows its two staves if one of them has notes.
+    for player in players:
+        base = player.id.split(".")[0]
+        if "." in player.id and any(other.split(".")[0] == base for other in shown):
+            shown.add(player.id)
+    position = 0
+    while position < len(players):
+        player = players[position]
+        position += 1
+        if player.id not in shown:
+            continue
+        emitter = _Emitter(work, for_part=False, left_hand=player.id.endswith(".lh"))
+        instrument = _instrument_at(work, player, index)
+        emitter.set_instrument(instrument)
+        body = emitter.emit(work.chunks[player.id][index][1].children)
+        blocks.append(
+            f"{identifier(player.id)} = {{\n\\clef {emitter.clef_of(instrument)}\n{body}\n}}"
+        )
+        tag = (
+            f"\\override StaffSymbol.output-attributes = "
+            f'#\'((class . "staff") (data-staff . "{player.id}"))'
+        )
+        names = f'instrumentName = "{player.short}" shortInstrumentName = "{player.short}"'
+        own_names = "" if "." in player.id else names + " "
+        staff = (
+            f'\\new Staff = "{player.id}" \\with {{ {own_names}{tag} }} '
+            f"<< \\global \\{identifier(player.id)} >>"
+        )
+        if player.id.endswith(".rh"):
+            staves[player.family].append(f"\\new PianoStaff \\with {{ {names} }} <<\n    {staff}")
+        elif player.id.endswith(".lh"):
+            staves[player.family].append(f"    {staff}\n  >>")
+        else:
+            staves[player.family].append(staff)
+    groups = [
+        f'\\new StaffGroup = "{family}" <<\n  ' + "\n  ".join(members) + "\n>>"
+        for family, members in staves.items()
+        if members
+    ]
+    width, height = VIDEO_PAGE_MM
+    paper = (
+        "\\paper {\n"
+        f"  #(set-paper-size '(cons (* {width} mm) (* {height} mm)))\n"
+        "  top-margin = 8\\mm\n  bottom-margin = 8\\mm\n  left-margin = 10\\mm\n"
+        "  right-margin = 10\\mm\n  indent = 20\\mm\n  short-indent = 20\\mm\n"
+        "  max-systems-per-page = 1\n  ragged-last = ##f\n  ragged-bottom = ##t\n"
+        "  print-page-number = ##f\n  oddHeaderMarkup = ##f\n  evenHeaderMarkup = ##f\n"
+        "  oddFooterMarkup = ##f\n  evenFooterMarkup = ##f\n}"
+    )
+    return (
+        "\n\n".join(
+            [
+                f'\\version "{LILYPOND_VERSION}"',
+                STYLE.strip(),
+                VIDEO_SCHEME.strip(),
+                techniques.lilypond_definitions(),
+                f"#(set-global-staff-size {staff_size:.2f})",
+                paper,
+                "\n\n".join(blocks),
+                "\\score {\n<<\n" + "\n".join(groups) + "\n>>\n" + VIDEO_LAYOUT.strip() + "\n}",
+            ]
+        )
+        + "\n"
+    )
+
+
 def write_all(work: Work, directory: Path) -> list[Path]:
     """Write the score file and all part files. Return the paths."""
     directory.mkdir(parents=True, exist_ok=True)

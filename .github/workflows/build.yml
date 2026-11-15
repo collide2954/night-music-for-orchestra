@@ -1,0 +1,86 @@
+# Build the score, the parts, the audio, and the video. Publish them as a release.
+name: Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/nightmusic/**"
+      - "design/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  assets:
+    name: Build all assets
+    runs-on: ubuntu-latest
+    # The container has the same tool versions as the computer of the composer.
+    container: fedora:45
+    timeout-minutes: 330
+    steps:
+      - name: Install the tools
+        run: >
+          dnf install -y --setopt=install_weak_deps=False
+          git make uv lilypond ffmpeg-free poppler-utils gh fontconfig urw-base35-fonts
+          tar gzip zip findutils
+
+      - name: Get the source
+        uses: actions/checkout@v7
+
+      - name: Permit git in the work directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Restore the sample libraries
+        uses: actions/cache@v6
+        with:
+          path: .cache/samples
+          key: samples-v1-${{ hashFiles('src/nightmusic/audio/library.py', 'src/nightmusic/audio/instruments.py') }}
+          restore-keys: samples-v1-
+
+      - name: Install the Python environment
+        run: uv sync --locked
+
+      - name: Build the score and the parts
+        run: uv run nightmusic parts
+
+      - name: Build the audio
+        run: uv run nightmusic audio
+
+      - name: Build the video
+        run: uv run nightmusic video
+
+      - name: Collect the assets
+        run: |
+          mkdir -p build/release
+          cp build/score/score.pdf build/release/night-music-score.pdf
+          (cd build/parts && zip -q -r ../release/night-music-parts.zip . -i "*.pdf")
+          cp build/audio/night-music.flac build/audio/night-music.mp3 build/release/
+          cp build/video/night-music.mp4 build/release/
+
+      - name: Upload the assets
+        uses: actions/upload-artifact@v7
+        with:
+          name: night-music
+          path: build/release/
+          if-no-files-found: error
+
+      - name: Publish the latest build
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git tag -f latest
+          git push -f origin latest
+          gh release view latest > /dev/null 2>&1 || gh release create latest \
+            --prerelease --title "Latest build" \
+            --notes "The newest build of the work in progress. CI replaces these files at each change."
+          gh release upload latest build/release/* --clobber
