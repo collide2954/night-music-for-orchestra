@@ -13,12 +13,12 @@ The work also uses musical material from different regions of the world.
 
 ## Project status
 
-The project is in its first stage. This stage is the style study.
+The first edition of the style study is complete. The subsequent stage is the design of the work.
 
 | Stage | Result | Status |
 | --- | --- | --- |
-| 1. Style study | Tables of measured and sourced style parameters | In work |
-| 2. Design | Form, orchestra, and material of the work | Not started |
+| 1. Style study | Tables of measured and sourced style parameters | First edition complete |
+| 2. Design | Form, orchestra, and material of the work | Subsequent stage |
 | 3. Composition | The music, written as code | Not started |
 | 4. Engraving | Conductor score and parts | Not started |
 | 5. Audio | Realistic audio from free sample libraries | Not started |
@@ -28,6 +28,10 @@ The project is in its first stage. This stage is the style study.
 
 The style study is in the [`research`](research/README.md) directory.
 The full report is [`docs/style-study.md`](docs/style-study.md).
+
+The study measured the complete *Verklärte Nacht* (418 bars) and two sets of piano works by Bartók.
+It also contains sourced tables for form, harmony, rhythm, orchestration, and orchestra sizes.
+The style profiles in the report give the target ranges for the new work.
 
 ## Requirements
 
