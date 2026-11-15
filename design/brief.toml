@@ -1,0 +1,48 @@
+# Night Music for Orchestra: design brief.
+#
+# This file records the decisions of the owner of the project.
+# The design code and the composition code read this file.
+# Do not change a decision in this file without the agreement of the owner.
+
+[work]
+title = "Night Music for Orchestra"
+form = "one arch in five linked parts"
+parts = ["dusk", "night voices", "crisis", "transfiguration", "dawn"]  # working names
+duration_minutes = 30
+decided = 2026-11-15
+
+[style]
+sources = [
+    "Schoenberg, primarily Verklärte Nacht",
+    "Bartók, primarily the night music style",
+    "Corigliano",
+]
+profiles = "research/tables/profiles.csv"
+# The work is a modern piece. It uses the sources; it does not copy them.
+
+[orchestra]
+size = "large plus colours"
+winds = "triple, with auxiliary instruments"
+horns = "4 to 6"
+percussion_players = "4 to 5"
+keyboards_and_harp = ["harp", "celesta", "piano"]
+unconventional_colours = "3 to 5"
+# The list of unconventional instruments is not final.
+# Each instrument must have a free sample library that sounds real.
+
+[world]
+traditions = [
+    "Carpathian and Balkan",
+    "Arab maqam and the night call",
+    "Hindustani night ragas",
+    "Javanese gamelan and Japanese gagaku",
+]
+role = "voices of the night inside the five parts"
+rule = "Research each tradition from primary sources before use."
+
+[deliverables]
+score = "conductor score"
+parts = "one part for each player"
+audio = "realistic audio from free sample libraries"
+video = "score video with part tracking"
+build = "CI builds all assets"
