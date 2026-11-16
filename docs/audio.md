@@ -62,6 +62,7 @@ The owner of the project heard two faults: one instrument had no sound (the cell
 The command `uv run nightmusic calibrate` measures the sound source.
 For each wind, brass, and string instrument, it renders a test score: each dynamic mark from ppp to fff as a long note, a staccato note, a note with an accent, a note with a marcato mark, and (for the strings) a pizzicato note.
 The table [`audio/muse_levels.csv`](../src/nightmusic/audio/muse_levels.csv) has the level of each case.
+The harp, the celesta, and the percussion instruments with a pitch (glockenspiel, crotales, vibraphone, marimba, xylophone, tubular bells) have one test: one stroke at each dynamic mark.
 
 | Fault that the table shows | Example |
 | --- | --- |
@@ -70,6 +71,7 @@ The table [`audio/muse_levels.csv`](../src/nightmusic/audio/muse_levels.csv) has
 | A soft staccato note is almost silent | Trumpet: 25 dB below a long note at pp. |
 | A marcato mark is much louder than its dynamic mark | Trumpet: 12 dB at mp. |
 | The loud marks of the brass are very bright | Trombone: from mf to f, the share of the sound above 2 kHz goes up by 26 dB. |
+| The soft marks of the instruments that a player strikes or plucks are much too soft | Celesta: the mark p is 27 dB below the mark f. Xylophone: 40 dB. Harp: 30 dB, with a step of 23 dB from mp to mf. |
 
 The module [`notation/playback.py`](../src/nightmusic/notation/playback.py) uses the table. For each note, it selects the dynamic mark and the articulation that the audio file gets:
 
@@ -145,8 +147,16 @@ The module [`audio/piano.py`](../src/nightmusic/audio/piano.py) plays the sample
 - The pedal marks of the score hold the notes. With no pedal, the damper stops the string when the key goes up. The highest keys have no dampers.
 - A staccato note is short. A new stroke on a key stops the old sound of that key.
 - The noise of a key that goes up and the noise of the pedal are in the sound at a low level.
-- The piano is in the middle of the stage, at the front. Its stereo picture is narrower than that of the samples, and it gets the reverberation of the hall.
-- In the mix, a chord of the piano at f is 6 dB louder than the same chord of the piano of Muse Keys: the piano is a soloist.
+- Each stroke has a small difference of time (some milliseconds) and of loudness, as the strokes of a pianist have. The owner of the project heard the exact fast lines of the last chord as "rigid".
+
+The piano has two roles, and each role has its place in the hall:
+
+| Role | Where | Place | Level |
+| --- | --- | --- | --- |
+| The soloist | The interlude (from the mark W to the mark BB) | In the middle of the stage, at the front. The stereo picture is narrower than that of the samples. Some reverberation of the hall. | A chord at f is 6 dB louder than the same chord of the piano of Muse Keys: the balance of a concerto recording. |
+| An instrument of the orchestra | All other sections | At its seat: on the left, at the back. The hall model of the project gives it the direct sound, the first reflections, and the reverberation for that seat. | The level of the piano of Muse Keys. |
+
+A measurement showed why the two roles are necessary: with the level of the soloist, the piano in the heavy section of part 5 was as loud as the woodwinds, the brass, and the strings together. The owner of the project heard that the piano lines of the last chord did not blend.
 
 If the samples are not on the computer, the piano of Muse Keys plays. The variable `NIGHTMUSIC_PIANO=muse` selects that piano for a comparison.
 To get the samples: `git clone --depth 1 https://github.com/sfzinstruments/SalamanderGrandPiano.git .cache/samples/salamander`.

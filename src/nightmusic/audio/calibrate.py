@@ -5,6 +5,9 @@ way to play (a long note, staccato, accent, marcato, and pizzicato for the
 strings), the code renders a short test score: one bar for each dynamic mark
 from ppp to fff. The level of a mark is the loudest 100 ms of its bar.
 
+The harp, the celesta, and the percussion instruments with a pitch have one
+test: one stroke for each dynamic mark.
+
 The result is the table `muse_levels.csv`. The module
 `notation/playback.py` uses it to select the marks of the audio file.
 
@@ -25,6 +28,14 @@ from ..notation.work import Work, load_orchestra
 from . import dsp, musescore
 
 FAMILIES = ("woodwinds", "brass", "strings")
+# Instruments that a player strikes or plucks. They have only the test "long": one
+# stroke for each dynamic mark. A measurement showed why they are in the table: the
+# soft marks of these instruments were much too soft (celesta: the mark p was 30 dB
+# below the mark f; harp: 27 dB; xylophone: 37 dB).
+STRUCK = (
+    "harp", "celesta", "glockenspiel", "crotales", "vibraphone", "marimba", "xylophone",
+    "tubular bells",
+)  # fmt: skip
 TEMPO = 120  # quarter notes in a minute: one bar of 4/4 is 2 s
 BAR_SECONDS = 2.0
 WINDOW_SECONDS = 0.1
@@ -46,6 +57,10 @@ def tests(orchestra) -> list[tuple[str, str, str, bool]]:
     found: dict[str, tuple[str, str, str, bool]] = {}
     for player in orchestra.players:
         if player.family not in FAMILIES:
+            for instrument in player.instruments:
+                sound = musicxml.SOUNDS.get(instrument)
+                if instrument in STRUCK and sound and sound[0] not in found:
+                    found[sound[0]] = (sound[0], player.id, instrument, False)
             continue
         for instrument in player.instruments:
             names = [(musicxml.SOUNDS.get(instrument), False)]
@@ -93,16 +108,27 @@ def measure_one(
     return levels
 
 
-def measure(directory: Path, table: Path = playback.TABLE) -> Path:
-    """Measure all instruments and write the table. Return the file."""
+def measure(directory: Path, table: Path = playback.TABLE, new_only: bool = False) -> Path:
+    """Measure the instruments and write the table. Return the file.
+
+    If `new_only` is true, the rows of the table stay, and the code measures
+    only the tests that the table does not have.
+    """
     orchestra = load_orchestra()
     families = {player.id: player.family for player in orchestra.players}
+    known: list[tuple[str, str, list[float]]] = []
+    if new_only:
+        playback.load.cache_clear()
+        for part, ways in playback.load(table).items():
+            known += [(part, way, levels) for way, levels in ways.items()]
+    done = {(part, way) for part, way, _levels in known}
     jobs = []
     for part, player, instrument, solo in tests(orchestra):
-        for way in playback.WAYS:
+        for way in ("long",) if instrument in STRUCK else playback.WAYS:
             if way == "pizzicato" and families[player] != "strings":
                 continue
-            jobs.append((part, player, instrument, solo, way))
+            if (part, way) not in done:
+                jobs.append((part, player, instrument, solo, way))
 
     def run(job: tuple[str, str, str, bool, str]) -> tuple[str, str, list[float]]:
         return job[0], job[4], measure_one(*job, directory)
@@ -112,7 +138,7 @@ def measure(directory: Path, table: Path = playback.TABLE) -> Path:
     with table.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle, lineterminator="\n")
         writer.writerow(["part", "way", *playback.MARKS])
-        for part, way, levels in sorted(rows):
+        for part, way, levels in sorted(known + rows):
             writer.writerow([part, way, *levels])
     playback.load.cache_clear()
     return table

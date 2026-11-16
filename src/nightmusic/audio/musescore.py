@@ -73,7 +73,22 @@ PART = re.compile(r'<Part id="(\d+)">.*?<Instrument id="([^"]+)"', re.DOTALL)
 # - The snare drum was 4 dB louder than the bass drum.
 # - One stroke of the tom-toms was 16 dB softer than one stroke of the bass drum.
 # - A stroke of the tam-tam (fff) was 11 dB softer than the hand cymbals.
-TRIM_DB = {"Taiko": -9.0, "Snare Drum": -3.0, "Concert Toms": 8.0, "Tam-tam": 6.0}
+# Three more values come from a test of the bright metal instruments (one stroke at
+# each dynamic mark) and from measurements in the last chorale (mark KK):
+# - One stroke of the crotales (fff) was 8 dB louder than one stroke of the tubular
+#   bells, and its highest sample was 16 dB above that of the tubular bells.
+# - One stroke of the glockenspiel (fff) was 6 to 8 dB softer than one stroke of the
+#   tubular bells or of the vibraphone.
+# - A roll of the triangle (ff) was 14 dB softer than a roll of the suspended cymbal (f).
+TRIM_DB = {
+    "Taiko": -9.0,
+    "Snare Drum": -3.0,
+    "Concert Toms": 8.0,
+    "Tam-tam": 6.0,
+    "Crotales": -10.0,
+    "Glockenspiel": 5.0,
+    "Triangle": 8.0,
+}
 TEXT = re.compile(r"<text>(.*?)</text>", re.DOTALL)
 
 
@@ -285,16 +300,71 @@ STEMS = {
 # sound above 2 kHz changes by 0.7 dB): a loud note is only a louder note. If the
 # samples of the other piano are not on the computer, the piano of Muse Keys plays.
 PIANO_SOURCE = "salamander"
-# The level of the piano in the mix, in dB. With -9 dB, a chord at f has the level
-# of the piano of Muse Keys. The piano is the soloist of the interlude: it is 6 dB
-# louder than that, as the solo piano of a concerto recording is.
-PIANO_GAIN_DB = -3.0
+# The level of the piano in the mix, in dB. The piano has two roles (see `add_piano`).
+# As one instrument of the orchestra, it is at its seat: with -6 dB, a chord at f has
+# the level of the piano of Muse Keys. As the soloist of the interlude, it is at the
+# front of the stage, and it is 6 dB louder than the piano of Muse Keys (at the front,
+# -9 dB gives the level of that piano): this is the balance of a concerto recording.
+# A measurement of the heavy section of part 5 showed why the two roles are necessary:
+# with the level of the soloist, the piano was as loud there as the woodwinds, the
+# brass, and the strings together.
+PIANO_GAIN_DB = -6.0
+PIANO_SOLO_GAIN_DB = -3.0
+PIANO_SOLO_MARKS = ("W", "BB")  # the piano is the soloist from the first mark to the second
+PIANO_FADE_SECONDS = 2.0  # the time of the change between the two roles
+PIANO_PART_SECONDS = 120.0  # the code renders the piano in parts of this length
 
 
 def own_piano() -> bool:
     """Return true if the code of this project renders the piano (not MuseScore)."""
     source = os.environ.get("NIGHTMUSIC_PIANO", PIANO_SOURCE)
     return source == "salamander" and piano.available()
+
+
+def piano_role(work: Work, begin: float, length: int) -> np.ndarray:
+    """Return the role of the piano for each sample: 1 = the soloist, 0 = in the orchestra.
+
+    `begin` is the time of the first sample in the work, in seconds. The piano
+    is the soloist between the marks of `PIANO_SOLO_MARKS`. The change of the
+    role takes `PIANO_FADE_SECONDS`: it is before the first mark, and after
+    the second mark.
+    """
+    structure = work.structure
+    bars = {label: bar for bar, label in structure.marks.items()}
+    if not all(mark in bars for mark in PIANO_SOLO_MARKS):
+        return np.zeros(length, dtype=np.float32)
+    first, last = (structure.seconds(structure.bar(bars[mark]).start) for mark in PIANO_SOLO_MARKS)
+    time = begin + np.arange(length) / dsp.RATE
+    up = np.clip((time - (first - PIANO_FADE_SECONDS)) / PIANO_FADE_SECONDS, 0.0, 1.0)
+    down = np.clip((last + PIANO_FADE_SECONDS - time) / PIANO_FADE_SECONDS, 0.0, 1.0)
+    return np.minimum(up, down).astype(np.float32)
+
+
+def add_piano(total: np.ndarray, work: Work, begin: float) -> None:
+    """Add the piano of the project to the mix.
+
+    The code renders the piano in parts of some minutes: thus the memory that
+    it uses stays small. Each part goes to one of two places, or to the two:
+    the place of the soloist, and the seat in the orchestra.
+    """
+    step = int(PIANO_PART_SECONDS * dsp.RATE)
+    prepared = piano.prepare(work)
+    for first in range(0, len(total), step):
+        count = min(step, len(total) - first)
+        dry = piano.render(work, begin + first / dsp.RATE, count / dsp.RATE, prepared)
+        if not dry.any():
+            continue
+        role = piano_role(work, begin + first / dsp.RATE, len(dry))[:, None]
+        places = (
+            (dry * role, piano.place, PIANO_SOLO_GAIN_DB),
+            (dry * (1.0 - role), piano.place_in_orchestra, PIANO_GAIN_DB),
+        )
+        for part, place, gain_db in places:
+            if not part.any():
+                continue
+            placed = place(part)
+            size = min(len(placed), len(total) - first)
+            total[first : first + size] += np.float32(dsp.db(gain_db)) * placed[:size]
 
 
 # Level of each stem in the mix, in dB.
@@ -353,8 +423,12 @@ def render_stems(
         folder = directory / (name if bars is None else f"{name}-{bars[0]}-{bars[1]}")
         record = folder / "stem.json"
         sound = folder / "score.wav"
+        # Only the mixer levels of the parts of this stem are in the key. Thus a new
+        # level for one percussion instrument does not make the other stems stale.
+        parts = {name.rsplit(" (", 1)[0] for name in names}
+        trims = sorted((part, TRIM_DB[part]) for part in parts if part in TRIM_DB)
         key = hashlib.sha256(
-            f"{RENDER_VERSION}|{profile}|{MASTER_VOLUME_DB}|{sorted(TRIM_DB.items())}|{text}".encode()
+            f"{RENDER_VERSION}|{profile}|{MASTER_VOLUME_DB}|{trims}|{text}".encode()
         ).hexdigest()
         kept = json.loads(record.read_text(encoding="utf-8")) if record.exists() else {}
         if sound.exists() and kept.get("key") == key:
@@ -446,9 +520,11 @@ def render_master(
         total[: len(audio)] += np.float32(dsp.db(STEM_GAIN_DB[name])) * audio
     total[: len(others)] += np.float32(gain) * others
     if own_piano():
-        solo = piano.place(piano.render(work, begin, length / dsp.RATE))[:length]
-        total[: len(solo)] += np.float32(dsp.db(PIANO_GAIN_DB)) * solo
-        print(f"musescore: piano: Salamander Grand Piano, {PIANO_GAIN_DB:+.1f} dB")
+        add_piano(total, work, begin)
+        print(
+            f"musescore: piano: Salamander Grand Piano, {PIANO_GAIN_DB:+.1f} dB in the "
+            f"orchestra, {PIANO_SOLO_GAIN_DB:+.1f} dB as the soloist"
+        )
     equalize(total)
     # The soft passages of Muse Sounds are much softer than those of the open
     # samples: the gain riding of the master can do more.

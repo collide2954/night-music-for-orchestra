@@ -18,15 +18,20 @@ This module plays the piano part of the work with these samples:
 - A new stroke on a key that sounds stops the old sound of that key.
 - The noise of a key that goes up, and the noise of the pedal, are in the
   sound at a low level, as in a real recording.
+- Each stroke has a small difference of time and of loudness, as the strokes
+  of a pianist have.
 
-The result is a dry signal near the strings. `place()` puts it on the stage:
-a narrower stereo picture, and the reverberation of the hall.
+The result is a dry signal near the strings. Two functions put it in the
+hall. `place()` is for the soloist at the front of the stage: a narrower
+stereo picture, and some reverberation. `place_in_orchestra()` is for the
+piano as an instrument of the orchestra, at its seat.
 """
 
 from __future__ import annotations
 
 import re
 from collections import OrderedDict
+from functools import cache
 from pathlib import Path
 
 import numpy as np
@@ -60,15 +65,31 @@ FIRST_KEY_WITH_NO_DAMPER = 89  # F6: the keys from here have no dampers
 DAMP_SECONDS = {21: 0.11, 48: 0.075, 72: 0.05, 88: 0.04}
 RESTRIKE_SECONDS = 0.02  # a new stroke on the same key stops the old sound in this time
 STACCATO_SECONDS = 0.11  # the longest time that the key is down for a staccato note
+FAST_SECONDS = 0.3  # a note with no slur that is shorter than this is a fast note
+FAST_SHARE = 0.55  # the part of a fast note for which the key is down
 KEY_NOISE_DB = -34.0  # the noise of a key that goes up
 PEDAL_NOISE_DB = -27.0  # the noise of the pedal
 LONGEST_SECONDS = 14.0  # a sample is not longer than this in the memory
 CACHE_BYTES = 1_200_000_000
 
-# The piano on the stage: the width of its stereo picture (1 = as recorded near the
-# strings), and the level of the hall reverberation in relation to the direct sound.
+# The piano as the soloist, at the front of the stage: the width of its stereo picture
+# (1 = as recorded near the strings), and the level of the hall reverberation in
+# relation to the direct sound.
 WIDTH = 0.45
 REVERB_DB = -15.0
+# The piano as an instrument of the orchestra: it is at its seat, and it gets the hall
+# as the other instruments of the sampler do (the same value as `mix.REVERB_GAIN_DB`).
+ORCHESTRA_REVERB_DB = -9.0
+
+# A pianist does not play as a machine. Each stroke comes some milliseconds before or
+# after its exact time, the notes of a chord do not start at exactly the same time, and
+# each note is a little louder or softer. The owner of the project heard the exact fast
+# lines of the last chord as "rigid". The values are standard deviations.
+TIMING_MS = 6.0  # the time of a stroke
+CHORD_MS = 2.0  # the time of one note in relation to the other notes of its stroke
+VELOCITY_SPREAD = 3.0  # the velocity of a note
+LARGEST_SHIFT_MS = 15.0
+HUMAN_SEED = 20261115
 
 
 def available() -> bool:
@@ -146,6 +167,12 @@ class _Library:
         return self.cache[key]
 
 
+@cache
+def _library() -> _Library:
+    """Return the library. All renders use the same one: the samples stay in the memory."""
+    return _Library()
+
+
 def _layer(value: int) -> int:
     """Return the dynamic level (1 to 16) of a MIDI velocity."""
     return next(index for index, top in enumerate(LAYER_TOP, start=1) if value <= top)
@@ -191,6 +218,9 @@ def _key_up(note: PerfNote, start: float, end: float) -> float:
         return start + min(0.5 * (end - start), limit)
     if note.legato or "tenuto" in note.articulations:
         return end
+    if end - start < FAST_SECONDS:
+        # A fast note with no slur (a toccata): the finger leaves the key early.
+        return start + FAST_SHARE * (end - start)
     return start + max(0.9 * (end - start), min(end - start, 0.05))
 
 
@@ -224,8 +254,25 @@ def notes_of(work: Work) -> list[tuple[float, float, int, int]]:
                 end = start + 0.09
             value = velocity(0.5 * (note.level + note.level_end), note.accent)
             found.append((start, _key_up(note, start, end), round(note.midi), value))
+    found = [_human(*note) for note in found]
     found.sort()
     return found
+
+
+def _human(start: float, key_up: float, midi: int, value: int) -> tuple[float, float, int, int]:
+    """Return a note with the small differences of time and loudness of a pianist.
+
+    The differences come from the time and the key of the note. Thus each
+    render of the same music gives the same sound.
+    """
+    place = int(round(start * 1000.0))
+    stroke = np.random.default_rng([HUMAN_SEED, place])
+    own = np.random.default_rng([HUMAN_SEED, place, midi])
+    shift = stroke.normal(0.0, TIMING_MS) + own.normal(0.0, CHORD_MS)
+    shift = float(np.clip(shift, -LARGEST_SHIFT_MS, LARGEST_SHIFT_MS)) / 1000.0
+    shift = max(shift, -start)
+    louder = float(own.normal(0.0, VELOCITY_SPREAD))
+    return start + shift, key_up + shift, midi, int(np.clip(round(value + louder), 1, 127))
 
 
 WHITE_KEYS = (0, 2, 4, 5, 7, 9, 11)
@@ -244,19 +291,32 @@ def _glissando(
     ]
 
 
-def render(work: Work, begin: float = 0.0, seconds: float | None = None) -> np.ndarray:
+Prepared = tuple[list[tuple[float, float]], list[tuple[float, float, int, int]]]
+
+
+def prepare(work: Work) -> Prepared:
+    """Return the pedal spans and the notes of the piano part, for more than one render."""
+    return pedal_spans(work), notes_of(work)
+
+
+def render(
+    work: Work,
+    begin: float = 0.0,
+    seconds: float | None = None,
+    prepared: Prepared | None = None,
+) -> np.ndarray:
     """Render the piano part: a dry signal with two channels.
 
     `begin` is the time of the first sample, in seconds from the start of the
     work. `seconds` is the length (default: to the end of the work, with
-    time for the last sound).
+    time for the last sound). `prepared` is the result of `prepare()`: a
+    caller that renders the work in parts gives it, and saves time.
     """
     total = work.structure.duration_seconds + 8.0 - begin if seconds is None else seconds
     length = int(total * dsp.RATE)
     out = np.zeros((length, 2), dtype=np.float32)
-    library = _Library()
-    spans = pedal_spans(work)
-    notes = notes_of(work)
+    library = _library()
+    spans, notes = prepared or prepare(work)
 
     def damper_time(key_up: float) -> float:
         """Return the time at which the damper comes down on the string."""
@@ -307,6 +367,17 @@ def _add(out: np.ndarray, sound: np.ndarray, start: int) -> None:
     stop = min(len(out), start + len(sound) - skip)
     if stop > start:
         out[start:stop] += sound[skip : skip + stop - start]
+
+
+def place_in_orchestra(dry: np.ndarray) -> np.ndarray:
+    """Put the dry piano at its seat in the orchestra (the hall model of `space.py`).
+
+    The piano is then one instrument of the orchestra: it is on the left, at
+    the back, with the first reflections and the reverberation of the hall.
+    """
+    stage = space.Stage(len(dry))
+    stage.add(0.5 * (dry[:, 0] + dry[:, 1]), space.seat_of("pno"))
+    return stage.mix(dsp.db(ORCHESTRA_REVERB_DB))
 
 
 def place(dry: np.ndarray) -> np.ndarray:

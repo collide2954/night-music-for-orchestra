@@ -142,11 +142,12 @@ def draw_chart() -> None:
     print(f"chart: {loudness_chart(build(), audio, Path('docs') / 'loudness.svg')}")
 
 
-def calibrate_levels() -> None:
+def calibrate_levels(new_only: bool = False) -> None:
     """Measure the levels of MuseScore with Muse Sounds for each dynamic mark."""
     from .audio import calibrate
 
-    print(f"calibrate: {calibrate.measure(BUILD_DIR / 'musescore' / 'calibrate')}")
+    folder = BUILD_DIR / "musescore" / "calibrate"
+    print(f"calibrate: {calibrate.measure(folder, new_only=new_only)}")
 
 
 def update_documents() -> None:
@@ -196,6 +197,11 @@ def main(argv: list[str] | None = None) -> int:
         help="make the video for a telephone, 1080 x 1920 (command: video)",
     )
     parser.add_argument(
+        "--new",
+        action="store_true",
+        help="measure only the tests that the table does not have (command: calibrate)",
+    )
+    parser.add_argument(
         "--profile",
         default="Muse Sounds",
         help='sound profile of MuseScore: "Muse Sounds" or "MuseScore Basic"',
@@ -217,7 +223,7 @@ def main(argv: list[str] | None = None) -> int:
         update_documents()
         return 0
     if args.command == "calibrate":
-        calibrate_levels()
+        calibrate_levels(args.new)
         return 0
     if args.command == "fetch-audio":
         return fetch_audio()
