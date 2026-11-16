@@ -121,7 +121,12 @@ def test_score_and_part_text():
     work = _small_work()
     score = lilypond.score_file(work)
     assert "Score in C" in score
-    assert "musicClA = { \\clef treble R1*1 | d'2\\p( e'2) |" in " ".join(score.split())
+    # Clarinets 1 and 2 share a staff in the score: clarinet 1 plays alone.
+    joined = " ".join(score.split())
+    assert "sharedClAOne = { \\clef treble \\oneVoice R1*1 | d'2\\p(" in joined
+    assert '^\\markup \\players "1."' in joined
+    # A staff of the score has no tempo marks: the lines of marks have them.
+    assert joined.count('\\tempo "Lento" 4 = 60') == 1
     part = lilypond.part_file(work, "cl1")
     assert "Clarinet 1 in B-flat" in part
     assert "e'2\\p( fis'2)" in part  # the part is a major second higher
@@ -353,7 +358,7 @@ def test_a_long_rest_of_a_part_stops_at_a_change_of_tempo():
     section.close()
     cello = " ".join(lilypond.part_file(work, "vc").split())
     # Bar 5 has the words "poco rit.": the rest of 8 bars stops there and starts again.
-    assert "musicVc = { R1*4 | R1*4 | }" in cello
+    assert "musicVc = { \\clef bass R1*4 | R1*4 | }" in cello
     assert "extra-spacing-width" in cello  # the words take their own width
     viola = " ".join(lilypond.part_file(work, "va").split())
     assert "R1*4 | R1*3 | c'1\\p |" in viola

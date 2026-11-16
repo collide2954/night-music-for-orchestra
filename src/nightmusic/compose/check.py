@@ -10,6 +10,8 @@ The checks are:
 - One hand of a keyboard player must have the time for each move, and it cannot play
   chords faster than a limit.
 - A hairpin must not go over a silence: a player cannot make a rest louder.
+- Two players who share a staff in the score (for example flutes 1 and 2): where
+  they play chords, player 1 has the upper note.
 """
 
 from __future__ import annotations
@@ -17,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from fractions import Fraction
 
-from ..notation import hairpins
+from ..notation import combine, hairpins
 from ..notation.pitch import from_midi
 from ..notation.work import Work
 from ..perform.events import PerfNote, perform
@@ -203,9 +205,21 @@ def _hairpin_problems(work: Work, player: str) -> list[Problem]:
     ]
 
 
+def _pair_problems(work: Work) -> list[Problem]:
+    """Find the bars in which player 2 of a shared staff has the upper note of a chord."""
+    present = {player.id for player in work.orchestra.players}
+    problems: list[Problem] = []
+    for first, second in combine.PAIRS:
+        if first in present and second in present:
+            text = f"{second} has the upper note: exchange the music of {first} and {second}"
+            for bar in combine.exchanged_units(work, first, second):
+                problems.append(Problem(second, bar, text))
+    return problems
+
+
 def check(work: Work) -> list[Problem]:
     """Return the problems in the work, in the sequence of the score."""
-    problems: list[Problem] = []
+    problems: list[Problem] = _pair_problems(work)
     structure = work.structure
     for player in work.orchestra.players:
         seen: set[tuple[int, str]] = set()

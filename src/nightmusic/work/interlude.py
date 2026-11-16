@@ -333,8 +333,8 @@ def _hammer_theme(work: Work) -> None:
         "bn2": "as,",
         "bn1": "d",
         "cl3": "as",
-        "cl1": "d'",
-        "cl2": "as'",
+        "cl2": "d'",
+        "cl1": "as'",
         "ob2": "a'",
         "ob1": "es''",
         "fl2": "a''",
@@ -520,8 +520,8 @@ def _hammer_theme(work: Work) -> None:
         "bn1": ["d", "d", "as"],
         "bn2": ["as,", "a,", "d"],
         "cl3": ["as", "a", "d'"],
-        "cl1": ["d''", "d''", "es''"],
-        "cl2": ["es''", "es''", "as''"],
+        "cl2": ["d''", "d''", "es''"],
+        "cl1": ["es''", "es''", "as''"],
         "ob2": ["d''", "d''", "es''"],
         "ob1": ["as''", "a''", "d'''"],
         "fl2": ["es'''", "es'''", "as'''"],
@@ -857,7 +857,7 @@ def _forge(work: Work) -> None:
     octaves = {
         "tuba": -2, "btbn": -1, "bn3": -2, "cbcl": -2, "cb": -1, "vc": -1, "tbn2": -1, "tbn1": 0,
         "bn1": -1, "bn2": -1, "hn4": 0, "hn3": 0, "hn2": 1, "hn1": 1, "tpt3": 1, "tpt2": 1,
-        "tpt1": 2, "cl3": 0, "cl1": 1, "cl2": 2, "ob2": 1, "ob1": 2, "fl2": 2, "fl1": 3,
+        "tpt1": 2, "cl3": 0, "cl2": 1, "cl1": 2, "ob2": 1, "ob1": 2, "fl2": 2, "fl1": 3,
         "va": 0, "vn2": 1, "vn1": 2,
     }  # fmt: skip
     unison = " ".join(

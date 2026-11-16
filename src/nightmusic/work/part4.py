@@ -714,8 +714,8 @@ def _main_climax(work: Work) -> None:
     block.add("fl2", 1, winds + r" c'''1 |")
     block.add("ob1", 1, octave(winds, -1) + r" g''1 |")
     block.add("ob2", 1, octave(winds, -1) + r" d''1 |")
-    block.add("cl1", 1, octave(winds, -1) + r" cis'1 |")
-    block.add("cl2", 1, octave(winds, -1) + r" gis'1 |")
+    block.add("cl2", 1, octave(winds, -1) + r" cis'1 |")
+    block.add("cl1", 1, octave(winds, -1) + r" gis'1 |")
     block.add("va", 1, strings + r" <cis' gis'>1:32 |")
     block.add("vc", 1, octave(strings, -1) + r" <e, b,>1:32 |")
 

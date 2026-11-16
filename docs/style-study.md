@@ -485,14 +485,14 @@ Data file: [`research/measured/work_harmony.csv`](../research/measured/work_harm
 
 | Player | Share of the time | Range in use | Notes in the low third | Notes in the middle third | Notes in the high third | Techniques |
 | --- | --- | --- | --- | --- | --- | --- |
-| fl1 | 37.9 % | 94.6 % | 2.0 % | 39.0 % | 59.0 % | tremolo; trill |
-| fl2 | 32.3 % | 75.7 % | 1.0 % | 40.9 % | 58.2 % | grace notes; tremolo; trill |
+| fl1 | 37.8 % | 94.6 % | 2.0 % | 39.0 % | 59.0 % | tremolo; trill |
+| fl2 | 32.4 % | 75.7 % | 1.0 % | 40.9 % | 58.2 % | grace notes; tremolo; trill |
 | fl3 | 22.6 % | 88.2 % | 35.9 % | 61.6 % | 2.5 % | tremolo; trill |
-| ob1 | 32.2 % | 81.8 % | 16.2 % | 64.2 % | 19.6 % | tremolo |
-| ob2 | 26.1 % | 81.8 % | 16.3 % | 64.3 % | 19.4 % | grace notes; tremolo |
+| ob1 | 32.1 % | 81.8 % | 12.7 % | 67.2 % | 20.1 % | tremolo |
+| ob2 | 26.3 % | 81.8 % | 20.8 % | 60.5 % | 18.7 % | grace notes; tremolo |
 | ob3 | 6.8 % | 71.9 % | 21.6 % | 69.1 % | 9.3 % | grace notes |
-| cl1 | 36.6 % | 72.7 % | 16.0 % | 68.9 % | 15.1 % | grace notes; tremolo |
-| cl2 | 30.5 % | 68.2 % | 6.1 % | 72.4 % | 21.5 % | tremolo |
+| cl1 | 36.5 % | 72.7 % | 15.8 % | 67.8 % | 16.3 % | grace notes; tremolo |
+| cl2 | 30.6 % | 68.2 % | 6.4 % | 73.8 % | 19.8 % | tremolo |
 | cl3 | 25.7 % | 58.3 % | 60.2 % | 39.8 % | 0.0 % | grace notes |
 | cbcl | 25.7 % | 62.8 % | 23.0 % | 72.9 % | 4.1 % | grace notes |
 | bn1 | 40.8 % | 73.8 % | 24.0 % | 69.9 % | 6.1 % | - |

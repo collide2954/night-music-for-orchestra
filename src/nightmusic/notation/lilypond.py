@@ -8,7 +8,7 @@ from fractions import Fraction
 from itertools import accumulate
 from pathlib import Path
 
-from . import frontmatter, music, techniques
+from . import combine, frontmatter, music, techniques
 from .pitch import Interval
 from .structure import Bar, global_to_lilypond
 from .work import Instrument, Player, Work
@@ -35,6 +35,27 @@ STYLE = r"""
    (interpret-markup layout props
      (markup #:box #:pad-markup 0.3 #:fontsize -1 text)))
 
+#(define-markup-command (players layout props text) (markup?)
+   "The players of a staff for two players: 1., 2., or a 2."
+   (interpret-markup layout props
+     (markup #:normal-text text)))
+
+#(define-markup-command (pairname layout props name upper lower) (markup? markup? markup?)
+   "The name of a staff for two players: the name, then the two numbers, one above the other."
+   (interpret-markup layout props
+     #{ \markup \line {
+          \vcenter #name
+          \vcenter \override #'(baseline-skip . 2.3) \column { #upper #lower }
+        } #}))
+
+#(define-markup-command (extraname layout props name player) (markup? markup?)
+   "The name of a staff for the second instrument of a player, with the player below it."
+   (interpret-markup layout props
+     #{ \markup \override #'(baseline-skip . 2.3) \right-column {
+          #name
+          \fontsize #-1.5 #player
+        } #}))
+
 % Dynamic marks that LilyPond does not have.
 sffz = #(make-dynamic-script "sffz")
 sfpp = #(make-dynamic-script "sfpp")
@@ -53,7 +74,7 @@ SCORE_LAYOUT = r"""
     \consists Mark_engraver
     \consists Metronome_mark_engraver
     \override VerticalAxisGroup.staff-affinity = #DOWN
-    \override VerticalAxisGroup.nonstaff-relatedstaff-spacing.padding = #1.2
+    \override VerticalAxisGroup.nonstaff-relatedstaff-spacing.padding = #1.8
     \override VerticalAxisGroup.nonstaff-unrelatedstaff-spacing.padding = #2.5
     \override MetronomeMark.font-size = #4.5
     \override RehearsalMark.self-alignment-X = #LEFT
@@ -61,11 +82,19 @@ SCORE_LAYOUT = r"""
     \override RehearsalMark.extra-spacing-width = #'(+inf.0 . -inf.0)
     \override MetronomeMark.extra-spacing-width = #'(+inf.0 . -inf.0)
     % The marks have fixed places in this line: they do not look for a staff. The
-    % tempo mark is on the base line, and a rehearsal mark is above it.
+    % tempo mark and the rehearsal mark are on the base line. A rehearsal mark at a
+    % tempo mark is a part of the tempo mark: the two are side by side.
     \override RehearsalMark.outside-staff-priority = ##f
     \override MetronomeMark.outside-staff-priority = ##f
     \override MetronomeMark.Y-offset = #0
-    \override RehearsalMark.Y-offset = #3.6
+    \override RehearsalMark.Y-offset = #0
+  }
+  \context {
+    % The first page shows all staves. The staves can be a little nearer than the
+    % usual smallest distance: thus that page is not too full.
+    \StaffGroup
+    \override StaffGrouper.staff-staff-spacing.minimum-distance = #6.4
+    \override StaffGrouper.staffgroup-staff-spacing.minimum-distance = #7.6
   }
   \context {
     \Score
@@ -137,16 +166,18 @@ SCORE_PAPER = r"""
   ragged-last-bottom = ##f
   print-page-number = ##t
   bookpart-level-page-numbering = ##t
+  % Space between the last staff of a page and the copyright line.
+  last-bottom-spacing.padding = #2.5
   % The first page of music: the type of the score on the left, the title in the
   % middle, the composer on the right. The sizes are in points.
   bookTitleMarkup = \markup \column {
     \fill-line { \abs-fontsize #25 \bold \fromproperty #'header:title }
-    \vspace #1.2
+    \vspace #0.9
     \fill-line {
       \abs-fontsize #12 \italic \fromproperty #'header:poet
       \abs-fontsize #13 \fromproperty #'header:composer
     }
-    \vspace #0.8
+    \vspace #0.4
   }
   % The page number is in the outer corner, 14 point. The title is in each header.
   oddHeaderMarkup = \markup \fill-line {
@@ -446,7 +477,10 @@ def _with_clefs(
 ) -> list[music.Element]:
     """Return the music of the chunks with a clef command where the best clef changes."""
     elements: list[music.Element] = []
-    current = ""
+    first_instrument = instrument
+    # A staff starts with its usual clef, also if the player starts with rests.
+    current = emitter.clef_of(instrument)
+    elements.append(music.Command("clef", [current]))
     ottava = 0
     position = Fraction(0)  # the start of the unit in the work, in quarter notes
     for chunk in chunks:
@@ -487,7 +521,7 @@ def _with_clefs(
                 instrument = work.orchestra.instruments.get(command.arguments[0].strip('"'))
                 emitter.set_instrument(instrument)
                 current = emitter.clef_of(instrument)
-    emitter.set_instrument(work.orchestra.first_instrument(player.id))
+    emitter.set_instrument(first_instrument)
     return elements
 
 
@@ -575,22 +609,104 @@ def _header(work: Work, instrument_line: str = "", document: str = "") -> str:
     return "\n".join(line for line in lines if line)
 
 
+def shared_staves(work: Work, breaks: set[int]) -> dict[str, combine.SharedStaff]:
+    """Return the staves of the conductor score that two players share.
+
+    The key is the identifier of player 1. `breaks` are the bars after which a
+    system of the score ends.
+    """
+    present = {player.id for player in work.orchestra.players}
+    system_bars = frozenset({1} | {bar + 1 for bar in breaks})
+    return {
+        first: combine.shared_staff(work, first, second, system_bars)
+        for first, second in combine.PAIRS
+        if first in present and second in present
+    }
+
+
+def _shared_identifier(player_id: str, voice: int) -> str:
+    return identifier(player_id).replace("music", "shared", 1) + ("One", "Two")[voice]
+
+
+def _extra_identifier(extra: combine.Extra) -> str:
+    letters = "".join(char for char in extra.instrument.title() if char.isalpha())
+    return identifier(extra.player).replace("music", "extra", 1) + letters
+
+
+def _shared_music(work: Work, staff: combine.SharedStaff, *, for_part: bool) -> tuple[str, str]:
+    """Return the LilyPond text of the two voices of a shared staff."""
+    instrument = work.orchestra.first_instrument(staff.first)
+    emitters = [_Emitter(work, for_part), _Emitter(work, for_part)]
+    for emitter in emitters:
+        emitter.set_instrument(instrument)
+    shift = emitters[0].interval.semitones if emitters[0].interval else 0
+    current = emitters[0].clef_of(instrument)
+    one: list[music.Element] = [music.Command("clef", [current])]
+    two: list[music.Element] = []
+    ottava = 0
+    for first, second in staff.chunks:
+        # One clef for a section, for the notes of the two players.
+        notes = [midi + shift for midi in _pitches(first) + _pitches(second)]
+        if notes:
+            clef = best_clef(emitters[0].clef_of(instrument), instrument, notes, current)
+            if clef != current:
+                one.append(music.Command("clef", [clef]))
+                current = clef
+            octave = best_ottava(clef, instrument, notes)
+            if octave != ottava:
+                one.append(music.Command("ottava", [f"#{octave}"]))
+                ottava = octave
+        one.extend(first)
+        two.extend(second)
+    return emitters[0].emit(one), emitters[1].emit(two)
+
+
+def _extra_music(work: Work, extra: combine.Extra, *, for_part: bool) -> str:
+    """Return the LilyPond text of the staff for the second instrument of a player."""
+    instrument = work.orchestra.instruments.get(extra.instrument)
+    emitter = _Emitter(work, for_part)
+    emitter.set_instrument(instrument)
+    player = work.orchestra.player(extra.player)
+    return emitter.emit(_with_clefs(work, player, extra.chunks, emitter, instrument))
+
+
 def _definitions(
-    work: Work, players: list[Player], *, for_part: bool, breaks: set[int] | None = None
+    work: Work,
+    players: list[Player],
+    *,
+    for_part: bool,
+    breaks: set[int] | None = None,
+    shared: dict[str, combine.SharedStaff] | None = None,
 ) -> str:
     structure = work.structure if breaks is None else replace(work.structure, breaks=breaks)
     score = breaks is not None
+    shared = shared or {}
+    second_players = {staff.second for staff in shared.values()}
     blocks = [
         "global = {\n\\accidentalStyle Score.modern\n\\numericTimeSignature\n"
-        + global_to_lilypond(structure, change_context=None if score else "Score.")
+        + global_to_lilypond(
+            structure, change_context=None if score else "Score.", marks="none" if score else "all"
+        )
         + "\n}"
     ]
     if score:
         # A score: the lines for the tempo marks and the rehearsal marks.
         blocks.append(
-            "globalMarks = {\n" + global_to_lilypond(structure, change_context="") + "\n}"
+            "globalMarks = {\n"
+            + global_to_lilypond(structure, change_context="", marks="line")
+            + "\n}"
         )
     for player in players:
+        if player.id in second_players:
+            continue  # the music is in the staff of player 1
+        if player.id in shared:
+            staff = shared[player.id]
+            for voice, text in enumerate(_shared_music(work, staff, for_part=for_part)):
+                blocks.append(f"{_shared_identifier(player.id, voice)} = {{\n{text}\n}}")
+            for extra in staff.extras:
+                text = _extra_music(work, extra, for_part=for_part)
+                blocks.append(f"{_extra_identifier(extra)} = {{\n{text}\n}}")
+            continue
         text = _player_music(work, player, for_part=for_part)
         blocks.append(f"{identifier(player.id)} = {{\n{text}\n}}")
     return "\n\n".join(blocks)
@@ -613,14 +729,66 @@ def _groups(work: Work) -> list[tuple[str, list[Player]]]:
     return [(family, members) for family, members in groups.items() if members]
 
 
-def _score_staves(work: Work) -> str:
+# The names of the instruments that have a staff of their own in the score when a
+# player of a shared staff changes to them: the full name and the short name.
+EXTRA_NAMES = {
+    "alto flute": ("Alto Flute", "A. Fl."),
+    "ocarina": ("Ocarina", "Oc."),
+    "clarinet in E-flat": ("Clarinet in E-flat", "E-fl. Cl."),
+}
+
+
+def _pair_names(player: Player) -> tuple[str, str]:
+    """Divide the name of a player into the instrument and the number: "Flute 1" -> "Flute", "1"."""
+    name, _, number = player.name.rpartition(" ")
+    return name, number
+
+
+def _shared_staff_text(work: Work, staff: combine.SharedStaff) -> list[str]:
+    """Return the LilyPond staves for a pair: the shared staff, then the extra staves."""
+    first, second = work.orchestra.player(staff.first), work.orchestra.player(staff.second)
+    name, upper = _pair_names(first)
+    lower = _pair_names(second)[1]
+    short = first.short.rpartition(" ")[0]
+    staves = [
+        f'\\new Staff = "{first.id}+{second.id}" \\with {{\n'
+        f'    instrumentName = \\markup \\pairname "{name}" "{upper}" "{lower}"\n'
+        f'    shortInstrumentName = \\markup \\pairname "{short}" "{upper}" "{lower}"\n'
+        "    \\consists Merge_rests_engraver\n"
+        "  } <<\n"
+        "    \\global\n"
+        f"    \\new Voice {{ \\{_shared_identifier(first.id, 0)} }}\n"
+        f"    \\new Voice {{ \\{_shared_identifier(first.id, 1)} }}\n"
+        "  >>"
+    ]
+    for extra in staff.extras:
+        player = work.orchestra.player(extra.player)
+        full, brief = EXTRA_NAMES.get(extra.instrument, (extra.instrument.title(),) * 2)
+        staves.append(
+            f'\\new Staff = "{extra.player} {extra.instrument}" \\with {{\n'
+            f'    instrumentName = \\markup \\extraname "{full}" "({player.name})"\n'
+            f'    shortInstrumentName = \\markup \\extraname "{brief}" "({player.short})"\n'
+            "    \\override VerticalAxisGroup.remove-first = ##t\n"
+            f"  }} << \\global \\{_extra_identifier(extra)} >>"
+        )
+    return staves
+
+
+def _score_staves(work: Work, shared: dict[str, combine.SharedStaff] | None = None) -> str:
+    shared = shared or {}
+    second_players = {staff.second for staff in shared.values()}
     blocks = []
     for family, members in _groups(work):
         staves = []
         index = 0
         while index < len(members):
             player = members[index]
-            if player.id.endswith(".rh"):
+            if player.id in second_players:
+                index += 1
+            elif player.id in shared:
+                staves.extend(_shared_staff_text(work, shared[player.id]))
+                index += 1
+            elif player.id.endswith(".rh"):
                 lower = members[index + 1]
                 base = player.id[: -len(".rh")]
                 staves.append(
@@ -811,13 +979,14 @@ def score_file(work: Work, *, transposed: bool = False) -> str:
     notes of its part: some orchestras ask for such a score.
     """
     breaks = score_breaks(work)
+    shared = shared_staves(work, breaks)
     document = "Transposed score" if transposed else "Score in C"
     edition = "Full score, transposed" if transposed else "Full score in C"
     music_part = (
         "\\bookpart {\n"
         + _header(work, document=document)
         + "\n\\score {\n<<\n"
-        + _score_staves(work)
+        + _score_staves(work, shared)
         + "\n>>\n"
         + SCORE_LAYOUT.strip()
         + "\n}\n}"
@@ -830,7 +999,9 @@ def score_file(work: Work, *, transposed: bool = False) -> str:
                 techniques.lilypond_definitions(),
                 f"#(set-global-staff-size {SCORE_PAGE.staff_size:g})",
                 SCORE_PAPER.strip(),
-                _definitions(work, work.orchestra.players, for_part=transposed, breaks=breaks),
+                _definitions(
+                    work, work.orchestra.players, for_part=transposed, breaks=breaks, shared=shared
+                ),
                 front_part(work, SCORE_PAGE, edition),
                 music_part,
             ]

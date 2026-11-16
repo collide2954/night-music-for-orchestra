@@ -276,7 +276,9 @@ def skip_text(quarters: Fraction) -> str:
 CHANGE_WIDTH = "\\once \\override {context}MetronomeMark.extra-spacing-width = #'(-0.3 . 0.8) "
 
 
-def global_to_lilypond(structure: Structure, *, change_context: str | None = None) -> str:
+def global_to_lilypond(
+    structure: Structure, *, change_context: str | None = None, marks: str = "all"
+) -> str:
     """Write the structure as a LilyPond voice of spacer rests with all marks.
 
     One spacer rest goes from each mark to the subsequent mark. Thus the parts
@@ -285,8 +287,22 @@ def global_to_lilypond(structure: Structure, *, change_context: str | None = Non
     If `change_context` is given, each gradual change of tempo takes its own
     width (see `CHANGE_WIDTH`). The value is the context of the tempo marks
     with a dot ("Score." in a part), or an empty text for a line of marks.
+
+    `marks` selects the rehearsal marks and the tempo marks:
+
+    - "all": all marks (a part).
+    - "none": no marks. A staff of a score uses this: the lines of marks have them.
+    - "line": a line of marks of a score. A rehearsal mark and a tempo mark at
+      the same bar line are one mark: the letter in its box, then the tempo.
+      Thus the two marks are side by side, and the line is not high.
     """
     events: dict[Fraction, list[str]] = {}
+    with_tempo: dict[Fraction, str] = {}  # a rehearsal mark that goes into a tempo mark
+    if marks == "line":
+        texts = {point.position for point in structure.tempo_points if point.text or point.unit}
+        for number, label in structure.marks.items():
+            if structure.bar(number).start in texts:
+                with_tempo[structure.bar(number).start] = label
 
     def add(position: Fraction, text: str) -> None:
         events.setdefault(position, []).append(text)
@@ -307,15 +323,15 @@ def global_to_lilypond(structure: Structure, *, change_context: str | None = Non
                 add(bar.start, f"\\time {groups} {bar.numerator}/{bar.denominator}")
             else:
                 add(bar.start, f"\\time {bar.numerator}/{bar.denominator}")
-        if bar.number in structure.marks:
+        if bar.number in structure.marks and bar.start not in with_tempo and marks != "none":
             add(bar.start, f'\\mark \\markup \\rehearsal "{structure.marks[bar.number]}"')
         previous = bar
     for point in structure.tempo_points:
-        if point.text or point.unit:
+        if (point.text or point.unit) and marks != "none":
             width = ""
             if change_context is not None and point.italic and not point.unit:
                 width = CHANGE_WIDTH.format(context=change_context)
-            add(point.position, width + _tempo_text(point))
+            add(point.position, width + _tempo_text(point, with_tempo.pop(point.position, "")))
     add(structure.length, '\\bar "|."' if structure.final_bar else "")
 
     lines: list[str] = []
@@ -331,13 +347,18 @@ def global_to_lilypond(structure: Structure, *, change_context: str | None = Non
     return "\n".join(lines)
 
 
-def _tempo_text(point: TempoPoint) -> str:
+def _tempo_text(point: TempoPoint, mark: str = "") -> str:
+    """Return the LilyPond text of a tempo mark. `mark` is a rehearsal mark at the same place."""
+    words = f'\\tempochange "{point.text}"' if point.italic else f'"{point.text}"'
+    if mark:
+        box = f'\\rehearsal "{mark}"'
+        words = f"\\markup {{ {box} \\hspace #1.2 {words} }}" if point.text else f"\\markup {box}"
+    elif point.italic:
+        words = f"\\markup {words}"
     if point.unit:
         quarters = _unit_quarters(point.unit)
         number = round(point.bpm / float(quarters))
-        if point.text:
-            return f'\\tempo "{point.text}" {point.unit} = {number}'
+        if point.text or mark:
+            return f"\\tempo {words} {point.unit} = {number}"
         return f"\\tempo {point.unit} = {number}"
-    if point.italic:
-        return f'\\tempo \\markup \\tempochange "{point.text}"'
-    return f'\\tempo "{point.text}"'
+    return f"\\tempo {words}"

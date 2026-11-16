@@ -560,7 +560,7 @@ def _return(work: Work) -> None:
         "tuba": "es,,", "cbcl": "es,,", "bn3": "es,,", "cb": "es,", "btbn": "a,,", "bn2": "e,",
         "tbn2": "e,", "bn1": "bes,", "tbn1": "bes,", "cl3": "bes,", "hn4": "g", "hn3": "des'",
         "hn2": "as'", "hn1": "d''", "tpt3": "g'", "tpt2": "des''", "tpt1": "as''",
-        "cl2": "d''", "cl1": "b'", "ob2": "f''", "ob1": "b''", "fl2": "f'''", "fl1": "c''''",
+        "cl1": "d''", "cl2": "b'", "ob2": "f''", "ob1": "b''", "fl2": "f'''", "fl1": "c''''",
         "fl3": "fis''''",
     }  # fmt: skip
     for player, note in wall.items():
