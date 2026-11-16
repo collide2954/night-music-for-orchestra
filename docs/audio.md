@@ -146,6 +146,7 @@ The module [`audio/piano.py`](../src/nightmusic/audio/piano.py) plays the sample
 - The loudness of a note selects one of the 16 dynamic levels of its key.
 - The pedal marks of the score hold the notes. With no pedal, the damper stops the string when the key goes up. The highest keys have no dampers.
 - A staccato note is short. A new stroke on a key stops the old sound of that key.
+- The notes of a rolled chord start one after the other, from the lowest note.
 - The noise of a key that goes up and the noise of the pedal are in the sound at a low level.
 - Each stroke has a small difference of time (some milliseconds) and of loudness, as the strokes of a pianist have. The owner of the project heard the exact fast lines of the last chord as "rigid".
 

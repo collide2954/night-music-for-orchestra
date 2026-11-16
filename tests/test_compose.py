@@ -197,3 +197,60 @@ def test_stack_makes_chords_from_lines():
     from nightmusic.compose.tools import stack
 
     assert _flat(stack(r"c'2\p d'2 |", r"e'2 f'2 |")) == r"<c' e'>2\p <d' f'>2 |"
+
+
+def test_sweep_makes_a_free_line_with_more_and_more_notes_in_each_eighth_note():
+    from nightmusic.compose.tools import sweep
+
+    groups = sweep("d e fis a b", "d,", (4, 5, 6))
+    assert [text for text, _low, _high in groups] == [
+        "d,32 e, fis, a,",
+        r"\tuplet 5/4 { b,32 d e fis a }",
+        r"\tuplet 6/4 { b32 d' e' fis' a' b' }",
+    ]
+    assert [(low, high) for _text, low, high in groups] == [(38, 45), (47, 57), (59, 71)]
+    # Each group fills one eighth note.
+    for text, _low, _high in groups:
+        assert music.length(music.parse(text + " r8 r4 r2 |")) == 4
+    down = sweep("d e fis a b", "b'", (4, 4), down=True)
+    assert [text for text, _low, _high in down] == ["b'32 a' fis' e'", "d'32 b a fis"]
+
+
+def test_a_sweep_goes_to_the_two_hands_of_the_piano():
+    from nightmusic.compose.tools import sweep
+    from nightmusic.work.part5 import _rests, _two_hands
+
+    groups = sweep("d e fis a b", "d,", (4, 5, 6))
+    low, high = _two_hands(groups, 3, r"\mp\<", r"\mf\<", "", r"d'''4->\f")
+    # The left hand has the two low groups. Its hairpin stops on its last note.
+    assert low == (r"r4 r8 d,32\mp\<( e, fis, a, \tuplet 5/4 { b,32 d e fis a)\! } r8 r4")
+    # The right hand has the high group, and the note where the sweep arrives.
+    assert high == r"r2 r8 \tuplet 6/4 { b32\mf\<( d' e' fis' a' b') } d'''4->\f"
+    for bar in (low, high):
+        assert music.length(music.parse(bar + " |")) == 4
+    assert _rests(0, 8) == ["r2", "r2"] and _rests(1, 4) == ["r8", "r4"]
+    assert _rests(3, 7) == ["r8", "r4", "r8"]
+
+
+def test_one_hand_must_reach_each_chord():
+    from nightmusic.compose.check import check
+    from nightmusic.notation.work import Work, load_orchestra
+
+    work = Work("Test", load_orchestra())
+    section = work.section(4, 4, 4)
+    work.structure.tempo(section.bar(1), 1, 60, "Lento")
+    # Bar 1: a tenth (good). Bar 2: an eleventh. Bar 3: the same chord, rolled (good).
+    # Bar 4: six notes.
+    section.write(
+        "pno.rh",
+        r"<c' e''>1\f | <c' f''>1 | <c' f''>1\arpeggio | <c' d' e' f' g' a'>1 |",
+    )
+    # The harp player has four fingers for each hand, and a rolled chord is not wider.
+    section.write("harp.rh", r"<c' e' g' c''>1\f | <c' d' e' g' c''>1 | <c' f''>1\arpeggio | R1 |")
+    section.close()
+    assert [str(problem) for problem in check(work)] == [
+        "harp.rh, bar 2: a chord of 5 notes for one hand of the harp",
+        "harp.rh, bar 3: a chord from c' to f'' is too wide for one hand of the harp",
+        "pno.rh, bar 2: a chord from c' to f'' is too wide for one hand of the piano",
+        "pno.rh, bar 4: a chord of 6 notes for one hand of the piano",
+    ]

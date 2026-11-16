@@ -195,3 +195,45 @@ def test_a_fermata_adds_time_to_the_end_of_a_bar():
     plain = slower.seconds(slower.bar(2).start)
     slower.fermata(2, 3.0)
     assert slower.seconds(slower.bar(2).start) == pytest.approx(plain)
+
+
+def test_a_hand_of_the_piano_changes_its_clef_in_a_bar_that_is_wide():
+    work = Work("Test", load_orchestra())
+    section = work.section(3, 4, 4)
+    work.structure.tempo(1, 1, 60, "Lento")
+    # Bar 1: a line from the low register to the high register. Bar 2: only low notes.
+    # Bar 3: a narrow bar near middle C keeps the clef of the bar before it.
+    section.write("pno.lh", r"c,4\f g, e'' c''' | c,4 g, c g, | b4 c' d' c' |")
+    section.close()
+    text = " ".join(lilypond.part_file(work, "pno").split())
+    expected = (
+        r"musicPnolh = { \clef bass c,4\f g, \clef treble e'' c''' | "
+        r"\clef bass c,4 g, c g, | b4 c' d' c' | }"
+    )
+    assert expected in text
+    # The division of a bar at its beats: a tuplet stays in one piece.
+    bar = music.parse(r"c8 d \tuplet 3/2 { e8 f g } a2 |").children
+    pieces = lilypond._beat_pieces(bar, [Fraction(1)] * 4)
+    assert [len(piece) for piece in pieces] == [2, 1, 1, 1]
+    # The beat groups of a bar: the groups of an uneven metre, or quarter notes.
+    structure = Structure()
+    structure.add_bars(1, 8, 8, (3, 3, 2))
+    structure.add_bars(1, 4, 4)
+    structure.add_bars(1, 6, 8)
+    lengths = [lilypond._beat_groups(bar) for bar in structure.bars]
+    assert lengths[0] == [Fraction(3, 2), Fraction(3, 2), Fraction(1)]
+    assert lengths[1] == [Fraction(1)] * 4
+    assert lengths[2] == [Fraction(3, 2)] * 2
+
+
+def test_the_systems_of_the_score_are_equally_full():
+    # A short bar between two long bars does not stay alone: a system can be a little
+    # more than full.
+    assert lilypond.system_breaks([20.0, 40.0, 20.0, 40.0, 20.0, 40.0], 56.0, 10) == {2, 4}
+    # Bars that go into one system have no break. The last system can be empty in part.
+    assert lilypond.system_breaks([10.0] * 5, 56.0, 10) == set()
+    assert lilypond.system_breaks([10.0] * 7, 56.0, 10) == {5}
+    # A system has not more than the largest number of bars.
+    assert lilypond.system_breaks([1.0] * 9, 56.0, 4) == {4, 8}
+    # A bar that is wider than a system is alone.
+    assert lilypond.system_breaks([30.0, 90.0, 30.0], 56.0, 10) == {1, 2}

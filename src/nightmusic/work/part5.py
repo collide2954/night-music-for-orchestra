@@ -430,9 +430,15 @@ def _last_statement(work: Work) -> None:
     block.add("perc4", 2, times(ring, 4) + r" d'''8 e''' gis''' a''' " * 2 + "| "
               + times(ring, 3) + r" a'''2. r4 | a'''1\fermata |")  # fmt: skip
     block.add("cel.rh", 2, dyn(times(BELLS_ON_BEAT, 8), r"\ff") + r" R1 | R1\fermata |")
-    block.add("harp.rh", 2, dyn(times(BELLS_OFF_BEAT, 8), r"\ff")
-              + r" <d' fis' a' d'' fis'' a''>2.\arpeggio r4 | "
-              r"<d' fis' a' d'' fis'' a''>1\arpeggio\fermata |")  # fmt: skip
+    # The harp rolls the last two chords through its two hands.
+    block.add(
+        "harp.rh", 2,
+        dyn(times(BELLS_OFF_BEAT, 8), r"\ff")
+        + r" <d'' fis'' a''>2.\arpeggio r4 | <d'' fis'' a''>1\arpeggio\fermata |",
+    )  # fmt: skip
+    block.add(
+        "harp.lh", 2, r"R1*8 | <d' fis' a'>2.\ff\arpeggio r4 | <d' fis' a'>1\arpeggio\fermata |"
+    )
     # The piano: deep bell strokes (the chord goes up from stroke to stroke), and free
     # sweeps between them, as a harp plays them. The owner of the project heard the
     # first form of these lines (equal sextuplets, the same line two times) as "rigid",

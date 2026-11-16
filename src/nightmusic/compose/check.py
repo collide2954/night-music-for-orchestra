@@ -6,6 +6,7 @@ The checks are:
 - A wind instrument plays one note at a time.
 - A player who changes to a different instrument must have the time to do it.
 - The timpani player must have the time to tune a drum to a different note.
+- One hand of a keyboard player or of the harp player must reach each of its chords.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ from ..notation.work import Work
 from ..perform.events import PerfNote, perform
 
 ONE_NOTE_FAMILIES = ("woodwinds", "brass")
+HAND_FAMILIES = ("keyboards", "plucked")
 
 # The smallest time in seconds for a change of instrument.
 CHANGE_SECONDS = {"percussion": 4.0}
@@ -27,6 +29,17 @@ CHANGE_SECONDS_DEFAULT = 8.0
 # a drum to a different note.
 TIMPANI_DRUMS = 4
 TIMPANI_SECONDS = 5.0
+
+
+# The chord of one hand (a player with two staves has one staff for each hand): the
+# largest number of notes, and the largest width in semitones. The harp player does
+# not use the little finger. A rolled chord of a keyboard instrument can be wider:
+# the hand moves, and the pedal of the piano holds the notes.
+HAND_NOTES = {"harp": 4}
+HAND_NOTES_DEFAULT = 5
+HAND_SPAN = 16  # a major tenth
+ROLLED_SPAN = {"harp": 16}
+ROLLED_SPAN_DEFAULT = 24
 
 
 @dataclass(frozen=True)
@@ -79,6 +92,32 @@ def _timpani_problems(work: Work, player: str, notes: list[PerfNote]) -> list[Pr
     return problems
 
 
+def _hand_problems(work: Work, player: str, notes: list[PerfNote]) -> list[Problem]:
+    """Find the chords that one hand cannot reach."""
+    chords: dict[Fraction, list[PerfNote]] = {}
+    for note in notes:
+        if not note.grace:
+            chords.setdefault(note.start, []).append(note)
+    problems = []
+    for start, chord in sorted(chords.items()):
+        keys = sorted({round(note.midi) for note in chord})
+        if len(keys) < 2:
+            continue
+        instrument = chord[0].instrument
+        rolled = all("arpeggio" in note.articulations for note in chord)
+        widest = ROLLED_SPAN.get(instrument, ROLLED_SPAN_DEFAULT) if rolled else HAND_SPAN
+        most = HAND_NOTES.get(instrument, HAND_NOTES_DEFAULT)
+        low, high = from_midi(keys[0]).name, from_midi(keys[-1]).name
+        text = ""
+        if len(keys) > most:
+            text = f"a chord of {len(keys)} notes for one hand of the {instrument}"
+        elif keys[-1] - keys[0] > widest:
+            text = f"a chord from {low} to {high} is too wide for one hand of the {instrument}"
+        if text:
+            problems.append(Problem(player, work.structure.bar_at(start).number, text))
+    return problems
+
+
 def check(work: Work) -> list[Problem]:
     """Return the problems in the work, in the sequence of the score."""
     problems: list[Problem] = []
@@ -91,6 +130,8 @@ def check(work: Work) -> list[Problem]:
         free = Fraction(0)
         notes = sorted(perform(work, player.id), key=lambda item: item.start)
         problems.extend(_timpani_problems(work, player.id, notes))
+        if player.id.endswith((".rh", ".lh")) and player.family in HAND_FAMILIES:
+            problems.extend(_hand_problems(work, player.id, notes))
         for note in notes:
             bar = structure.bar_at(note.start).number
             if last_instrument and note.instrument != last_instrument:

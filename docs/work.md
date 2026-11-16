@@ -131,8 +131,8 @@ The loudness of a moment is the loudest dynamic mark in effect at that moment.
 
 | Value | Target | The work |
 | --- | --- | --- |
-| Share of the time: p or softer | 0.55 to 0.68 | 0.44 |
-| Share of the time: mp or mf | 0.08 to 0.14 | 0.18 |
+| Share of the time: p or softer | 0.55 to 0.68 | 0.46 |
+| Share of the time: mp or mf | 0.08 to 0.14 | 0.16 |
 | Share of the time: f or louder | 0.18 to 0.28 | 0.37 |
 | Bars for each tempo mark | 5 to 13 | 10.1 |
 
@@ -182,7 +182,7 @@ The orchestra has one timpani player and six percussion players.
 | The way up to the first climax (mark P) | Tom-toms and taiko: their strokes come nearer and nearer together. Rolls of the bass drum and of the suspended cymbal. |
 | The first climax (mark Q) | Hand cymbals, suspended cymbal, tam-tam, bass drum, taiko, tubular bells, timpani. |
 | The main climax (mark EE) | Hand cymbals, suspended cymbal, tam-tam, triangle, bass drum, tubular bells, glockenspiel, timpani. |
-| The last statement (mark KK) | Hand cymbals, suspended cymbal, tam-tam, bass drum, taiko, tubular bells, glockenspiel, timpani. |
+| The last statement (mark KK) | Hand cymbals, crotales, suspended cymbal, tam-tam, triangle, bass drum, tubular bells, glockenspiel, timpani. |
 
 A player who goes to a different instrument has 4 seconds or more for the change.
 The timpani player has 5 seconds or more to tune a drum to a different note (the check uses four drums).
@@ -202,10 +202,12 @@ Functions make the other forms of a theme:
 | `lines` | Divide a chord progression into its voices. |
 | `fill` | Make a figure from each chord of a progression. |
 | `scatter` | Put short figures at given moments, with rests between them. |
+| `sweep` | Make a fast, free line through a scale: each eighth note has a group of 4, 5, 6, or 7 notes. |
 | `Block` | Collect the music of a section phrase by phrase. |
 
 The command `nightmusic check` finds notes that are out of the range of an instrument.
 It also finds a change of instrument, and a change of tuning of the timpani, for which the player has too little time.
+It also finds a chord that one hand of the piano, the celesta, the accordion, or the harp cannot reach: a chord wider than a tenth, or a chord with too many notes (a rolled chord of a keyboard instrument can be two octaves wide).
 
 The command `nightmusic docs` writes the bar numbers, the times, and the measured values of the work into this document and into the file `README.md`.
 A test makes sure that these values are up to date.

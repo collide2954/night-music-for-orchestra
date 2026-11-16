@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import bisect
 from dataclasses import dataclass, replace
+from fractions import Fraction
+from itertools import accumulate
 from pathlib import Path
 
 from . import music, techniques
 from .pitch import Interval
-from .structure import global_to_lilypond
+from .structure import Bar, global_to_lilypond
 from .work import Instrument, Player, Work
 
 LILYPOND_VERSION = "2.26.0"
@@ -258,9 +260,10 @@ def best_clef(
     ordered = sorted(written)
     median, lowest = ordered[len(ordered) // 2], ordered[0]
     if instrument.clef == "grand":
+        # Between A-flat 3 and E4 (the notes near middle C), the hand keeps its clef.
         if (current or base) == "bass":
-            return "treble" if median > 67 and lowest >= 57 else "bass"
-        return "bass" if median < 53 and ordered[-1] <= 64 else "treble"
+            return "treble" if median >= 64 and lowest >= 55 else "bass"
+        return "bass" if median <= 56 and ordered[-1] <= 65 else "treble"
     if base == "treble" and instrument.name == "horn in F" and median < 55:
         return "bass"
     if base == "bass" and instrument.name == "bass clarinet" and median > 62:
@@ -297,26 +300,39 @@ def _with_clefs(
     elements: list[music.Element] = []
     current = ""
     ottava = 0
+    position = Fraction(0)  # the start of the unit in the work, in quarter notes
     for chunk in chunks:
         # A hand of a keyboard instrument can change its clef in each bar: its music
         # moves through the full keyboard. Other instruments have one clef for a section.
         grand = instrument is not None and instrument.clef == "grand"
         units = _bars_of(chunk.children) if grand else [chunk.children]
         for unit in units:
+            start = position
+            position += sum((music.length(element) for element in unit), Fraction(0))
             shift = emitter.interval.semitones if emitter.interval else 0
             written = [midi + shift for midi in _pitches(unit)]
             if grand and not written:
                 elements.extend(unit)
                 continue
-            clef = best_clef(emitter.clef_of(instrument), instrument, written, current)
-            if clef != current:
-                elements.append(music.Command("clef", [clef]))
-                current = clef
-            octave = best_ottava(clef, instrument, written)
-            if octave != ottava:
-                elements.append(music.Command("ottava", [f"#{octave}"]))
-                ottava = octave
-            elements.extend(unit)
+            pieces = [unit]
+            if grand and max(written) - min(written) > WIDE_BAR:
+                # A line that goes through much of the keyboard in one bar: each beat
+                # group of the bar can have its own clef and its own octave sign.
+                pieces = _beat_pieces(unit, _beat_groups(work.structure.bar_at(start)))
+            for piece in pieces:
+                notes = [midi + shift for midi in _pitches(piece)]
+                if not notes:
+                    elements.extend(piece)
+                    continue
+                clef = best_clef(emitter.clef_of(instrument), instrument, notes, current)
+                if clef != current:
+                    elements.append(music.Command("clef", [clef]))
+                    current = clef
+                octave = best_ottava(clef, instrument, notes)
+                if octave != ottava:
+                    elements.append(music.Command("ottava", [f"#{octave}"]))
+                    ottava = octave
+                elements.extend(piece)
         # A change of instrument in the chunk changes the usual clef.
         for command in _walk_commands(chunk.children):
             if command.name == "switch":
@@ -325,6 +341,48 @@ def _with_clefs(
                 current = emitter.clef_of(instrument)
     emitter.set_instrument(work.orchestra.first_instrument(player.id))
     return elements
+
+
+# A bar of one hand of a keyboard instrument that is wider than this (in semitones)
+# can have more than one clef.
+WIDE_BAR = 19
+
+
+def _beat_groups(bar: Bar) -> list[Fraction]:
+    """Return the length of each beat group of a bar, in quarter notes."""
+    if bar.grouping:
+        return [Fraction(4 * size, bar.denominator) for size in bar.grouping]
+    beat = Fraction(3, 2) if bar.denominator == 8 and bar.numerator % 3 == 0 else Fraction(1)
+    count = int(bar.length / beat)
+    groups = [beat] * count
+    if bar.length > beat * count:
+        groups.append(bar.length - beat * count)
+    return groups
+
+
+def _beat_pieces(
+    elements: list[music.Element], groups: list[Fraction]
+) -> list[list[music.Element]]:
+    """Divide the music of one bar at the ends of its beat groups.
+
+    A tuplet or a different group stays in one piece. A grace note or a
+    command at the start of a beat group goes with that beat group.
+    """
+    edges = list(accumulate(groups))
+    pieces: list[list[music.Element]] = [[]]
+    position = Fraction(0)
+    has_time = False
+    for element in elements:
+        if has_time and edges and position >= edges[0]:
+            pieces.append([])
+            has_time = False
+        while edges and position >= edges[0]:
+            edges.pop(0)
+        pieces[-1].append(element)
+        duration = music.length(element)
+        position += duration
+        has_time = has_time or duration > 0
+    return pieces
 
 
 def _bars_of(elements: list[music.Element]) -> list[list[music.Element]]:
@@ -570,11 +628,47 @@ def _front_page(work: Work) -> str:
     )
 
 
+OVERFULL = 0.12  # a system can have this much more than its capacity
+
+
+def system_breaks(widths: list[float], capacity: float, most_bars: int) -> set[int]:
+    """Return the bars after which a new system starts, for the widths of the bars.
+
+    The systems are as equally full as possible: the function finds the
+    division with the lowest sum of the costs of the systems. A system that
+    is not full costs the square of its empty share. A system can be a little
+    more than full (`OVERFULL`): this costs more. The last system can be
+    empty in part at no cost. Thus a short bar does not stay alone between
+    two long bars.
+    """
+    count = len(widths)
+    best = [0.0] + [float("inf")] * count  # the lowest cost for the first bars
+    cut = [0] * (count + 1)  # the last bar of the system before
+    for last in range(1, count + 1):
+        load = 0.0
+        for first in range(last, max(last - most_bars, 0), -1):
+            load += widths[first - 1]
+            if load > capacity * (1.0 + OVERFULL) and first < last:
+                break
+            if load > capacity:
+                cost = (3.0 * (load - capacity) / capacity) ** 2
+            else:
+                cost = 0.0 if last == count else ((capacity - load) / capacity) ** 2
+            if best[first - 1] + cost < best[last]:
+                best[last], cut[last] = best[first - 1] + cost, first - 1
+    breaks: set[int] = set()
+    last = count
+    while cut[last]:
+        last = cut[last]
+        breaks.add(last)
+    return breaks
+
+
 def score_breaks(work: Work, capacity: float = 56.0, most_bars: int = 10) -> set[int]:
     """Return the bars after which the conductor score starts a new system.
 
     The width of a bar depends on the number of different moments at which
-    a note starts. A system gets bars until it is full.
+    a note starts. The function `system_breaks` divides the bars into systems.
     """
     from ..perform.events import perform
 
@@ -585,16 +679,8 @@ def score_breaks(work: Work, capacity: float = 56.0, most_bars: int = 10) -> set
         for note in perform(work, player.id):
             position = float(note.start)
             moments[bisect.bisect_right(starts, position) - 1].add(position)
-    breaks: set[int] = set()
-    load, count = 0.0, 0
-    for bar, columns in zip(structure.bars, moments, strict=True):
-        width = max(len(columns), 2) + 1.5
-        if count and (load + width > capacity or count >= most_bars):
-            breaks.add(bar.number - 1)
-            load, count = 0.0, 0
-        load += width
-        count += 1
-    return breaks
+    widths = [max(len(columns), 2) + 1.5 for columns in moments]
+    return system_breaks(widths, capacity, most_bars)
 
 
 def score_file(work: Work) -> str:

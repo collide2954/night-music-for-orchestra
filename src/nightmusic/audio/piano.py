@@ -16,6 +16,7 @@ This module plays the piano part of the work with these samples:
 - The sustain pedal of the score holds the notes. With no pedal, the damper
   stops the string when the key goes up. The highest keys have no dampers.
 - A new stroke on a key that sounds stops the old sound of that key.
+- The notes of a rolled chord start one after the other, from the lowest.
 - The noise of a key that goes up, and the noise of the pedal, are in the
   sound at a low level, as in a real recording.
 - Each stroke has a small difference of time and of loudness, as the strokes
@@ -65,6 +66,8 @@ FIRST_KEY_WITH_NO_DAMPER = 89  # F6: the keys from here have no dampers
 DAMP_SECONDS = {21: 0.11, 48: 0.075, 72: 0.05, 88: 0.04}
 RESTRIKE_SECONDS = 0.02  # a new stroke on the same key stops the old sound in this time
 STACCATO_SECONDS = 0.11  # the longest time that the key is down for a staccato note
+ROLL_STEP_SECONDS = 0.045  # a rolled chord: the time from one note to the subsequent note
+ROLL_SECONDS = 0.35  # a rolled chord: the longest time from its first note to its last note
 FAST_SECONDS = 0.3  # a note with no slur that is shorter than this is a fast note
 FAST_SHARE = 0.55  # the part of a fast note for which the key is down
 KEY_NOISE_DB = -34.0  # the noise of a key that goes up
@@ -228,6 +231,7 @@ def notes_of(work: Work) -> list[tuple[float, float, int, int]]:
     """Return the piano notes of the work: the start, the key-up time, the key, the velocity."""
     structure = work.structure
     found = []
+    rolled: dict[float, list[tuple[float, float, int, int]]] = {}
     for player in PLAYERS:
         notes = [note for note in perform(work, player) if note.instrument == "piano"]
         for index, note in enumerate(notes):
@@ -253,10 +257,29 @@ def notes_of(work: Work) -> list[tuple[float, float, int, int]]:
                 start = max(0.0, start - 0.07 * note.grace)
                 end = start + 0.09
             value = velocity(0.5 * (note.level + note.level_end), note.accent)
-            found.append((start, _key_up(note, start, end), round(note.midi), value))
+            item = (start, _key_up(note, start, end), round(note.midi), value)
+            if "arpeggio" in note.articulations:
+                rolled.setdefault(round(start, 4), []).append(item)
+            else:
+                found.append(item)
+    for chord in rolled.values():
+        found.extend(_roll(chord))
     found = [_human(*note) for note in found]
     found.sort()
     return found
+
+
+def _roll(chord: list[tuple[float, float, int, int]]) -> list[tuple[float, float, int, int]]:
+    """Return the notes of a rolled chord: they start one after the other, from the lowest.
+
+    The notes of the two hands that start at the same time are one roll.
+    """
+    step = min(ROLL_STEP_SECONDS, ROLL_SECONDS / max(len(chord) - 1, 1))
+    ordered = sorted(chord, key=lambda note: note[2])
+    return [
+        (start + number * step, max(key_up, start + number * step + 0.05), midi, value)
+        for number, (start, key_up, midi, value) in enumerate(ordered)
+    ]
 
 
 def _human(start: float, key_up: float, midi: int, value: int) -> tuple[float, float, int, int]:

@@ -65,6 +65,25 @@ def test_a_note_with_the_pedal_sounds_longer_than_a_note_with_no_pedal():
     assert level(4.0) > level(0.0) + 3.0  # ff is louder than mf
 
 
+def test_the_notes_of_a_rolled_chord_start_one_after_the_other():
+    work = Work("Test", load_orchestra())
+    section = work.section(2, 4, 4)
+    work.structure.tempo(1, 1, 60, "Lento")
+    section.write("pno.rh", r"<e' g' c''>1\f\arpeggio | <e' g' c''>1 |")
+    section.write("pno.lh", r"<c, c>1\f\arpeggio | <c, c>1 |")
+    section.close()
+    notes = piano.notes_of(work)
+    rolled = sorted(note for note in notes if note[0] < 3.0)
+    block = sorted(note for note in notes if note[0] > 3.0)
+    assert [midi for _start, _key_up, midi, _value in rolled] == [36, 48, 64, 67, 72]
+    steps = np.diff([start for start, *_rest in rolled])
+    largest = 2 * piano.LARGEST_SHIFT_MS / 1000.0
+    assert np.all(steps > piano.ROLL_STEP_SECONDS - largest)  # from the lowest note up
+    assert rolled[-1][0] - rolled[0][0] <= piano.ROLL_SECONDS + largest
+    # A chord with no mark: all its notes start together (with the small differences).
+    assert block[-1][0] - block[0][0] <= largest
+
+
 def test_each_stroke_has_small_differences_of_time_and_loudness():
     notes = [piano._human(float(second), second + 0.5, 60, 80) for second in range(1, 201)]
     shifts = np.array([start - second for second, (start, *_rest) in enumerate(notes, 1)])

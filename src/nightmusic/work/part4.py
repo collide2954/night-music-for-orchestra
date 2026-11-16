@@ -168,9 +168,10 @@ def _warm_theme(work: Work) -> None:
         3: beat.replace("32(", r"32\sustainOff\sustainOn(") + " " + beat + " " + beat,
         1: beat.replace("32(", r"32\sustainOff\sustainOn("),
     }
-    # The mark is mp: the piano is the soloist, and its figures must be as clear as the
-    # theme (at pp, the audio had the piano 12 dB below the strings).
-    block.add("pno.rh", 1, first(fill(chords, ripple), r"\mp\leggiero", note=True))
+    # The mark is p: the piano is the soloist, and its figures must be as clear as the
+    # theme. A measurement of the audio gave: at pp, the piano was 12 dB below the
+    # strings; at mp, 4 dB above them; at p, 3 dB below them.
+    block.add("pno.rh", 1, first(fill(chords, ripple), r"\p\leggiero", note=True))
     block.add(
         "pno.rh",
         2,
@@ -729,20 +730,27 @@ def _main_climax(work: Work) -> None:
     block.add(
         "pno.lh", 1, with_last(double(dyn(WARM_BASS, r"\fff"), -1), r"<a,, e, b, fis>1\arpeggio")
     )
-    full = {4: r"<B C D B' C' D'>1", 2: r"<B C D B' C' D'>2"}
-    rolled = {4: full[4] + r"\arpeggio", 2: full[2] + r"\arpeggio"}
+    # Each hand has three notes of the chord: a hand can reach them. The harp rolls
+    # each chord through its two hands.
+    low = {4: r"<B C D>1", 2: r"<B C D>2"}
+    high = {4: r"<B' C' D'>1", 2: r"<B' C' D'>2"}
+    rolled_low = {4: low[4] + r"\arpeggio", 2: low[2] + r"\arpeggio"}
+    rolled_high = {4: high[4] + r"\arpeggio", 2: high[2] + r"\arpeggio"}
     block.add(
         "pno.rh", 1,
-        with_last(fill(dyn(WARM_CHORDS, r"\fff"), full), r"<cis' gis' d'' g'' c'''>1\arpeggio"),
+        with_last(fill(dyn(WARM_CHORDS, r"\fff"), high), r"<cis' gis' d'' g'' c'''>1\arpeggio"),
     )  # fmt: skip
     block.add(
         "harp.rh", 1,
-        with_last(fill(dyn(WARM_CHORDS, r"\ff"), rolled), r"<fis cis' gis'>1\arpeggio"),
+        with_last(fill(dyn(WARM_CHORDS, r"\ff"), rolled_high), r"<fis cis' gis'>1\arpeggio"),
     )  # fmt: skip
-    block.add("harp.lh", 1, rests(4, 4, 7) + r" <a,, e, b,>1\ff\arpeggio |")
+    block.add(
+        "harp.lh", 1,
+        with_last(fill(dyn(WARM_CHORDS, r"\ff"), rolled_low), r"<a,, e, b,>1\arpeggio"),
+    )  # fmt: skip
     block.add(
         "acc.rh", 1,
-        with_last(fill(dyn(WARM_CHORDS, r"\ff"), full), r"<d'' g'' c''' f'''>1"),
+        with_last(fill(dyn(WARM_CHORDS, r"\ff"), low), r"<d'' g'' c''' f'''>1"),
     )  # fmt: skip
     block.add(
         "timp", 1,
@@ -798,7 +806,8 @@ def _main_climax(work: Work) -> None:
         r"c'4->\fff c'4->\ff r4 c'4-> | r4 c'4->\mf r4 c'4-> | r4 c'4->\mp r4 c'4->\p | R1 |",
     )  # fmt: skip
     block.add("pno.lh", 2, r"<d,, d,>1\fff | R1*3 |")
-    block.add("harp.rh", 2, r"<d' fis' a' d'' fis'' a''>1\ff\arpeggio | R1*3 |")
+    block.add("harp.rh", 2, r"<d'' fis'' a''>1\ff\arpeggio | R1*3 |")
+    block.add("harp.lh", 2, r"<d' fis' a'>1\ff\arpeggio | R1*3 |")
     block.close()
 
 

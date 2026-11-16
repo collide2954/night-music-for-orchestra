@@ -853,7 +853,7 @@ def _broad_motto(work: Work) -> None:
     block.add(
         "harp.rh", 3,
         r"<as es' as' ces''>2\p\arpeggio r2 | <a fis' a' cis''>2\arpeggio r2 | "
-        r"<g d' g' b'>2\arpeggio r2 | <fis e' ais' d''>2\arpeggio r2 |",
+        r"<g d' g' b'>2\arpeggio r2 | <ais e' ais' d''>2\arpeggio r2 |",
     )  # fmt: skip
     block.close()
 
@@ -1154,7 +1154,7 @@ def _first_climax(work: Work) -> None:
     block.add(
         "pno.rh", 1,
         r"<f' a' d''>1\fff-^ | <ges' bes' es''>1-^ | <f' des'' as''>1-^ | <f' cis'' g''>1-^ | "
-        r"<f' a' d''>1-^ | <ges' bes' es''>1-^ | <d' es'' as''>1-^ | <d' es'' as''>1-^ |",
+        r"<f' a' d''>1-^ | <ges' bes' es''>1-^ | <d' as' es''>1-^ | <d' as' es''>1-^ |",
     )  # fmt: skip
     block.close()
 

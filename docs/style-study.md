@@ -454,7 +454,7 @@ The table shows how frequently a bar comes again with no change. Each value is a
 | Full texture: bar is the same at a different pitch | 3.9 % | 0.5 % | 0.0 % | 0.0 % | 1.5 % | 0.8 % | 0.0 % |
 | Full texture: bar has the same rhythm with different notes | 8.7 % | 13.3 % | 0.0 % | 13.6 % | 24.4 % | 10.2 % | 4.8 % |
 | One voice: bar is the same as one of its 8 bars before | 10.2 % | 37.8 % | 26.1 % | 35.8 % | 30.7 % | 20.1 % | 60.6 % |
-| One voice: bar is the same at a different pitch | 8.5 % | 21.7 % | 2.3 % | 26.2 % | 31.9 % | 14.4 % | 12.4 % |
+| One voice: bar is the same at a different pitch | 8.5 % | 21.7 % | 2.3 % | 26.2 % | 31.9 % | 14.3 % | 12.4 % |
 | Bars in a block of 4 bars that is the same as an earlier block | 0.0 % | 2.7 % | 0.0 % | 1.9 % | 0.0 % | 0.0 % | 14.5 % |
 
 Data files: [`research/measured/repetition.csv`](../research/measured/repetition.csv), [`research/measured/work_repetition.csv`](../research/measured/work_repetition.csv)
@@ -518,16 +518,16 @@ Data file: [`research/measured/work_harmony.csv`](../research/measured/work_harm
 | perc4 | 17.0 % | - | - | - | - | tremolo |
 | perc5 | 11.3 % | - | - | - | - | tremolo |
 | perc6 | 11.1 % | - | - | - | - | tremolo |
-| harp.rh | 39.9 % | 56.2 % | 0.0 % | 40.2 % | 59.9 % | harmonic |
-| harp.lh | 11.6 % | 38.8 % | 70.2 % | 29.8 % | 0.0 % | - |
+| harp.rh | 32.7 % | 56.2 % | 0.0 % | 35.4 % | 64.6 % | harmonic |
+| harp.lh | 18.8 % | 53.8 % | 52.3 % | 47.7 % | 0.0 % | - |
 | cimb.rh | 3.2 % | 36.8 % | 0.0 % | 46.0 % | 54.0 % | tremolo |
 | cimb.lh | 16.5 % | 42.1 % | 64.9 % | 35.1 % | 0.0 % | tremolo |
 | mand | 10.7 % | 68.4 % | 23.8 % | 57.0 % | 19.2 % | tremolo |
 | cel.rh | 13.2 % | 58.3 % | 2.8 % | 45.5 % | 51.7 % | - |
 | cel.lh | 0.0 % | - | - | - | - | no notes |
-| pno.rh | 59.7 % | 78.2 % | 1.8 % | 63.6 % | 34.6 % | glissando; grace notes |
+| pno.rh | 55.2 % | 78.2 % | 1.8 % | 63.3 % | 34.9 % | glissando; grace notes |
 | pno.lh | 44.9 % | 85.1 % | 72.7 % | 26.6 % | 0.7 % | grace notes; tremolo |
-| acc.rh | 50.3 % | 48.6 % | 0.0 % | 70.5 % | 29.5 % | - |
+| acc.rh | 45.8 % | 48.6 % | 0.0 % | 72.2 % | 27.8 % | - |
 | acc.lh | 0.0 % | - | - | - | - | no notes |
 | vn1 | 74.4 % | 84.0 % | 7.3 % | 77.6 % | 15.1 % | desk: solo; glissando; harmonic; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo |
 | vn2 | 87.7 % | 78.0 % | 48.2 % | 51.3 % | 0.5 % | col legno; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |

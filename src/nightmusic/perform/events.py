@@ -278,7 +278,7 @@ def _play(
 
     articulations = {post.value for post in posts if post.kind == "articulation"}
     articulations |= commands & {
-        "staccato", "accent", "tenuto", "marcato", "staccatissimo", "portato",
+        "staccato", "accent", "tenuto", "marcato", "staccatissimo", "portato", "arpeggio",
     }  # fmt: skip
     if "accent" in articulations:
         accent = max(accent, 0.1)

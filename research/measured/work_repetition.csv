@@ -3,6 +3,6 @@ full texture: bar is the same as the bar before,0.006734,0.01042,0,0,0.01878,0,0
 full texture: bar is the same as one of the 8 bars before,0.05051,0.03646,0.07619,0,0.06573,0,0,0.1928
 full texture: bar is the same at a different pitch,0.005051,0.005208,0.004762,0,0,0.01481,0.007874,0
 full texture: bar has the same rhythm with different notes,0.133,0.1615,0.08095,0,0.1362,0.2444,0.1024,0.04819
-one voice: bar is the same as one of its 8 bars before,0.3782,0.3409,0.4343,0.2614,0.3581,0.307,0.2011,0.6062
-one voice: bar is the same at a different pitch,0.2174,0.2738,0.1324,0.02273,0.2623,0.3188,0.1437,0.1241
+one voice: bar is the same as one of its 8 bars before,0.3778,0.3409,0.4331,0.2614,0.3581,0.307,0.2005,0.6055
+one voice: bar is the same at a different pitch,0.2171,0.2738,0.1319,0.02273,0.2623,0.3188,0.1427,0.1239
 bars in a block of 4 bars that is the same as an earlier block,0.02694,0.01042,0.05714,0,0.01878,0,0,0.1446

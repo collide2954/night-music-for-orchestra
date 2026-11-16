@@ -32,16 +32,16 @@ perc3,0.1499,,,,,tremolo
 perc4,0.1695,,,,,tremolo
 perc5,0.1129,,,,,tremolo
 perc6,0.111,,,,,tremolo
-harp.rh,0.3985,0.5625,0,0.4015,0.5985,harmonic
-harp.lh,0.1164,0.3875,0.7018,0.2982,0,
+harp.rh,0.3272,0.5625,0,0.3538,0.6462,harmonic
+harp.lh,0.1877,0.5375,0.5229,0.4771,0,
 cimb.rh,0.03194,0.3684,0,0.4595,0.5405,tremolo
 cimb.lh,0.1647,0.4211,0.6494,0.3506,0,tremolo
 mand,0.1067,0.6842,0.2383,0.5701,0.1916,tremolo
 cel.rh,0.1319,0.5833,0.02768,0.455,0.5173,
 cel.lh,0,,,,,no notes
-pno.rh,0.597,0.7816,0.01793,0.6356,0.3465,glissando; grace notes
+pno.rh,0.5517,0.7816,0.01811,0.6327,0.3492,glissando; grace notes
 pno.lh,0.4494,0.8506,0.727,0.2662,0.00674,grace notes; tremolo
-acc.rh,0.5029,0.4861,0,0.7051,0.2949,
+acc.rh,0.4576,0.4861,0,0.7222,0.2778,
 acc.lh,0,,,,,no notes
 vn1,0.7442,0.84,0.07291,0.7762,0.1508,desk: solo; glissando; harmonic; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo
 vn2,0.8767,0.78,0.4823,0.5126,0.005143,col legno; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none
