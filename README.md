@@ -55,7 +55,7 @@ It also has four instruments that are not usual in an orchestra: cimbalom, accor
 | 1. Style study | Tables of measured and sourced style parameters | First edition complete |
 | 2. Design | Form, orchestra, and material of the work | Complete |
 | 3. Composition | The music, written as code | Second version complete (603 bars) |
-| 4. Engraving | Conductor score and parts | Complete. See "Limits". |
+| 4. Engraving | Conductor score and parts | The rules of the orchestra librarians are in work. See [`docs/engraving.md`](docs/engraving.md) and "Limits". |
 | 5. Audio | Audio from MuseScore Studio with Muse Sounds (free sample libraries) | Second version. See [`docs/audio.md`](docs/audio.md). |
 | 6. Video | Score video with part tracking | Complete |
 

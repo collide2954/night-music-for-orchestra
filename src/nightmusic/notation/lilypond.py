@@ -8,7 +8,7 @@ from fractions import Fraction
 from itertools import accumulate
 from pathlib import Path
 
-from . import music, techniques
+from . import frontmatter, music, techniques
 from .pitch import Interval
 from .structure import Bar, global_to_lilypond
 from .work import Instrument, Player, Work
@@ -21,9 +21,9 @@ STYLE = r"""
 % Style of Night Music for Orchestra. The build code writes this file.
 
 #(define-markup-command (rehearsal layout props text) (markup?)
-   "A rehearsal mark: a bold letter in a box."
+   "A rehearsal mark: a bold letter in a box. The size is in points."
    (interpret-markup layout props
-     (markup #:box #:pad-markup 0.4 #:bold #:fontsize 2 text)))
+     (markup #:override '(box-padding . 0.5) #:box #:bold #:abs-fontsize @REHEARSAL@ text)))
 
 #(define-markup-command (tempochange layout props text) (markup?)
    "A gradual change of tempo, for example rit."
@@ -45,14 +45,39 @@ pf = #(make-dynamic-script "pf")
 SCORE_LAYOUT = r"""
 \layout {
   \context {
+    % A line for the tempo marks and the rehearsal marks. The score has one above the
+    % woodwinds and one above the strings: a conductor reads them near each group.
+    \type Engraver_group
+    \name MarkLine
+    \consists Axis_group_engraver
+    \consists Mark_engraver
+    \consists Metronome_mark_engraver
+    \override VerticalAxisGroup.staff-affinity = #DOWN
+    \override VerticalAxisGroup.nonstaff-relatedstaff-spacing.padding = #1.2
+    \override VerticalAxisGroup.nonstaff-unrelatedstaff-spacing.padding = #2.5
+    \override MetronomeMark.font-size = #4.5
+    \override RehearsalMark.self-alignment-X = #LEFT
+    \override RehearsalMark.break-align-symbols = #'(left-edge staff-bar)
+    \override RehearsalMark.extra-spacing-width = #'(+inf.0 . -inf.0)
+    \override MetronomeMark.extra-spacing-width = #'(+inf.0 . -inf.0)
+    % The marks have fixed places in this line: they do not look for a staff. The
+    % tempo mark is on the base line, and a rehearsal mark is above it.
+    \override RehearsalMark.outside-staff-priority = ##f
+    \override MetronomeMark.outside-staff-priority = ##f
+    \override MetronomeMark.Y-offset = #0
+    \override RehearsalMark.Y-offset = #3.6
+  }
+  \context {
     \Score
-    \override BarNumber.font-size = #0
+    \remove Mark_engraver
+    \remove Metronome_mark_engraver
+    \accepts MarkLine
+    \override BarNumber.font-size = #3
+    \override BarNumber.font-shape = #'italic
     \override BarNumber.padding = #1.5
-    \override MetronomeMark.font-size = #2
-    \override MetronomeMark.padding = #2.5
-    \override RehearsalMark.padding = #3
     \override InstrumentName.self-alignment-X = #RIGHT
     \override InstrumentName.padding = #0.8
+    \override InstrumentName.font-size = #1
     \override Hairpin.minimum-length = #5
     \override SpacingSpanner.common-shortest-duration = #(ly:make-moment 1/16)
     skipBars = ##f
@@ -75,7 +100,8 @@ PART_LAYOUT = r"""
 \layout {
   \context {
     \Score
-    \override BarNumber.font-size = #-1
+    \override BarNumber.font-size = #0
+    \override BarNumber.font-shape = #'italic
     \override MetronomeMark.font-size = #1.5
     \override MetronomeMark.padding = #2.5
     \override RehearsalMark.padding = #2.5
@@ -88,9 +114,10 @@ PART_LAYOUT = r"""
     \Staff
     \override TextScript.font-size = #-0.5
     \override DynamicTextSpanner.style = #'none
-    % A page turn is permitted where the player has a rest of two bars or more.
+    % A page turn is permitted where the player has a rest of three whole notes or
+    % more: the player needs the time to turn the page.
     \consists Page_turn_engraver
-    pageTurnMinimumRestLength = #2
+    pageTurnMinimumRestLength = #3
   }
 }
 """
@@ -98,29 +125,83 @@ PART_LAYOUT = r"""
 SCORE_PAPER = r"""
 \paper {
   #(set-paper-size "11x17")
+  % Pages for a print on the two sides of the paper: the inner margin is for the binding.
+  two-sided = ##t
+  inner-margin = 18\mm
+  outer-margin = 13\mm
   top-margin = 12\mm
-  bottom-margin = 12\mm
-  left-margin = 14\mm
-  right-margin = 12\mm
-  indent = 28\mm
-  short-indent = 14\mm
+  bottom-margin = 14\mm
+  indent = 32\mm
+  short-indent = 15\mm
   system-separator-markup = \slashSeparator
   ragged-last-bottom = ##f
   print-page-number = ##t
+  bookpart-level-page-numbering = ##t
+  % The first page of music: the type of the score on the left, the title in the
+  % middle, the composer on the right. The sizes are in points.
+  bookTitleMarkup = \markup \column {
+    \fill-line { \abs-fontsize #25 \bold \fromproperty #'header:title }
+    \vspace #1.2
+    \fill-line {
+      \abs-fontsize #12 \italic \fromproperty #'header:poet
+      \abs-fontsize #13 \fromproperty #'header:composer
+    }
+    \vspace #0.8
+  }
+  % The page number is in the outer corner, 14 point. The title is in each header.
+  oddHeaderMarkup = \markup \fill-line {
+    \null
+    \unless \on-first-page-of-part \abs-fontsize #9 \italic \fromproperty #'header:title
+    \if \should-print-page-number \abs-fontsize #14 \fromproperty #'page:page-number-string
+  }
+  evenHeaderMarkup = \markup \fill-line {
+    \if \should-print-page-number \abs-fontsize #14 \fromproperty #'page:page-number-string
+    \unless \on-first-page-of-part \abs-fontsize #9 \italic \fromproperty #'header:title
+    \null
+  }
 }
 """
 
 PART_PAPER = r"""
 \paper {
   #(set-paper-size "arch a")
-  top-margin = 12\mm
-  bottom-margin = 14\mm
-  left-margin = 14\mm
-  right-margin = 14\mm
-  indent = 0\mm
+  % 9 x 12 inches: a usual size for parts, and the largest size for a digital part.
+  % The margins are those of the guidelines of the orchestra librarians (20 mm).
+  two-sided = ##t
+  inner-margin = 19\mm
+  outer-margin = 17\mm
+  top-margin = 13\mm
+  bottom-margin = 15\mm
+  indent = 12\mm
   ragged-last-bottom = ##t
   print-page-number = ##t
   page-breaking = #ly:page-turn-breaking
+  % The first page: the instrument on the left, the title in the middle, the composer
+  % on the right. The sizes are in points.
+  bookTitleMarkup = \markup \column {
+    \fill-line {
+      \abs-fontsize #15 \bold \fromproperty #'header:instrument
+      \abs-fontsize #21 \bold \fromproperty #'header:title
+      \abs-fontsize #12 \fromproperty #'header:composer
+    }
+    \vspace #1.0
+  }
+  % Each subsequent page: the instrument and the title, and the page number in the
+  % outer corner.
+  oddHeaderMarkup = \markup \fill-line {
+    \null
+    \unless \on-first-page-of-part \abs-fontsize #9.5 \concat {
+      \bold \fromproperty #'header:instrument "   " \italic \fromproperty #'header:title
+    }
+    \if \should-print-page-number \abs-fontsize #13 \fromproperty #'page:page-number-string
+  }
+  evenHeaderMarkup = \markup \fill-line {
+    \if \should-print-page-number \abs-fontsize #13 \fromproperty #'page:page-number-string
+    \unless \on-first-page-of-part \abs-fontsize #9.5 \concat {
+      \bold \fromproperty #'header:instrument "   " \italic \fromproperty #'header:title
+    }
+    \null
+  }
 }
 """
 
@@ -142,8 +223,10 @@ class _Emitter:
     left_hand: bool = False
     interval: Interval | None = None
     pedal_down: bool = False  # the sustain pedal is down at this point of the file
+    instrument_name: str = ""  # the instrument that the player has at this point
 
     def set_instrument(self, instrument: Instrument | None) -> None:
+        self.instrument_name = instrument.name if instrument is not None else ""
         if instrument is None:
             self.interval = None
         else:
@@ -157,11 +240,15 @@ class _Emitter:
             return "bass" if self.left_hand else "treble"
         return clef
 
-    def emit(self, elements: list[music.Element]) -> str:
+    def emit(self, elements: list[music.Element], *, top: bool = True) -> str:
+        """Return the LilyPond text of the elements. `top` is true for all music of a player."""
         parts = []
-        for element in _merge_full_bar_rests(elements):
+        splits = _rest_splits(self.work) if top else frozenset()
+        for element in _merge_full_bar_rests(elements, splits):
             if isinstance(element, music.Command) and element.name == "switch":
                 name = element.arguments[0].strip('"')
+                if name == self.instrument_name:
+                    continue  # the player has this instrument: no mark
                 instrument = self.work.orchestra.instruments.get(name)
                 self.set_instrument(instrument)
                 label = name[0].upper() + name[1:]
@@ -169,10 +256,12 @@ class _Emitter:
                     f'\\clef {self.clef_of(instrument)} <>^\\markup \\instrumentchange "{label}"'
                 )
             elif isinstance(element, music.Group) and element.kind == "parallel":
-                voices = [f"{{ {self.emit(child.children)} }}" for child in element.children]
+                voices = [
+                    f"{{ {self.emit(child.children, top=False)} }}" for child in element.children
+                ]
                 parts.append("<< " + " \\\\ ".join(voices) + " >>")
             elif isinstance(element, music.Group):
-                inner = self.emit(element.children)
+                inner = self.emit(element.children, top=False)
                 prefix = f"{element.header} " if element.kind != "sequence" else ""
                 parts.append(f"{prefix}{{ {inner} }}")
             else:
@@ -202,31 +291,68 @@ class _Emitter:
         return replace(element, posts=kept) if changed else element
 
 
-def _merge_full_bar_rests(elements: list[music.Element]) -> list[music.Element]:
+def _rest_text(quarters: Fraction) -> str:
+    """Return the length of a full-bar rest as LilyPond text, for example "1*7/8"."""
+    whole = quarters / 4
+    return f"1*{whole.numerator}" if whole.denominator == 1 else f"1*{whole}"
+
+
+def _cut_long_rests(
+    elements: list[music.Element], splits: frozenset[Fraction]
+) -> list[music.Element]:
+    """Cut each full-bar rest of many bars at the positions of `splits` that are in it."""
+    if not splits:
+        return elements
+    result: list[music.Element] = []
+    position = Fraction(0)
+    for element in elements:
+        start = position
+        position += music.length(element)
+        inside = sorted(split for split in splits if start < split < position)
+        if not (isinstance(element, music.Rest) and element.kind == "R" and inside):
+            result.append(element)
+            continue
+        edges = [start, *inside, position]
+        for number, (first, last) in enumerate(zip(edges, edges[1:], strict=False)):
+            posts = list(element.posts) if number == 0 else []
+            result.append(music.Rest("R", last - first, _rest_text(last - first), posts))
+            if number < len(edges) - 2:
+                result.append(music.BarCheck())
+    return result
+
+
+def _merge_full_bar_rests(
+    elements: list[music.Element], splits: frozenset[Fraction] = frozenset()
+) -> list[music.Element]:
     """Join adjacent full-bar rests into one rest.
 
     LilyPond shows one long rest as a rest with a number in the parts. It does
     not join rests that are written one bar at a time.
+
+    `splits` are positions in the work (in quarter notes, from the first
+    element) at which a new rest must start. A part shows each change of tempo
+    also in a long rest: thus a long rest stops at a tempo mark.
     """
     merged: list[music.Element] = []
     run: music.Rest | None = None
-    for element in elements:
+    position = Fraction(0)
+    for element in _cut_long_rests(elements, splits):
+        start = position
+        position += music.length(element)
         full_bar = isinstance(element, music.Rest) and element.kind == "R"
         plain_rest = full_bar and not element.posts
         # A full-bar rest at which a hairpin stops can be the first rest of a long rest.
         stop_only = full_bar and [(p.kind, p.value) for p in element.posts] == [("hairpin", "!")]
+        if run is not None and full_bar and start in splits:
+            merged.append(music.BarCheck())
+            run = None
         if plain_rest or (stop_only and run is None):
             if run is None:
                 run = music.Rest("R", element.duration, "", list(element.posts))
                 merged.append(run)
             else:
                 run.duration += element.duration
-            whole = run.duration / 4
-            run.duration_text = (
-                f"1*{whole.numerator}"
-                if whole.denominator == 1
-                else f"1*{whole.numerator}/{whole.denominator}"
-            )
+            run.duration_text = _rest_text(run.duration)
         elif isinstance(element, music.BarCheck) and run is not None:
             continue
         else:
@@ -237,6 +363,23 @@ def _merge_full_bar_rests(elements: list[music.Element]) -> list[music.Element]:
     if run is not None:
         merged.append(music.BarCheck())
     return merged
+
+
+def _rest_splits(work: Work) -> frozenset[Fraction]:
+    """Return the positions at which a long rest of a part must stop and start again.
+
+    These are the start and the end of each bar that has a tempo mark or a
+    change of tempo in words.
+    """
+    structure = work.structure
+    positions: set[Fraction] = set()
+    for point in structure.tempo_points:
+        if point.text or point.unit:
+            bar = structure.bar_at(min(point.position, structure.length - Fraction(1, 64)))
+            positions.add(bar.start)
+            if point.position > bar.start:
+                positions.add(bar.end)
+    return frozenset(positions)
 
 
 def _pitches(elements: list[music.Element]) -> list[float]:
@@ -412,13 +555,20 @@ def _player_music(work: Work, player: Player, *, for_part: bool) -> str:
     return emitter.emit(_with_clefs(work, player, chunks, emitter, instrument))
 
 
-def _header(work: Work, instrument_line: str = "") -> str:
+def _header(work: Work, instrument_line: str = "", document: str = "") -> str:
+    """Return the header of the music: title, composer, and the name of the part.
+
+    `document` is the type of a score ("Score in C" or "Transposed score"): it
+    is in the upper left corner of the first page of music.
+    """
     lines = [
         "\\header {",
         f'  title = "{work.title}"',
         f'  subtitle = "{work.subtitle}"' if work.subtitle else "",
         f'  composer = "{work.composer}"' if work.composer else "",
         f'  instrument = "{instrument_line}"' if instrument_line else "",
+        f'  poet = "{document}"' if document else "",
+        f'  copyright = "{frontmatter.copyright_line(work)}"',
         "  tagline = ##f",
         "}",
     ]
@@ -429,11 +579,17 @@ def _definitions(
     work: Work, players: list[Player], *, for_part: bool, breaks: set[int] | None = None
 ) -> str:
     structure = work.structure if breaks is None else replace(work.structure, breaks=breaks)
+    score = breaks is not None
     blocks = [
         "global = {\n\\accidentalStyle Score.modern\n\\numericTimeSignature\n"
-        + global_to_lilypond(structure)
+        + global_to_lilypond(structure, change_context=None if score else "Score.")
         + "\n}"
     ]
+    if score:
+        # A score: the lines for the tempo marks and the rehearsal marks.
+        blocks.append(
+            "globalMarks = {\n" + global_to_lilypond(structure, change_context="") + "\n}"
+        )
     for player in players:
         text = _player_music(work, player, for_part=for_part)
         blocks.append(f"{identifier(player.id)} = {{\n{text}\n}}")
@@ -477,18 +633,10 @@ def _score_staves(work: Work) -> str:
                 staves.append(_staff(player))
                 index += 1
         joined = "\n  ".join(staves)
+        if family in MARK_LINE_FAMILIES:
+            blocks.append("\\new MarkLine { \\globalMarks }")
         blocks.append(f'\\new StaffGroup = "{family}" <<\n  {joined}\n>>')
     return "\n".join(blocks)
-
-
-FAMILY_TITLES = {
-    "woodwinds": "Woodwinds",
-    "brass": "Brass",
-    "percussion": "Percussion",
-    "plucked": "Harp and plucked instruments",
-    "keyboards": "Keyboards",
-    "strings": "Strings",
-}
 
 
 def score_notes(work: Work) -> list[str]:
@@ -567,72 +715,6 @@ def score_notes(work: Work) -> list[str]:
     return notes
 
 
-def _instrument_lines(work: Work) -> dict[str, list[str]]:
-    """Return the list of the players for the first page: one line for each player."""
-    from ..perform.events import perform
-
-    lines: dict[str, list[str]] = {family: [] for family in FAMILY_ORDER}
-    for player in work.orchestra.players:
-        if player.id.endswith(".lh"):
-            continue
-        hands = [player.id]
-        if player.id.endswith(".rh"):
-            hands.append(player.id[: -len(".rh")] + ".lh")
-        used: list[str] = []
-        for hand in hands:
-            for note in perform(work, hand):
-                if note.instrument not in used:
-                    used.append(note.instrument)
-        if not used:
-            continue
-        first = player.instruments[0]
-        if player.family == "percussion" and len(player.instruments) > 1:
-            line = f"{player.name}: {', '.join(used)}"
-        else:
-            others = [name for name in used if name != first]
-            also = "also " if first in used else ""
-            line = player.name + (f" ({also}{', '.join(others)})" if others else "")
-        if player.count > 1 and player.family == "strings":
-            line += f" ({player.count} players)"
-        lines[player.family].append(line)
-    return lines
-
-
-def _front_page(work: Work) -> str:
-    """Return the first page of the score: the list of the players and the notes."""
-
-    def text(value: str) -> str:
-        return '"' + value.replace("\\", "").replace('"', "'") + '"'
-
-    def wrapped(value: str) -> str:
-        words = " ".join(text(word) for word in value.split())
-        return f"\\wordwrap {{ {words} }}"
-
-    families = _instrument_lines(work)
-    columns: list[list[str]] = [[], []]
-    for family in FAMILY_ORDER:
-        if not families[family]:
-            continue
-        target = columns[0] if family in ("woodwinds", "brass") else columns[1]
-        target.append(f"\\vspace #1 \\line {{ \\bold {text(FAMILY_TITLES[family])} }}")
-        target.extend(f"\\line {{ {text(line)} }}" for line in families[family])
-    left = "\n      ".join(columns[0])
-    right = "\n      ".join(columns[1])
-    notes = "\n    ".join(f"\\vspace #0.4 {wrapped(note)}" for note in score_notes(work))
-    return (
-        "\\markup \\fontsize #4 \\column {\n"
-        '  \\vspace #2 \\line { \\bold \\fontsize #2 "Orchestra" }\n'
-        "  \\line {\n"
-        f"    \\column {{\n      {left}\n    }}\n"
-        "    \\hspace #14\n"
-        f"    \\column {{\n      {right}\n    }}\n"
-        "  }\n"
-        '  \\vspace #2 \\line { \\bold \\fontsize #2 "Notes for the performance" }\n'
-        f"  \\override #'(line-width . 110) \\column {{\n    {notes}\n  }}\n"
-        "}\n\n\\pageBreak"
-    )
-
-
 OVERFULL = 0.12  # a system can have this much more than its capacity
 
 
@@ -688,21 +770,69 @@ def score_breaks(work: Work, capacity: float = 56.0, most_bars: int = 10) -> set
     return system_breaks(widths, capacity, most_bars)
 
 
-def score_file(work: Work) -> str:
-    """Return the LilyPond text of the conductor score."""
+# The families that have a line for the tempo marks and the rehearsal marks above them.
+MARK_LINE_FAMILIES = ("woodwinds", "strings")
+SCORE_PAGE = frontmatter.Page(279.4, 431.8, 13.0)  # 11 x 17 inches, staff of 4.6 mm
+SCORE_REHEARSAL_POINTS = 20.0
+PART_REHEARSAL_POINTS = 15.0
+
+
+def style(rehearsal_points: float) -> str:
+    """Return the style definitions for a document."""
+    return STYLE.replace("@REHEARSAL@", f"{rehearsal_points:g}").strip()
+
+
+def front_part(work: Work, page: frontmatter.Page, edition: str) -> str:
+    """Return the pages before the music as one part of the book, with no page numbers."""
+    pages = frontmatter.pages(work, page, edition, score_notes(work))
+    body = "\n\n\\pageBreak\n\n".join(pages)
+    return (
+        "\\bookpart {\n"
+        "\\paper {\n"
+        "  two-sided = ##f\n"
+        f"  left-margin = {page.margin_mm:g}\\mm\n"
+        f"  right-margin = {page.margin_mm:g}\\mm\n"
+        "  top-margin = 18\\mm\n"
+        "  bottom-margin = 18\\mm\n"
+        "  print-page-number = ##f\n"
+        "  oddHeaderMarkup = ##f\n"
+        "  evenHeaderMarkup = ##f\n"
+        "  oddFooterMarkup = ##f\n"
+        "  evenFooterMarkup = ##f\n"
+        "}\n"
+        "\\header { tagline = ##f }\n\n" + body + "\n}"
+    )
+
+
+def score_file(work: Work, *, transposed: bool = False) -> str:
+    """Return the LilyPond text of the conductor score.
+
+    The usual score is in C. If `transposed` is true, each instrument has the
+    notes of its part: some orchestras ask for such a score.
+    """
     breaks = score_breaks(work)
+    document = "Transposed score" if transposed else "Score in C"
+    edition = "Full score, transposed" if transposed else "Full score in C"
+    music_part = (
+        "\\bookpart {\n"
+        + _header(work, document=document)
+        + "\n\\score {\n<<\n"
+        + _score_staves(work)
+        + "\n>>\n"
+        + SCORE_LAYOUT.strip()
+        + "\n}\n}"
+    )
     return (
         "\n\n".join(
             [
                 f'\\version "{LILYPOND_VERSION}"',
-                STYLE.strip(),
+                style(SCORE_REHEARSAL_POINTS),
                 techniques.lilypond_definitions(),
-                "#(set-global-staff-size 13)",
+                f"#(set-global-staff-size {SCORE_PAGE.staff_size:g})",
                 SCORE_PAPER.strip(),
-                _header(work, "Score in C"),
-                _front_page(work),
-                _definitions(work, work.orchestra.players, for_part=False, breaks=breaks),
-                "\\score {\n<<\n" + _score_staves(work) + "\n>>\n" + SCORE_LAYOUT.strip() + "\n}",
+                _definitions(work, work.orchestra.players, for_part=transposed, breaks=breaks),
+                front_part(work, SCORE_PAGE, edition),
+                music_part,
             ]
         )
         + "\n"
@@ -716,6 +846,17 @@ def part_players(work: Work) -> dict[str, list[Player]]:
         base = player.id.split(".")[0]
         parts.setdefault(base, []).append(player)
     return parts
+
+
+# The height of a staff in a part, in points. The guidelines of the orchestra
+# librarians: 7.5 mm is the best, 7.0 mm is possible for winds, and less is not
+# acceptable. Two string players read one part: they get the larger staff.
+PART_STAFF_POINTS = 20.0  # 7.1 mm
+STRING_PART_STAFF_POINTS = 21.0  # 7.4 mm
+
+
+def part_staff_size(family: str) -> float:
+    return STRING_PART_STAFF_POINTS if family == "strings" else PART_STAFF_POINTS
 
 
 def part_file(work: Work, part_id: str) -> str:
@@ -736,9 +877,9 @@ def part_file(work: Work, part_id: str) -> str:
         "\n\n".join(
             [
                 f'\\version "{LILYPOND_VERSION}"',
-                STYLE.strip(),
+                style(PART_REHEARSAL_POINTS),
                 techniques.lilypond_definitions(),
-                "#(set-global-staff-size 19)",
+                f"#(set-global-staff-size {part_staff_size(first.family):g})",
                 PART_PAPER.strip(),
                 _header(work, line),
                 _definitions(work, players, for_part=True),
@@ -754,6 +895,7 @@ def part_file(work: Work, part_id: str) -> str:
 # ----------------------------------------------------------------------------
 
 VIDEO_PAGE_MM = (480.0, 270.0)
+VIDEO_REHEARSAL_POINTS = 16.0
 VIDEO_SECONDS_PER_SCREEN = 15.0
 # The video for a telephone: the screen is tall and narrow. A screen shows less
 # time, and the notes are larger.
@@ -910,7 +1052,7 @@ def video_file(work: Work, index: int, staff_size: float, *, mobile: bool = Fals
         clef = best_clef(
             emitter.clef_of(instrument), instrument, [midi + shift for midi in _pitches(children)]
         )
-        body = emitter.emit(children)
+        body = emitter.emit(children, top=False)  # a page of the video: no long rests
         blocks.append(f"{identifier(player.id)} = {{\n\\clef {clef}\n{body}\n}}")
         tag = (
             f"\\override StaffSymbol.output-attributes = "
@@ -948,7 +1090,7 @@ def video_file(work: Work, index: int, staff_size: float, *, mobile: bool = Fals
         "\n\n".join(
             [
                 f'\\version "{LILYPOND_VERSION}"',
-                STYLE.strip(),
+                style(VIDEO_REHEARSAL_POINTS),
                 VIDEO_SCHEME.strip(),
                 techniques.lilypond_definitions(),
                 f"#(set-global-staff-size {staff_size:.2f})",

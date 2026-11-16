@@ -1,0 +1,33 @@
+subject,rule,value,source
+Score: paper,Size of the conductor score,"North America: 9 x 12 inches or more, 11 x 17 inches or less. Europe: B4 JIS (257 x 364 mm) or A3 (297 x 420 mm). Portrait format.",mola-prep; sso-prep; clark-seminar
+Score: staff,Height of a staff,The smallest staff that a conductor can read is 4 mm. One orchestra asks for 4 to 5 mm.,mola-prep; sso-prep
+Score: margins,Margins of a B4 page,"Top and bottom 20 to 23 mm, left and right 17 to 20 mm.",sso-prep
+Score: order,Sequence of the staves,"Woodwinds, brass, timpani and percussion and harp and keyboards, voices, strings. In each group from high to low.",mola-prep
+Score: bar lines,Bar lines,The bar lines are continuous in each family of instruments.,mola-prep
+Score: names,Names of the instruments,"Full names at the first system, abbreviations after it. A staff for more than one player says how many players it has.",mola-prep; scoringnotes-names
+Score: tempo,Place of the tempo marks,Above the highest staff and above the first violins on each page.,mola-prep
+Score: bar numbers,Place and size of the bar numbers,"At the start of each system (not the first), above the clef of the highest staff, 10 to 13 point, italic. A different way: each bar, below the system.",mola-prep; sso-prep
+Score: rehearsal marks,Place and size of the rehearsal marks,"At landmarks of the music. Above the highest staff of the woodwinds and of the strings; for a large orchestra above more families. Bold, in a box, 19 to 23 point. A reader finds a mark with not more than one page turn.",mola-prep; sso-prep; scoringnotes-prep
+Score: page numbers,Page numbers,"Right pages have odd numbers in the upper right corner, left pages have even numbers in the upper left corner. 14 to 16 point. Page 1 is the first page of music.",mola-prep; sso-prep
+Score: first page,First page of music,"Title, composer, copyright, and all instruments (also those that do not play at the start). ""Transposed score"" or ""Score in C"" in the upper left corner.",sso-prep; scoringnotes-names
+Score: cover,Cover,"Title and composer are prominent. The title is as in a concert programme. The name and address of the publisher, and a date of the print or of the revision.",mola-prep
+Score: front pages,Pages before the music,"The full instrumentation: doublings, the keys of the transposing instruments, each percussion instrument (with the ranges that are necessary), and the number of percussion players. The durations. Special instructions, a diagram of the stage for an unusual plan, an explanation of unusual notation. A programme note.",mola-prep; sso-prep; scoringnotes-prep
+Score: transposition,Transposed score or score in C,One orchestra asks for a transposed score. The score must say which type it is.,sso-prep; scoringnotes-prep
+Score: empty staves,Staves of players who do not play,Do not hide empty staves if the reduction is not large. Keep the full score where possible.,sso-prep
+Score: shared staves,Staves for two players,"Two players of one instrument share a staff where possible (for example flutes 1 and 2). One publisher made a score of 41 possible staves with 22 staves.",sso-prep; clark-seminar
+Score: percussion,Percussion staves,"From high to low by pitch, or by player. The same plan for all of the work.",mola-prep
+Paper,Paper and print,"100 to 120 g/m2, white or off-white, not shiny. Music on the two sides of each sheet. The parts lie flat on the stand.",mola-prep
+Parts: paper,Size of a part,"9 x 12 inches or more, 11 x 14 inches or less; A4 is the smallest size, B4 is the most common. Sizes of many publishers: 9 x 12, 9.5 x 12.5, 10 x 13 inches. A digital part: not larger than 9 x 12 inches.",mola-prep; clark-seminar
+Parts: staff,Height of a staff,"7.5 mm is the best. 7.0 mm is possible for winds. Less than 7.0 mm is not acceptable, more than 8.5 mm is not good.",mola-prep
+Parts: margins,Margins,20 mm (0.75 inch) around the music.,mola-prep
+Parts: systems,Systems on a page,"8 to 10 for an instrument with many ledger lines (flute, violin, tuba). Not more than 12.",mola-prep
+Parts: page turns,Page turns,"The player has the time to turn the page: think of the tempo and of the instrument. A rest of many bars is at the end of a page, if possible.",mola-prep; scoringnotes-prep
+Parts: clefs,Clefs and key signatures,At the start of each line. A warning at the end of the line before a change.,mola-prep
+Parts: bar numbers,Bar numbers,"At the start of each line, not in each bar. A rest of many bars can show its range of bar numbers.",mola-prep
+Parts: cues,Cues,"After a long rest, a cue from an instrument that the player can hear, in the key of the part. Tempo and metre changes show also in rests.",mola-prep
+Parts: doubling,Change of instrument,"A clear instruction when to change, and the name of the instrument at the subsequent entry.",mola-prep
+Parts: headers,Headers,"The front of a part has the title, the composer, and the instrument (with its key). Each subsequent page has the name of the instrument, the title, and the page number.",mola-prep; scoringnotes-names
+Parts: one player,One part for each wind player,"Flute 1 and flute 2 are separate parts. Each string section has one part. A division that is complex has separate staves.",mola-prep
+Parts: percussion,Percussion and timpani,A key of the notation at the start of a percussion part that is complex. The timpani have a separate part.,mola-prep
+Parts: harp and strings,Pedals and bowings,The pedal changes of the harp are not printed. Bowings are printed only for a special effect.,mola-prep
+Files,Names of the files,"""COMPOSER work title 00 - score.pdf"", ""COMPOSER work title 01 - flute 1.pdf"", and so on, in the sequence of the score.",clark-seminar

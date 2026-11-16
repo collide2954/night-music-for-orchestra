@@ -9,6 +9,9 @@
 # If "score_transposition" is not given, it is 0.
 # "score_clef" is the clef in the conductor score, if it is different from the part.
 # The ranges are safe ranges for professional players.
+# The identifiers fl3, ob3, cl3, and bn3 are the players of the piccolo, the English
+# horn, the bass clarinet, and the contrabassoon: in this work they play only these
+# instruments, and the score and the parts have these names.
 
 [summary]
 woodwind_players = 13
@@ -37,10 +40,10 @@ instruments = ["flute", "alto flute"]
 
 [[player]]
 id = "fl3"
-name = "Flute 3"
-short = "Fl. 3"
+name = "Piccolo"
+short = "Picc."
 family = "woodwinds"
-instruments = ["flute", "piccolo"]
+instruments = ["piccolo", "flute"]
 
 [[player]]
 id = "ob1"
@@ -58,10 +61,10 @@ instruments = ["oboe", "ocarina"]
 
 [[player]]
 id = "ob3"
-name = "Oboe 3"
-short = "Ob. 3"
+name = "English Horn"
+short = "E. Hn."
 family = "woodwinds"
-instruments = ["oboe", "English horn"]
+instruments = ["English horn", "oboe"]
 
 [[player]]
 id = "cl1"
@@ -79,10 +82,10 @@ instruments = ["clarinet in B-flat", "clarinet in E-flat"]
 
 [[player]]
 id = "cl3"
-name = "Clarinet 3"
-short = "Cl. 3"
+name = "Bass Clarinet"
+short = "B. Cl."
 family = "woodwinds"
-instruments = ["clarinet in B-flat", "bass clarinet"]
+instruments = ["bass clarinet", "clarinet in B-flat"]
 
 [[player]]
 id = "cbcl"
@@ -107,10 +110,10 @@ instruments = ["bassoon", "ocarina"]
 
 [[player]]
 id = "bn3"
-name = "Bassoon 3"
-short = "Bn. 3"
+name = "Contrabassoon"
+short = "Cbn."
 family = "woodwinds"
-instruments = ["bassoon", "contrabassoon"]
+instruments = ["contrabassoon", "bassoon"]
 
 # -------------------------------------------------------------------- brass
 

@@ -294,3 +294,69 @@ def test_the_work_has_no_hairpin_over_a_silence():
         spans = hairpins.sounding(work.music_of(other).children, Fraction(0)) if other else []
         found = hairpins.over_rests(work.music_of(player.id).children, Fraction(0), spans)
         assert found == [], player.id
+
+
+def test_the_pages_before_the_music_have_what_the_librarians_ask_for():
+    from nightmusic.notation import frontmatter
+    from nightmusic.work import build
+
+    work = build()
+    pages = frontmatter.pages(work, lilypond.SCORE_PAGE, "Full score in C", ["A note."])
+    # An even number of pages: the first page of music is then a right page.
+    assert len(pages) % 2 == 0
+    text = " ".join(pages)
+    for heading in ("Instrumentation", "Plan of the stage", "Notes for the performance"):
+        assert heading in text
+    lines = frontmatter.instrument_lines(work)
+    names = [name for family in lines.values() for name, _remark in family]
+    # The keys of the transposing instruments, and the other instruments of a player.
+    assert "Horn 1 in F" in names and "Clarinet 1 in B-flat" in names
+    assert ("Flute 2", "also alto flute") in lines["woodwinds"]
+    # A player who has only one instrument has the name of that instrument.
+    assert {"Piccolo", "English Horn", "Bass Clarinet", "Contrabassoon"} <= set(names)
+    # Each percussion player has a list of instruments. An instrument with a pitch has
+    # the range that the music uses.
+    percussion = dict(lines["percussion"])
+    assert len(percussion) == 7 and "Timpani" in percussion
+    assert "glockenspiel (" in " ".join(percussion.values())
+    assert ("First violins", "16 players") in lines["strings"]
+    assert frontmatter.note_name(60) == "C4" and frontmatter.note_name(63) == "E-flat4"
+    assert frontmatter.note_name(54) == "G-flat3"  # a black key has the name of a flat
+    # The plan of the form has the time of each part, from the music.
+    rows = frontmatter.form_rows(work)
+    assert [row[0] for row in rows] == [
+        "Part 1",
+        "Part 2",
+        "Part 3",
+        "Interlude",
+        "Part 4",
+        "Part 5",
+    ]
+    assert rows[0][2] == "0:00" and rows[4][1] == "AA to FF"
+    # The areas of the plan of the stage do not overlap.
+    areas = [
+        (left, right, front, back) for _name, left, right, front, back, _s in frontmatter.STAGE
+    ]
+    for index, (left, right, front, back) in enumerate(areas):
+        for other_left, other_right, other_front, other_back in areas[index + 1 :]:
+            apart = right <= other_left or other_right <= left
+            assert apart or back <= other_front or other_back <= front
+
+
+def test_a_long_rest_of_a_part_stops_at_a_change_of_tempo():
+    work = Work("Test", load_orchestra())
+    section = work.section(8, 4, 4)
+    work.structure.tempo(1, 1, 60, "Lento")
+    work.structure.change(5, 1, "poco rit.")
+    section.write("vc", r"R1*8 |")
+    section.write("va", r"R1*4 | R1 | R1 | R1 | c'1\p |")
+    section.close()
+    cello = " ".join(lilypond.part_file(work, "vc").split())
+    # Bar 5 has the words "poco rit.": the rest of 8 bars stops there and starts again.
+    assert "musicVc = { R1*4 | R1*4 | }" in cello
+    assert "extra-spacing-width" in cello  # the words take their own width
+    viola = " ".join(lilypond.part_file(work, "va").split())
+    assert "R1*4 | R1*3 | c'1\\p |" in viola
+    # The parts have the staff height of the guidelines: 7 mm or more.
+    assert lilypond.part_staff_size("woodwinds") * 0.3528 >= 7.0
+    assert lilypond.part_staff_size("strings") > lilypond.part_staff_size("brass")

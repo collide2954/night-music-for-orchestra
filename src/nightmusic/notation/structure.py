@@ -271,11 +271,20 @@ def skip_text(quarters: Fraction) -> str:
     return f"s1*{whole.numerator}/{whole.denominator}"
 
 
-def global_to_lilypond(structure: Structure) -> str:
+# A gradual change of tempo (for example "poco rit.") can take its own width. Thus it
+# does not collide with the mark after it. "{context}" is the context of the mark.
+CHANGE_WIDTH = "\\once \\override {context}MetronomeMark.extra-spacing-width = #'(-0.3 . 0.8) "
+
+
+def global_to_lilypond(structure: Structure, *, change_context: str | None = None) -> str:
     """Write the structure as a LilyPond voice of spacer rests with all marks.
 
     One spacer rest goes from each mark to the subsequent mark. Thus the parts
     can show many empty bars as one rest with a number.
+
+    If `change_context` is given, each gradual change of tempo takes its own
+    width (see `CHANGE_WIDTH`). The value is the context of the tempo marks
+    with a dot ("Score." in a part), or an empty text for a line of marks.
     """
     events: dict[Fraction, list[str]] = {}
 
@@ -303,7 +312,10 @@ def global_to_lilypond(structure: Structure) -> str:
         previous = bar
     for point in structure.tempo_points:
         if point.text or point.unit:
-            add(point.position, _tempo_text(point))
+            width = ""
+            if change_context is not None and point.italic and not point.unit:
+                width = CHANGE_WIDTH.format(context=change_context)
+            add(point.position, width + _tempo_text(point))
     add(structure.length, '\\bar "|."' if structure.final_bar else "")
 
     lines: list[str] = []
