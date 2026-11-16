@@ -18,7 +18,21 @@ Style profile: "Theatre", then "Transfigured" after the turn.
 
 from __future__ import annotations
 
-from ..compose.tools import Block, bars, double, dyn, fill, first, lines, put, rests, times, tr
+from ..compose.tools import (
+    Block,
+    bars,
+    double,
+    dyn,
+    fill,
+    first,
+    lines,
+    octave,
+    put,
+    rests,
+    run,
+    times,
+    tr,
+)
 from ..notation.work import Work
 from .part4 import (
     BELLS_OFF_BEAT,
@@ -48,9 +62,9 @@ RUN_TOGETHER = r"""
     e''8-. gis''-. b''-. gis''-. d''-. fis''-. a''-. fis''-. |
     g'8-. a'-. b'-. cis''-. d''-. cis''-. b'-. a'-. |
     a'8-. b'-. cis''-. d''-. e''-. d''-. cis''-. b'-. |
-    d''8-. e''-. fis''-. gis''-. a''-. gis''-. fis''-. e''-. |
-    e''8-. gis''-. b''-. gis''-. d''-. fis''-. a''-. fis''-. |
-    g'8-. a'-. b'-. cis''-. d''-. cis''-. b'-. a'-. |
+    a''8-. gis''-. fis''-. e''-. d''-. e''-. fis''-. gis''-. |
+    b''8-. gis''-. e''-. gis''-. a''-. fis''-. d''-. fis''-. |
+    d''8-. cis''-. b'-. a'-. g'-. a'-. b'-. cis''-. |
     a'8-. b'-. cis''-. e''-. g''-. e''-. cis''-. a'-. |
 """
 
@@ -129,11 +143,17 @@ def _themes_together(work: Work) -> None:
     eight = rests(4, 4, 8)
     block = Block(s, eight, eight)
 
-    # The first time: soft.
-    block.add("hn1 hn3 vc", 1, dyn(WARM, r"\p\espr"))
+    # The first time: soft. The warm theme goes from one instrument to the subsequent
+    # instrument, two bars each (horn, cellos, English horn, then horn and clarinet): the
+    # listener gets the theme as a sequence of colours, not as one voice. (The owner of
+    # the project: do not show the theme too frequently; change it or hide it.)
+    block.add("hn1", 1, r"d'2\p\espr\solo( e'2 | gis'2 a'2) | R1*6 |")
+    block.add("vc", 1, r"R1*2 | b'2\p\espr( a'4 fis'4 | e'1) | R1*4 |")
+    block.add("ob3", 1, r"R1*4 | d'2\p\espr( e'2 | gis'4 a'4 d''2) | R1*2 |")
+    block.add("hn3 cl1", 1, r"R1*6 | cis''2\p\espr( b'4 a'4 | fis'2. e'4) |")
     block.add("vn1:1", 1, first(SONG_TOGETHER, r"\p\dolce", note=True))
     block.add("fl1:1", 1, r"R1*4 | " + dyn(SONG_TOGETHER.split("|", 4)[4], r"\p"))
-    block.add("va cl1 ob3", 1, dyn(WALK_TOGETHER, r"\p"))
+    block.add("va cl2", 1, dyn(WALK_TOGETHER, r"\p"))
     block.add("vn2", 1, dyn(WARM_MIDDLE, r"\p"))
     block.add("bn1 bn2 cb:-1", 1, dyn(WARM_BASS, r"\p"))
     quiet = {3: "R1 |", 4: "R1 |", 7: "R1 |", 8: "R1 |"}
@@ -142,7 +162,26 @@ def _themes_together(work: Work) -> None:
 
     # The second time: loud, with the chase theme in a major key.
     block.add("tpt1 tpt2 hn1 hn2 hn3 hn4 vc va", 2, dyn(WARM, r"\f\espr"))
-    block.add("vn1:1 vn2:1 fl1:1 fl2:1 ob1:1 ob2:1", 2, first(SONG_TOGETHER, r"\f", note=True))
+    # The song theme, without its last bar. In the last bar, the woodwinds and the violins
+    # trade short groups of thirty-second notes, and then they go up together to the first
+    # stroke of the heavy section (a decision of the owner of the project).
+    seven_bars = SONG_TOGETHER.replace(r"b'2 a'4 g'4 | a'1\!) |", r"b'2 a'4 g'4\!) |")
+    song = octave(first(seven_bars, r"\f", note=True), 1)
+    scale = "d e fis g a b cis"
+
+    def burst(start: str, count: int, marks: str = "") -> str:
+        notes = run(scale, start, count, 32).split()
+        return f"{notes[0]}{marks}( {' '.join(notes[1:])})"
+
+    together = burst("a'", 16)
+    winds = burst("a''", 8, r"\ff") + " r4 " + together + " |"
+    strings = "r4 " + burst("d'''", 8, r"\ff") + " " + together + " |"
+    block.add("fl1 fl2", 2, song + " " + winds)
+    # The oboes cannot play the low notes of the last figure: they play its second half.
+    oboes = octave(burst("a''", 8, r"\ff") + " r4 r4 " + burst("b''", 8), -1) + " |"
+    block.add("ob1 ob2", 2, song + " " + oboes)
+    block.add("vn1", 2, song + " " + strings)
+    block.add("vn2", 2, song + " " + octave(strings, -1))
     block.add("cl1 cl2 mand cimb.rh fl3:1 perc2:1 pno.rh:1", 2, dyn(RUN_TOGETHER, r"\f"))
     block.start("perc2", r'\switch "xylophone"')
     bass, tenor, alto, _top = lines(dyn(WARM_CHORDS, r"\mf"))
