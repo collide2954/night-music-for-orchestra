@@ -50,6 +50,7 @@ NIGHT_TEMPO = 54
 BOX_TEMPO = 81  # the eighth note of the 7/8 = the eighth note of a triplet at 54
 LIGHT_TEMPO = 52
 WAVE_TEMPO = 60
+PEDAL = r"\sustainOff\sustainOn"  # a change of the sustain pedal
 
 
 def write_night_piano(work: Work) -> None:
@@ -90,7 +91,7 @@ def _entry(work: Work) -> None:
         (10, 3): r"\grace { bes16( a } as2)",
     }))  # fmt: skip
     block.add("pno.rh", 1, scatter(10, 4, 4, {
-        (2, 4): r"d''''8\pp( es''''8)",
+        (2, 4): r"\ottava #1 d''''8\pp( es''''8) \ottava #0",
         (4, 2): r"\grace { d'''16 } es'''8-.\p es'''8-. es'''4--",
         (6, 2): r"as''8\pp as''8 \tuplet 3/2 { as''8 as'' as'' } as''16 as'' as'' as'' | as''4--",
         (8, 3): r"<as'' as'''>4\p( <g'' g'''>4)",
@@ -246,7 +247,8 @@ def _turn(work: Work) -> None:
     # The bass: E-flat to D. The middle: G-sharp to A. The bell: G-flat is now F-sharp.
     block.add(
         "pno.lh", 1,
-        r"<d,, d,>2\pp\lv\sustainOn gis2\pp( | a1) | <d, a,>1\ppp\lv\sustainOff\sustainOn | "
+        r"<d,, d,>2\pp\lv\sustainOff\sustainOn gis2\pp( | a1) | "
+        r"<d, a,>1\ppp\lv\sustainOff\sustainOn | "
         r"r2 <d a fis'>2\pp\arpeggio | <d,, d,>1\pp\lv\sustainOff\sustainOn | R1 |",
     )  # fmt: skip
     block.add(
@@ -266,7 +268,7 @@ def _turn(work: Work) -> None:
         1,
         r"R1*3 | <a'' d'''>1\ppp\flageolet\< ~ | <a'' d'''>1\pp ~ | <a'' d'''>1 |",
     )
-    block.add("perc2", 1, r"R1 | r2 <d' fis' a'>2\pp\mallets\softmallets\motoron\lv | R1*4 |")
+    block.add("perc2", 1, r"R1 | r2 <d' fis' a'>2\pp\mallets\motoron\lv | R1*4 |")
     block.add("cel.rh", 1, r"R1 | r2 a'''2\pp\lv | r4 d''''4\ppp( e'''' gis'''' | a''''2.) r4 | "
               r"R1*2 |")  # fmt: skip
     block.add("perc4", 1, r"""\switch "glockenspiel" R1 | r2 a''2\pp\lv | R1*3 | """
@@ -328,13 +330,14 @@ def _wave(shape: str, left: str, right: str, long: str, mark: str) -> tuple[str,
     if shape in ("A", "F"):
         first = left.split()
         tail = rf"<{first[0]} {first[2]}>2" if shape == "F" else "r2"
-        low = rf"\tuplet 6/4 {{ {first[0]}16{mark}( {' '.join(first[1:])}) }} r4 {tail} |"
+        low = rf"\tuplet 6/4 {{ {first[0]}16{mark}{PEDAL}( {' '.join(first[1:])}) }} r4 {tail} |"
         notes = right.split()
-        high = rf"r4 \tuplet 6/4 {{ {notes[0]}16( {' '.join(notes[1:])} }} {long}2) |"
+        top = rf"\ottava #1 {long}2) \ottava #0" if shape == "F" else rf"{long}2)"
+        high = rf"r4 \tuplet 6/4 {{ {notes[0]}16( {' '.join(notes[1:])} }} {top} |"
         return high, low
     if shape == "B":
         first = left.split()
-        low = rf"\tuplet 6/4 {{ {first[0]}16{mark}( {' '.join(first[1:])}) }} r4 r2 |"
+        low = rf"\tuplet 6/4 {{ {first[0]}16{mark}{PEDAL}( {' '.join(first[1:])}) }} r4 r2 |"
         one, two = (part.split() for part in right.split("|"))
         high = (
             rf"r4 \tuplet 6/4 {{ {one[0]}16( {' '.join(one[1:])} }} "
@@ -343,7 +346,7 @@ def _wave(shape: str, left: str, right: str, long: str, mark: str) -> tuple[str,
         return high, low
     one, two = (part.split() for part in right.split("|"))
     high = rf"{long}2{mark}( \tuplet 6/4 {{ {one[0]}16 {' '.join(one[1:])}) }} r4 |"
-    low = rf"<{left}>2\arpeggio r4 \tuplet 6/4 {{ {two[0]}16( {' '.join(two[1:])}) }} |"
+    low = rf"<{left}>2{PEDAL}\arpeggio r4 \tuplet 6/4 {{ {two[0]}16( {' '.join(two[1:])}) }} |"
     return high, low
 
 
@@ -362,10 +365,11 @@ def _waves(work: Work) -> None:
     # The last two bars: the long notes only, above the last waves of the left hand.
     right.append(r"b''2\mp( a''2) |")
     left.append(
-        r"\tuplet 6/4 { a,,16( e, a, b, d g) } r4 \tuplet 6/4 { a,,16( e, a, cis e g) } r4 |"
+        r"\tuplet 6/4 { a,,16\sustainOff\sustainOn( e, a, b, d g) } r4 "
+        r"\tuplet 6/4 { a,,16\sustainOff\sustainOn( e, a, cis e g) } r4 |"
     )
     right.append(r"fis''2\>( e''2)\pp |")
-    left.append(r"<a,, a,>1\pp\lv |")
+    left.append(r"<a,, a,>1\pp\lv\sustainOff\sustainOn |")
     block.add("pno.rh", 1, " ".join(right))
     block.add("pno.lh", 1, " ".join(left))
 
@@ -454,7 +458,7 @@ def _chorale_of_light(work: Work) -> None:
     )  # fmt: skip
     block.add(
         "pno.lh", 1,
-        r"<d, a,>2\pp\sustainOn <d, b,>2\sustainOff\sustainOn | "
+        r"<d, a,>2\pp\sustainOff\sustainOn <d, b,>2\sustainOff\sustainOn | "
         r"<cis, a,>2\sustainOff\sustainOn <b,, fis,>2\sustainOff\sustainOn | "
         r"<fis, cis>2\sustainOff\sustainOn <g, d>2\sustainOff\sustainOn | "
         r"<bes,, bes,>2\p\sustainOff\sustainOn <a,, a,>2\sustainOff\sustainOn | "

@@ -1,50 +1,50 @@
 player,share_of_time,range_used,low_third,middle_third,high_third,techniques
-fl1,0.3634,0.9459,0.03614,0.4578,0.506,grace notes
-fl2,0.3187,0.7568,0.009509,0.4802,0.5103,grace notes
-fl3,0.1972,0.7059,0.3989,0.5957,0.005415,
-ob1,0.2953,0.8182,0.2027,0.6198,0.1776,
-ob2,0.2464,0.8182,0.1682,0.6322,0.1996,grace notes
+fl1,0.3513,0.9459,0.03345,0.4348,0.5317,grace notes
+fl2,0.3066,0.7568,0.01065,0.4501,0.5393,grace notes
+fl3,0.1918,0.7647,0.3866,0.5942,0.01917,
+ob1,0.2827,0.8182,0.2073,0.622,0.1707,
+ob2,0.2337,0.8182,0.1792,0.6325,0.1884,grace notes
 ob3,0.07556,0.7812,0.2435,0.6783,0.07826,grace notes
-cl1,0.3525,0.75,0.2093,0.6478,0.1429,grace notes
-cl2,0.269,0.6818,0.05479,0.7123,0.2329,
-cl3,0.2338,0.5833,0.6316,0.3684,0,grace notes
+cl1,0.3404,0.7273,0.1971,0.6626,0.1403,grace notes
+cl2,0.2568,0.6591,0.06849,0.7306,0.2009,
+cl3,0.2338,0.5833,0.6312,0.3688,0,grace notes
 cbcl,0.2238,0.6279,0.1626,0.7884,0.049,grace notes
-bn1,0.3735,0.7381,0.2469,0.7061,0.04707,
-bn2,0.3477,0.6429,0.2909,0.6824,0.02667,grace notes
+bn1,0.3735,0.7381,0.245,0.7079,0.04712,
+bn2,0.3477,0.6429,0.29,0.6833,0.0267,grace notes
 bn3,0.2964,0.8182,0.06418,0.646,0.2899,
-hn1,0.4988,0.6429,0.001764,0.5115,0.4868,desk: solo; mute: on
-hn2,0.4194,0.6429,0.02204,0.7134,0.2645,mute: on
-hn3,0.4357,0.619,0.00189,0.7164,0.2817,mute: on
-hn4,0.4061,0.8333,0.1118,0.7093,0.1789,mute: on
+hn1,0.4988,0.6429,0.001745,0.5096,0.4887,desk: solo; mute: on
+hn2,0.4194,0.6429,0.02178,0.6871,0.2911,mute: on
+hn3,0.4357,0.619,0.001869,0.6897,0.3084,mute: on
+hn4,0.4061,0.8333,0.09438,0.6968,0.2088,mute: on
 hn5,0.1385,0.5,0,0.4751,0.5249,
 hn6,0.1385,0.5,0,0.6022,0.3978,
 tpt1,0.2027,0.6875,0.07556,0.7578,0.1667,mute: on
 tpt2,0.19,0.6875,0.1631,0.7565,0.08038,
-tpt3,0.1581,0.7188,0.2994,0.6204,0.08025,
-tbn1,0.2412,0.7941,0.3882,0.5434,0.06839,
-tbn2,0.2395,0.7941,0.461,0.474,0.06506,
-btbn,0.2181,0.641,0.5047,0.4905,0.004732,
+tpt3,0.1581,0.7188,0.2972,0.6223,0.0805,
+tbn1,0.2412,0.7941,0.3889,0.5426,0.06852,
+tbn2,0.2395,0.7941,0.4637,0.4711,0.06518,
+btbn,0.2181,0.641,0.5071,0.4882,0.004739,
 tuba,0.229,0.6667,0.5501,0.4208,0.02914,
 timp,0.2807,0.8182,0.5699,0.3666,0.06352,mallet: soft; tremolo
 perc1,0.09065,,,,,tremolo
-perc2,0.4601,0.5814,0.2355,0.7568,0.007722,bowed; mallet: soft; motor: on
-perc3,0.1376,,,,,tremolo
+perc2,0.4601,0.5814,0.2355,0.7568,0.007722,bowed; motor: on
+perc3,0.1381,,,,,tremolo
 perc4,0.1622,,,,,tremolo
 perc5,0.06109,,,,,
 perc6,0.1065,,,,,tremolo
-harp.rh,0.3199,0.5625,0,0.3807,0.6193,harmonic
-harp.lh,0.0687,0.3875,0.6923,0.3077,0,
+harp.rh,0.3137,0.5625,0,0.3695,0.6305,harmonic
+harp.lh,0.0749,0.3875,0.7009,0.2991,0,
 cimb.rh,0.03063,0.3684,0,0.4595,0.5405,tremolo
 cimb.lh,0.1582,0.4211,0.6494,0.3506,0,tremolo
 mand,0.1026,0.6842,0.2383,0.5701,0.1916,tremolo
 cel.rh,0.1233,0.5833,0,0.2763,0.7237,
 cel.lh,0,,,,,no notes
-pno.rh,0.6617,0.6667,0.03065,0.827,0.1424,grace notes
-pno.lh,0.4684,0.5172,0.8332,0.1668,0,grace notes; tremolo
-acc.rh,0.56,0.4583,0,0.736,0.264,
+pno.rh,0.6596,0.6667,0.0308,0.8248,0.1444,grace notes
+pno.lh,0.4725,0.5172,0.8327,0.1673,0,grace notes; tremolo
+acc.rh,0.5559,0.4861,0,0.7196,0.2804,
 acc.lh,0,,,,,no notes
-vn1,0.841,0.8,0.07774,0.8273,0.09493,desk: solo; harmonic; mute: on; sul ponticello; sul tasto; tremolo; vibrato: none
-vn2,0.8931,0.72,0.5837,0.4132,0.003072,mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none
-va,1.231,0.8,0.4323,0.5295,0.03813,mute: on; sul ponticello; sul tasto; tremolo; vibrato: none
-vc,1.092,0.8542,0.4833,0.4833,0.03342,desk: solo; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none
+vn1,0.8246,0.84,0.07422,0.7881,0.1377,desk: solo; harmonic; mute: on; sul ponticello; sul tasto; tremolo; vibrato: none
+vn2,0.8767,0.78,0.5638,0.4326,0.003605,mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none
+va,1.209,0.85,0.42,0.5392,0.04074,mute: on; sul ponticello; sul tasto; tremolo; vibrato: none
+vc,1.087,0.8542,0.4831,0.4894,0.02753,desk: solo; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none
 cb,0.7673,0.6279,0.528,0.4534,0.01865,mute: on; pizzicato; sul tasto; tremolo

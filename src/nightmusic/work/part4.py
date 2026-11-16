@@ -580,12 +580,17 @@ def _approach(work: Work) -> None:
             + tr(burst("as'''", 4, down=True) + " r4", 1, 0) + " " + last + " |"
         )  # fmt: skip
 
-    strings = (
-        first(strings_long + " " + strings_short, r"\ff", note=True) + " "
-        + first(tr(strings_long, 1, 0), r"\fff", note=True) + " "
-        + "r4 " + tr(burst("c'''", 4), 1, 0) + " " + together + " |"
-    )  # fmt: skip
-    block.add("vn1 vn2:-1 va:-1", 7, strings)
+    def strings(last: str) -> str:
+        return (
+            first(strings_long + " " + strings_short, r"\ff", note=True) + " "
+            + first(tr(strings_long, 1, 0), r"\fff", note=True) + " "
+            + "r4 " + tr(burst("c'''", 4), 1, 0) + " " + last + " |"
+        )  # fmt: skip
+
+    block.add("vn1 vn2:-1", 7, strings(together))
+    # The violas: the trades two octaves below the first violins, the last figure one
+    # octave below them.
+    block.add("va:-2", 7, strings(octave(together, 1)))
     brass = r"<as, es ges c' es' as' c''>1-^ ~ | <as, es ges c' es' as' c''>1 |"
     voices_flat, voices_up = lines(brass), lines(tr(brass, 1))
     names = ["btbn", "tbn2", "tbn1", "hn2", "tpt3", "tpt2", "tpt1"]

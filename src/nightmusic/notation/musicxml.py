@@ -696,11 +696,7 @@ def score(
         _shape(events, work)
         brass = work.orchestra.player(player_id).family == "brass"
         _calibrate(events, levels.get(name), brass)
-        marks = sorted(
-            (position, kind)
-            for position, kind in pedals.get(player_id.split(".")[0], [])
-            if begin <= position < end
-        )
+        marks = _pedal_marks(pedals.get(player_id.split(".")[0], []), begin, end)
         bodies.append(
             _part_xml(
                 number, events, measures, tempos if number == 1 else {}, starts[key], drums,
@@ -717,6 +713,35 @@ def score(
         "</score-partwise>\n"
     )
     return text, names
+
+
+def _pedal_marks(
+    changes: list[tuple[Fraction, str]], begin: Fraction, end: Fraction
+) -> list[tuple[Fraction, str]]:
+    """Return the changes of the sustain pedal from `begin` to `end`, in time sequence.
+
+    A release comes before a push at the same moment. A release with no push
+    before it, and a push while the pedal is down, are not in the result. If
+    the pedal is down at `begin`, the result starts with a push at `begin`.
+    """
+    marks: list[tuple[Fraction, str]] = []
+    down = False
+    started = False
+    for position, kind in sorted(changes, key=lambda change: (change[0], change[1] != "stop")):
+        if position >= end:
+            break
+        if position >= begin and not started:
+            started = True
+            if down:
+                marks.append((begin, "start"))
+        if (kind == "start") == down:
+            continue  # no change of the state
+        down = kind == "start"
+        if position >= begin:
+            marks.append((position, kind))
+    if not started and down:
+        marks.append((begin, "start"))
+    return marks
 
 
 def _part_xml(

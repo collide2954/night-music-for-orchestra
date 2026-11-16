@@ -250,3 +250,29 @@ def test_the_work_has_no_notes_that_muse_sounds_cannot_play():
     from nightmusic.work import build
 
     assert musescore.silent_notes(build()) == []
+
+
+def test_the_pedal_marks_of_a_piano_are_in_the_audio_file_of_its_two_hands():
+    work = Work("Test", load_orchestra())
+    section = work.section(3, 4, 4)
+    work.structure.tempo(1, 1, 60, "Lento")
+    section.write("pno.lh", r"c,1\p\sustainOn | c,1\sustainOff\sustainOn | r2\sustainOff r2 |")
+    section.write("pno.rh", r"e'1\p | g'1 | R1 |")
+    section.close()
+    text, names = musicxml.score(work)
+    assert names == ["Piano (pno.rh)", "Piano (pno.lh)"] or sorted(names) == sorted(
+        ["Piano (pno.rh)", "Piano (pno.lh)"]
+    )
+    # Each hand has: push, release and push (the change), release.
+    assert text.count('<pedal type="start" line="yes"/>') == 4
+    assert text.count('<pedal type="stop" line="yes"/>') == 4
+
+
+def test_an_excerpt_that_starts_with_the_pedal_down_has_a_push_at_its_start():
+    marks = musicxml._pedal_marks(
+        [(Fraction(0), "start"), (Fraction(4), "stop"), (Fraction(4), "start"),
+         (Fraction(10), "stop"), (Fraction(12), "stop")],
+        Fraction(6), Fraction(16),
+    )  # fmt: skip
+    # The pedal is down at the start. The second release has no push before it.
+    assert marks == [(Fraction(6), "start"), (Fraction(10), "stop")]

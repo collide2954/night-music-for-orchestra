@@ -139,6 +139,7 @@ class _Emitter:
     for_part: bool
     left_hand: bool = False
     interval: Interval | None = None
+    pedal_down: bool = False  # the sustain pedal is down at this point of the file
 
     def set_instrument(self, instrument: Instrument | None) -> None:
         if instrument is None:
@@ -173,8 +174,30 @@ class _Emitter:
                 prefix = f"{element.header} " if element.kind != "sequence" else ""
                 parts.append(f"{prefix}{{ {inner} }}")
             else:
-                parts.append(music.to_lilypond(element, self.interval))
+                parts.append(music.to_lilypond(self._pedal(element), self.interval))
         return " ".join(parts).replace("\n ", "\n")
+
+    def _pedal(self, element: music.Element) -> music.Element:
+        """Remove a release of the sustain pedal that has no push before it in this file.
+
+        A file with a part of the work (a page of the video) can start while the
+        pedal is down. LilyPond does not print a pedal change that starts with a
+        release only.
+        """
+        posts = getattr(element, "posts", None)
+        if not posts:
+            return element
+        kept, changed = [], False
+        for post in posts:
+            if post.kind == "command" and post.value == "sustainOn":
+                self.pedal_down = True
+            elif post.kind == "command" and post.value == "sustainOff":
+                if not self.pedal_down:
+                    changed = True
+                    continue
+                self.pedal_down = False
+            kept.append(post)
+        return replace(element, posts=kept) if changed else element
 
 
 def _merge_full_bar_rests(elements: list[music.Element]) -> list[music.Element]:
