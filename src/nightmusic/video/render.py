@@ -41,6 +41,11 @@ BOTTOM_BAND = 128
 # the ribbon has four rows.
 MOBILE_TOP_BAND = 118  # pixels at a width of 1080
 MOBILE_BOTTOM_BAND = 276
+# The space above and below the staves of a system that the frame shows (pixels at
+# 1080p). The staves of the video for a telephone are larger: the tempo text and the
+# rehearsal mark are farther from the top staff.
+MARGINS = (80, 60)
+MOBILE_MARGINS = (210, 90)
 RING_SECONDS = 0.5  # shortest time that an instrument is lit
 MAX_WORKERS = 8  # largest number of parallel processes
 
@@ -75,15 +80,21 @@ class _Screen:
 
 
 def _prepare(
-    page: Page, width: int, height: int, scale: float, top_band: int, bottom_band: int
+    page: Page,
+    width: int,
+    height: int,
+    scale: float,
+    top_band: int,
+    bottom_band: int,
+    margins: tuple[int, int] = MARGINS,
 ) -> _Screen:
     """Put the system of a page in the centre of the score area of the frame."""
     picture = np.asarray(Image.open(page.image).convert("RGB"), dtype=np.float32) / 255.0
     picture = picture[:, :width]  # the page picture can be one pixel wider than the frame
     area_top, area_bottom = top_band + int(8 * scale), height - bottom_band - int(8 * scale)
     area_height = area_bottom - area_top
-    crop_top = max(0, int(page.top - 80 * scale))
-    crop_bottom = min(picture.shape[0], int(page.bottom + 60 * scale))
+    crop_top = max(0, int(page.top - margins[0] * scale))
+    crop_bottom = min(picture.shape[0], int(page.bottom + margins[1] * scale))
     crop = picture[crop_top:crop_bottom]
     factor = min(1.0, area_height / crop.shape[0])
     if factor < 1.0:
@@ -189,7 +200,8 @@ def render(
 
     @lru_cache(maxsize=8)
     def screen(index: int) -> _Screen:
-        return _prepare(pages[index], width, height, scale, top_band, bottom_band)
+        margins = MOBILE_MARGINS if mobile else MARGINS
+        return _prepare(pages[index], width, height, scale, top_band, bottom_band, margins)
 
     band_top = top_band
     band_bottom = height - bottom_band
