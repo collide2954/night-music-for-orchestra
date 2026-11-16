@@ -264,9 +264,11 @@ def best_clef(
     median, lowest = ordered[len(ordered) // 2], ordered[0]
     if instrument.clef == "grand":
         # Between A-flat 3 and E4 (the notes near middle C), the hand keeps its clef.
+        # A passage with a very low note is in the bass clef (for example a low grace
+        # note before a figure that goes up).
         if (current or base) == "bass":
             return "treble" if median >= 64 and lowest >= 55 else "bass"
-        return "bass" if median <= 56 and ordered[-1] <= 65 else "treble"
+        return "bass" if (median <= 56 and ordered[-1] <= 65) or lowest < 45 else "treble"
     if base == "treble" and instrument.name == "horn in F" and median < 55:
         return "bass"
     if base == "bass" and instrument.name == "bass clarinet" and median > 62:
