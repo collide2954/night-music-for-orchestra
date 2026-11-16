@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from fractions import Fraction
 from pathlib import Path
 
-from . import music, techniques  # noqa: F401  (the import registers the technique names)
+from . import hairpins, music, techniques  # noqa: F401  (the import registers the technique names)
 from .pitch import Interval
 from .structure import Structure
 
@@ -179,6 +179,21 @@ class Section:
         for player in self.work.orchestra.players:
             if player.id not in self.written:
                 self.write(player.id, rests)
+        self._stop_hairpins_at_rests()
+
+    def _stop_hairpins_at_rests(self) -> None:
+        """Stop each hairpin of this section at a silence (see `hairpins.py`)."""
+        chunks = {
+            player.id: self.work.chunks[player.id][-1][1] for player in self.work.orchestra.players
+        }
+        for player_id, chunk in chunks.items():
+            # A player with two staves: a rest in one hand is not a silence while the
+            # other hand plays.
+            base, _, hand = player_id.partition(".")
+            other = f"{base}.{'lh' if hand == 'rh' else 'rh'}" if hand in ("rh", "lh") else ""
+            spans = hairpins.sounding(chunks[other].children, self.start) if other in chunks else []
+            state = self.work.hairpin_states.setdefault(player_id, hairpins.State())
+            hairpins.stop_at_rests(chunk.children, self.start, state, spans)
 
     @property
     def label(self) -> str:
@@ -285,6 +300,8 @@ class Work:
     chunks: dict[str, list[tuple[int, music.Group]]] = field(default_factory=dict)
     composer: str = ""
     subtitle: str = ""
+    # The dynamic marks of each player at the end of the last complete section.
+    hairpin_states: dict[str, hairpins.State] = field(default_factory=dict, repr=False)
 
     def section(
         self, bars: int, numerator: int, denominator: int, grouping: tuple[int, ...] = ()

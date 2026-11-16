@@ -211,10 +211,13 @@ def _merge_full_bar_rests(elements: list[music.Element]) -> list[music.Element]:
     merged: list[music.Element] = []
     run: music.Rest | None = None
     for element in elements:
-        plain_rest = isinstance(element, music.Rest) and element.kind == "R" and not element.posts
-        if plain_rest:
+        full_bar = isinstance(element, music.Rest) and element.kind == "R"
+        plain_rest = full_bar and not element.posts
+        # A full-bar rest at which a hairpin stops can be the first rest of a long rest.
+        stop_only = full_bar and [(p.kind, p.value) for p in element.posts] == [("hairpin", "!")]
+        if plain_rest or (stop_only and run is None):
             if run is None:
-                run = music.Rest("R", element.duration, "")
+                run = music.Rest("R", element.duration, "", list(element.posts))
                 merged.append(run)
             else:
                 run.duration += element.duration

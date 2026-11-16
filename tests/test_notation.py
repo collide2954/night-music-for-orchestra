@@ -237,3 +237,60 @@ def test_the_systems_of_the_score_are_equally_full():
     assert lilypond.system_breaks([1.0] * 9, 56.0, 4) == {4, 8}
     # A bar that is wider than a system is alone.
     assert lilypond.system_breaks([30.0, 90.0, 30.0], 56.0, 10) == {1, 2}
+
+
+def _one_player(text: str, bars: int, player: str = "vc", other: str = "") -> str:
+    """Return the music of one player after the section is complete."""
+    work = Work("Test", load_orchestra())
+    section = work.section(bars, 4, 4)
+    work.structure.tempo(1, 1, 60, "Lento")
+    section.write(player, text)
+    if other:
+        section.write(player.replace(".lh", ".rh"), other)
+    section.close()
+    written = music.body_to_lilypond(work.music_of(player))
+    return " ".join(written.split())
+
+
+def test_a_hairpin_stops_at_a_silence():
+    # A hairpin with no end: it stops at the start of the rest.
+    assert _one_player(r"c1\p\< | R1 | R1 | d1 |", 4) == r"c1\p\< | R1\! | R1 | d1 |"
+    assert _one_player(r"c2\p\> r2 | R1 |", 2) == r"c2\p\> r2\! | R1 |"
+    # Short rests in a figure do not stop a hairpin.
+    figure = r"c4\p\< r4 d4 r4 | e4 r4 f4 r4 | g1\f |"
+    assert _one_player(figure, 3) == figure
+    # A hairpin that has its end mark before the rest does not change.
+    assert _one_player(r"c1\p\< | d1\f | R1 |", 3) == r"c1\p\< | d1\f | R1 |"
+    # A hairpin cannot start on a rest.
+    assert _one_player(r"r1\< | c1\f |", 2) == r"r1 | c1\f |"
+
+
+def test_a_crescendo_through_entries_with_rests_gets_a_mark_at_each_entry():
+    # The old hairpin went from p (bar 1) to ff (bar 7), through two entries.
+    text = r"c1\p\< | R1 | d4 r2. | R1 | e4 f4 r2 | R1 | g1\ff |"
+    expected = r"c1\p\< | R1\! | d4\mp r2. | R1 | e4\f\< f4 r2\! | R1 | g1\ff |"
+    assert _one_player(text, 7) == expected
+    # A diminuendo: the marks go down, and the mark of the end stays new.
+    text = r"c1\f\> | R1 | d4 e4 r2 | R1 | g1\p |"
+    assert _one_player(text, 5) == r"c1\f\> | R1\! | d4\mf\> e4 r2\! | R1 | g1\p |"
+
+
+def test_a_rest_of_one_hand_is_not_a_silence_while_the_other_hand_plays():
+    left = r"c4\p\< r2. | r2. d4 | e1\f |"
+    assert _one_player(left, 3, "pno.lh", r"r4 c'2. | d'2. r4 | e'1\f |") == left
+    # The two hands have a rest: the hairpin stops, and the entry after it gets a mark.
+    stopped = _one_player(left, 3, "pno.lh", r"R1 | R1 | e'1\f |")
+    assert stopped == r"c4\p\< r2.\! | r2. d4\mf | e1\f |"
+
+
+def test_the_work_has_no_hairpin_over_a_silence():
+    from nightmusic.notation import hairpins
+    from nightmusic.work import build
+
+    work = build()
+    for player in work.orchestra.players:
+        base, _, hand = player.id.partition(".")
+        other = f"{base}.{'lh' if hand == 'rh' else 'rh'}" if hand in ("rh", "lh") else ""
+        spans = hairpins.sounding(work.music_of(other).children, Fraction(0)) if other else []
+        found = hairpins.over_rests(work.music_of(player.id).children, Fraction(0), spans)
+        assert found == [], player.id

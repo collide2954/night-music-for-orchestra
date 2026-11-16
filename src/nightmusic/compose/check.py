@@ -7,6 +7,9 @@ The checks are:
 - A player who changes to a different instrument must have the time to do it.
 - The timpani player must have the time to tune a drum to a different note.
 - One hand of a keyboard player or of the harp player must reach each of its chords.
+- One hand of a keyboard player must have the time for each move, and it cannot play
+  chords faster than a limit.
+- A hairpin must not go over a silence: a player cannot make a rest louder.
 """
 
 from __future__ import annotations
@@ -14,6 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from fractions import Fraction
 
+from ..notation import hairpins
 from ..notation.pitch import from_midi
 from ..notation.work import Work
 from ..perform.events import PerfNote, perform
@@ -37,9 +41,25 @@ TIMPANI_SECONDS = 5.0
 # the hand moves, and the pedal of the piano holds the notes.
 HAND_NOTES = {"harp": 4}
 HAND_NOTES_DEFAULT = 5
-HAND_SPAN = 16  # a major tenth
+HAND_SPAN = {"harp": 16}  # the harp: a major tenth
+HAND_SPAN_DEFAULT = 14  # a keyboard instrument: a major ninth
 ROLLED_SPAN = {"harp": 16}
 ROLLED_SPAN_DEFAULT = 24
+
+# The moves of one hand of a keyboard player. The model: the hand is a window of
+# `HAND_REACH` semitones, and each stroke (the notes of the hand that start together)
+# must be in the window. From one stroke to the subsequent stroke, the window moves by
+# the smallest possible distance. A move of not more than `FREE_MOVE` semitones is a
+# part of usual finger work (a scale, an arpeggio). A larger move needs time:
+# `MOVE_SECONDS` plus `MOVE_SECONDS_FOR_SEMITONE` for each semitone. Examples: a fifth
+# 0.13 s, an octave 0.19 s, two octaves 0.34 s. One hand cannot play chords faster
+# than `CHORD_SECONDS` one after the other.
+HAND_FAMILIES_WITH_MOVES = ("keyboards",)
+HAND_REACH = 12
+FREE_MOVE = 5
+MOVE_SECONDS = 0.05
+MOVE_SECONDS_FOR_SEMITONE = 0.012
+CHORD_SECONDS = 0.14
 
 
 @dataclass(frozen=True)
@@ -105,7 +125,11 @@ def _hand_problems(work: Work, player: str, notes: list[PerfNote]) -> list[Probl
             continue
         instrument = chord[0].instrument
         rolled = all("arpeggio" in note.articulations for note in chord)
-        widest = ROLLED_SPAN.get(instrument, ROLLED_SPAN_DEFAULT) if rolled else HAND_SPAN
+        widest = (
+            ROLLED_SPAN.get(instrument, ROLLED_SPAN_DEFAULT)
+            if rolled
+            else HAND_SPAN.get(instrument, HAND_SPAN_DEFAULT)
+        )
         most = HAND_NOTES.get(instrument, HAND_NOTES_DEFAULT)
         low, high = from_midi(keys[0]).name, from_midi(keys[-1]).name
         text = ""
@@ -116,6 +140,67 @@ def _hand_problems(work: Work, player: str, notes: list[PerfNote]) -> list[Probl
         if text:
             problems.append(Problem(player, work.structure.bar_at(start).number, text))
     return problems
+
+
+def hand_move(first: list[int], second: list[int]) -> int:
+    """Return the smallest move of the hand from one stroke to the subsequent stroke.
+
+    Each stroke is the sorted list of its keys (MIDI numbers). The result is
+    in semitones.
+    """
+    # The lowest key of the window can be between these two values for each stroke.
+    first_low, first_high = min(first[-1] - HAND_REACH, first[0]), first[0]
+    second_low, second_high = min(second[-1] - HAND_REACH, second[0]), second[0]
+    return max(0, second_low - first_high, first_low - second_high)
+
+
+def move_seconds(distance: int) -> float:
+    """Return the time that a move of the hand needs."""
+    if distance <= FREE_MOVE:
+        return 0.0
+    return MOVE_SECONDS + MOVE_SECONDS_FOR_SEMITONE * distance
+
+
+def _move_problems(work: Work, player: str, notes: list[PerfNote]) -> list[Problem]:
+    """Find the moves of one hand that are too fast, and chords that come too fast."""
+    structure = work.structure
+    strokes: dict[Fraction, set[int]] = {}
+    for note in notes:
+        if not note.grace:
+            strokes.setdefault(note.start, set()).add(round(note.midi))
+    ordered = [(start, sorted(keys)) for start, keys in sorted(strokes.items())]
+    problems: list[Problem] = []
+    seen: set[tuple[int, str]] = set()
+    for (start, keys), (after, subsequent) in zip(ordered, ordered[1:], strict=False):
+        seconds = structure.seconds(after) - structure.seconds(start)
+        distance = hand_move(keys, subsequent)
+        kind = ""
+        if seconds + 1e-6 < move_seconds(distance):
+            kind = "leap"
+            low, high = from_midi(keys[0]).name, from_midi(subsequent[0]).name
+            text = (
+                f"the hand must move {distance} semitones in {seconds:.2f} s "
+                f"(from {low} to {high}); it needs {move_seconds(distance):.2f} s"
+            )
+        elif len(keys) >= 2 and len(subsequent) >= 2 and seconds <= CHORD_SECONDS:
+            kind = "chords"
+            text = f"chords come after {seconds:.2f} s in one hand; the limit is {CHORD_SECONDS} s"
+        bar = structure.bar_at(after).number
+        if kind and (bar, kind) not in seen:
+            seen.add((bar, kind))
+            problems.append(Problem(player, bar, text))
+    return problems
+
+
+def _hairpin_problems(work: Work, player: str) -> list[Problem]:
+    """Find the hairpins that go over a silence (the model stops them: see `hairpins.py`)."""
+    base, _, hand = player.partition(".")
+    other = f"{base}.{'lh' if hand == 'rh' else 'rh'}" if hand in ("rh", "lh") else ""
+    spans = hairpins.sounding(work.music_of(other).children, Fraction(0)) if other else []
+    return [
+        Problem(player, work.structure.bar_at(start).number, "a hairpin goes over a silence")
+        for start in hairpins.over_rests(work.music_of(player).children, Fraction(0), spans)
+    ]
 
 
 def check(work: Work) -> list[Problem]:
@@ -130,8 +215,11 @@ def check(work: Work) -> list[Problem]:
         free = Fraction(0)
         notes = sorted(perform(work, player.id), key=lambda item: item.start)
         problems.extend(_timpani_problems(work, player.id, notes))
+        problems.extend(_hairpin_problems(work, player.id))
         if player.id.endswith((".rh", ".lh")) and player.family in HAND_FAMILIES:
             problems.extend(_hand_problems(work, player.id, notes))
+            if player.family in HAND_FAMILIES_WITH_MOVES:
+                problems.extend(_move_problems(work, player.id, notes))
         for note in notes:
             bar = structure.bar_at(note.start).number
             if last_instrument and note.instrument != last_instrument:
