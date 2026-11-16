@@ -239,18 +239,49 @@ def test_one_hand_must_reach_each_chord():
     work = Work("Test", load_orchestra())
     section = work.section(4, 4, 4)
     work.structure.tempo(section.bar(1), 1, 60, "Lento")
-    # Bar 1: a tenth (good). Bar 2: an eleventh. Bar 3: the same chord, rolled (good).
-    # Bar 4: six notes.
+    # The piano. Bar 1: a ninth (good). Bar 2: a tenth. Bar 3: the same chord, rolled
+    # (good). Bar 4: six notes.
     section.write(
         "pno.rh",
-        r"<c' e''>1\f | <c' f''>1 | <c' f''>1\arpeggio | <c' d' e' f' g' a'>1 |",
+        r"<c' d''>1\f | <c' e''>1 | <c' e''>1\arpeggio | <c' d' e' f' g' a'>1 |",
     )
-    # The harp player has four fingers for each hand, and a rolled chord is not wider.
-    section.write("harp.rh", r"<c' e' g' c''>1\f | <c' d' e' g' c''>1 | <c' f''>1\arpeggio | R1 |")
+    # The harp player can reach a tenth, has four fingers for each hand, and cannot roll
+    # a chord that is wider than a tenth.
+    section.write("harp.rh", r"<c' e' g' e''>1\f | <c' d' e' g' c''>1 | <c' f''>1\arpeggio | R1 |")
     section.close()
     assert [str(problem) for problem in check(work)] == [
         "harp.rh, bar 2: a chord of 5 notes for one hand of the harp",
         "harp.rh, bar 3: a chord from c' to f'' is too wide for one hand of the harp",
-        "pno.rh, bar 2: a chord from c' to f'' is too wide for one hand of the piano",
+        "pno.rh, bar 2: a chord from c' to e'' is too wide for one hand of the piano",
         "pno.rh, bar 4: a chord of 6 notes for one hand of the piano",
     ]
+
+
+def test_one_hand_of_a_keyboard_player_needs_time_for_a_move():
+    from nightmusic.compose.check import check, hand_move, move_seconds
+    from nightmusic.notation.work import Work, load_orchestra
+
+    # The model of the hand: a window of one octave.
+    assert hand_move([60, 64, 67], [62, 65, 69]) == 0  # the two chords are in one position
+    assert hand_move([26, 38], [44]) == 6  # an octave, then a note a tritone above it
+    assert hand_move([44], [26, 38]) == 6
+    assert hand_move([60], [84]) == 12 and hand_move([84], [60]) == 12
+    assert move_seconds(5) == 0.0 and 0.18 < move_seconds(12) < 0.20
+
+    work = Work("Test", load_orchestra())
+    section = work.section(4, 4, 4)
+    work.structure.tempo(section.bar(1), 1, 120, "Allegro")  # an eighth note is 0.25 s
+    # Bar 1: a scale (good). Bar 2: an octave and a note two octaves higher, in sixteenth
+    # notes. Bar 3: the same leap in quarter notes (good). Bar 4: chords in thirty-second
+    # notes in one hand.
+    section.write(
+        "pno.lh",
+        r"c''16\f b' a' g' f' e' d' c' b a g f e d c b, | "
+        r"<c, c>16 c''16 <c, c>16 c''16 r4 r2 | <c, c>4 c''4 <c, c>4 c''4 | "
+        r"<c e>32 <d f> <c e> <d f> r8 r4 r2 |",
+    )
+    section.close()
+    problems = [str(problem) for problem in check(work)]
+    assert len(problems) == 2
+    assert problems[0].startswith("pno.lh, bar 2: the hand must move 24 semitones in 0.12 s")
+    assert problems[1].startswith("pno.lh, bar 4: chords come after 0.06 s in one hand")

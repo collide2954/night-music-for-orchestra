@@ -84,7 +84,13 @@ def sixteenths(tokens: Sequence[Token], grouping: tuple[int, ...] = (6, 6, 4)) -
 
 
 def hammer(
-    low: Sequence[Token], high: Sequence[Token], grouping: tuple[int, ...] = (6, 6, 4)
+    low: Sequence[Token],
+    high: Sequence[Token],
+    grouping: tuple[int, ...] = (6, 6, 4),
+    *,
+    skip_low: int = 0,
+    skip_high: int = 0,
+    tail: bool = True,
 ) -> tuple[str, str]:
     """Return one bar in which the hands alternate: the right hand, then the left hand.
 
@@ -92,13 +98,29 @@ def hammer(
     `high` one sixteenth note later. Each note is written as an eighth note,
     as in the toccatas of the repertoire: thus each hand has beams, and no
     rests between its notes. The notes are short (martellato).
+
+    A hand needs time to go to a far position. Thus the first notes of a
+    hand can be rests (`skip_low`, `skip_high`: the number of notes), and
+    the last sixteenth note of the right hand can be a rest (`tail` false).
+    The marks of a note that becomes a rest go to the first note that stays.
     """
     if len(low) != len(high) or 2 * len(low) != sum(grouping):
         raise ValueError("the two hands must have one note for each eighth note of the bar")
-    left = " ".join(f"{pitch}8{marks}" for pitch, marks in low)
-    right = "r16 " + " ".join(f"{pitch}8{marks}" for pitch, marks in high[:-1])
-    right += f" {high[-1][0]}16{high[-1][1]}"
-    return right + " |", left + " |"
+
+    def notes(tokens: Sequence[Token], skip: int) -> list[str]:
+        moved = "".join(
+            mark for _pitch, marks in tokens[:skip] for mark in [marks.replace("->", "")]
+        )
+        result = ["r8"] * skip
+        for number, (pitch, marks) in enumerate(tokens[skip:]):
+            result.append(f"{pitch}8{marks}{moved if number == 0 else ''}")
+        return result
+
+    left = " ".join(notes(low, skip_low))
+    upper = notes(high, skip_high)
+    last_pitch, last_marks = high[-1]
+    upper[-1] = f"{last_pitch}16{last_marks}" if tail else "r16"
+    return "r16 " + " ".join(upper) + " |", left + " |"
 
 
 def marked(note: str, marks: str = "") -> Token:
@@ -161,7 +183,8 @@ def _awakening(work: Work) -> None:
             low_a,
         ),
     ]
-    last_low = [low_a, "<as d'>", "<as d'>", low_b, "<as d'>", "<as d'>", low_c, "<as d'>"]
+    # The chord between the octaves is directly above them: the hand does not leap.
+    last_low = [low_a, "<as, d>", "<as, d>", low_b, "<as, d>", "<as, d>", low_c, "<as, d>"]
     last_high = ["<a d' es'>"] * 3 + ["<d' es' as'>"] * 3 + ["<es' as' a'>"] * 2
     last = hammer(
         [
@@ -238,8 +261,15 @@ HAMMER_BARS = [
 ]
 
 
-def _hammer_bar(bass: str, fill: str, first: str, second: str, level: str) -> tuple[str, str]:
-    """Return one bar of the hammer theme: the right hand and the left hand."""
+def _hammer_bar(
+    bass: str, fill: str, first: str, second: str, level: str, **junction: int | bool
+) -> tuple[str, str]:
+    """Return one bar of the hammer theme: the right hand and the left hand.
+
+    The left hand stays in one place: its octave, and a note not more than a
+    fifth above the octave. `junction` has the options of `hammer()` for a bar
+    that comes after, or before, a far position of a hand.
+    """
     low_octave = f"<{bass}, {bass}>"
     low = [
         marked(low_octave, "->" + level),
@@ -261,7 +291,7 @@ def _hammer_bar(bass: str, fill: str, first: str, second: str, level: str) -> tu
         marked(first),
         marked(second, "->"),
     ]
-    return hammer(low, high)
+    return hammer(low, high, **junction)
 
 
 def _hammer_theme(work: Work) -> None:
@@ -273,9 +303,10 @@ def _hammer_theme(work: Work) -> None:
     block = Block(s, four, four, four, four)
 
     # ------------------------------------------------------- phrase 1: the piano alone
+    # The right hand has a rest before the run: it must go up one octave.
     right, left = zip(
         *[
-            _hammer_bar(*bar, r"\f" if number == 0 else "")
+            _hammer_bar(*bar, r"\f" if number == 0 else "", tail=number < 2)
             for number, bar in enumerate(HAMMER_BARS[:3])
         ],
         strict=True,
@@ -436,39 +467,40 @@ def _hammer_theme(work: Work) -> None:
     # ---------------- phrase 3: the full orchestra has the accents, the piano answers
     # The orchestra plays the chords of the cell on the accents. Between the accents
     # the piano runs up: a confrontation of equal partners.
-    steps = [
-        ("as,", "<as d' es'>", "as'"),
-        ("a,", "<a d' es'>", "a'"),
-        ("d", "<d' es' as'>", "d''"),
-    ]
-    piano_right, piano_left = [], []
-    for number, (bass_note, chord_text, start) in enumerate(steps):
+    # In each beat group the piano has a chord of the cell on the accent, and then a
+    # short run to the chord of the subsequent beat group. That chord is a tritone
+    # lower or higher: it has notes of the same cell. Thus the hand goes through the
+    # keyboard with no leap: down in the first bar (the run before it ended high), then
+    # up for two bars, to the octaves of the last bar. The two hands have the same
+    # music, two octaves apart.
+    waves = [
+        [("<as'' d''' es'''>", "d''' c''' b'' a''"), ("<d'' as'' a''>", "as'' ges'' f'' es''"),
+         ("<as' d'' es''>", "d'' c''")],
+        [("<a' d'' es''>", "es'' f'' ges'' as''"), ("<es'' as'' a''>", "a'' b'' c''' d'''"),
+         ("<a'' d''' es'''>", "es''' f'''")],
+        [("<d'' es'' as''>", "as'' a'' b'' c'''"), ("<as'' a'' d'''>", "d''' es''' f''' ges'''"),
+         ("<d''' es''' as'''>", "as''' a'''")],
+    ]  # fmt: skip
+    piano_right = []
+    for number, groups in enumerate(waves):
         level = r"\ff" if number == 0 else ""
-        first = slurred(run(OCT, start, 4))
-        second = slurred(run(OCT, _up(start, 4), 4))
-        third = slurred(run(OCT, _up(start, 8), 2))
-        high_chord = octave(chord_text, 1)
-        piano_right.append(
-            f"{high_chord}8->{level} {octave(first, 1)} {high_chord}8-> {octave(second, 1)} "
-            f"{high_chord}8-> {octave(third, 1)} |"
-        )
-        low_chord = f"<{bass_note}, {bass_note}>"
-        piano_left.append(
-            f"{low_chord}8->{level} {octave(first, -1)} {low_chord}8-> {octave(second, -1)} "
-            f"{low_chord}8-> {octave(third, -1)} |"
-        )
+        parts = []
+        for index, (chord_text, notes) in enumerate(groups):
+            names = notes.split()
+            line = slurred(" ".join([names[0] + "16", *names[1:]]))
+            parts.append(f"{chord_text}8->{level if index == 0 else ''} {line}")
+        piano_right.append(" ".join(parts) + " |")
+    piano_left = [octave(bar, -2) for bar in piano_right]
     # Bar 4 of the phrase: the piano alone, octaves in the two hands, down through the scale.
+    # The left hand stops before the end of the bar: it must go to the low octave.
     fall = run(OCT, "es''''", 8, 8, down=True)
+    low_fall = double(octave(fall, -2), -1).replace("8", "8->", 1).split("> <")
     block.add(
         "pno.rh",
         3,
         " ".join(piano_right) + " " + double(fall, -1).replace("8", r"8->\fff", 1) + " |",
     )
-    block.add(
-        "pno.lh",
-        3,
-        " ".join(piano_left) + " " + double(octave(fall, -2), -1).replace("8", "8->", 1) + " |",
-    )
+    block.add("pno.lh", 3, " ".join(piano_left) + " " + "> <".join(low_fall[:6]) + "> r4 |")
     tutti = {
         "tuba": ["as,,", "a,,", "d,"],
         "btbn": ["as,", "a,", "d"],
@@ -651,17 +683,19 @@ def _forge(work: Work) -> None:
     block.add("pno.rh", 1, double(FORGE_THEME, 1).replace("4.->", r"4.->\ff", 1))
     # The left hand: a motor of sixteenth notes on the chord of E-flat minor. In bar 2
     # the theme has the note G above the G-flat of the left hand (major and minor together).
+    # Each figure is in one position of the hand (not wider than an octave). Bar 1 has
+    # the tritone A of the cell. In bar 3 an inner line goes B-flat, A-flat, G-flat.
     motors = [
-        "es, bes, es a es bes, es, bes, es a es bes, es, bes, es a",
-        "es, bes, es ges es bes, es, bes, es ges es bes, es, bes, es ges",
-        "es, bes, es bes es bes, es, bes, es as es bes, es, bes, es ges",
-        "es, bes, es ges es bes, es, bes, es ges es bes, es, ges, bes, es",
+        "es bes, a, es, a, bes, es bes, a, es, a, bes, es bes, a, es,",
+        "es bes, ges, es, ges, bes, es bes, ges, es, ges, bes, es bes, ges, bes,",
+        "bes es ges es bes es as es ges es as es ges es bes, es",
+        "es bes, ges, es, ges, bes, es bes, ges, es, ges, bes, es, ges, bes, es",
     ]
     block.add(
         "pno.lh",
         1,
         " ".join(
-            slurred(motor.replace("es,", r"es,16" + (r"\f" if number == 0 else ""), 1)) + " |"
+            slurred(_first_value(motor, r"\f" if number == 0 else "")) + " |"
             for number, motor in enumerate(motors)
         ),
     )
@@ -799,8 +833,18 @@ def _forge(work: Work) -> None:
         ("bes,", "e", "<e' bes'>", "<a' es''>"),
         ("b,", "f", "<f' b'>", "<ges' c''>"),
     ]
+    # In the first bar, each hand starts one eighth note later: it comes from the broken
+    # octaves of the bar before, which are far from the hammer.
     right, left = zip(
-        *[_hammer_bar(*bar, r"\ff\<" if number == 0 else "") for number, bar in enumerate(bars)],
+        *[
+            _hammer_bar(
+                *bar,
+                r"\ff\<" if number == 0 else "",
+                skip_low=int(number == 0),
+                skip_high=int(number == 0),
+            )
+            for number, bar in enumerate(bars)
+        ],
         strict=True,
     )
     rush = run(OCT, "c'", 12)
@@ -832,3 +876,9 @@ def _forge(work: Work) -> None:
     )
     block.add("perc5", 4, SNARE.replace("16", r"16\f\<", 1) + SNARE * 2 + r"c'2.:32 c'8->\fff r8 |")
     block.close()
+
+
+def _first_value(notes: str, marks: str = "") -> str:
+    """Return a line of note names as sixteenth notes: the first note gets the value and marks."""
+    names = notes.split()
+    return " ".join([f"{names[0]}16{marks}", *names[1:]])

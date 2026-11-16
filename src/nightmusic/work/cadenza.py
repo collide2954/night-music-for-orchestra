@@ -159,8 +159,18 @@ def _trades(work: Work) -> None:
         ("des,", "g,", "<g des'>", "<c' ges'>"),
         ("d,", "as,", "<as d'>", "<a es'>"),
     ]
+    # The right hand comes from a high figure, and it goes to a run: it has a rest at
+    # the start of the first bar and at the end of the last bar.
     right, left = zip(
-        *[_hammer_bar(*bar, r"\mf\<" if number == 0 else "") for number, bar in enumerate(bars)],
+        *[
+            _hammer_bar(
+                *bar,
+                r"\mf\<" if number == 0 else "",
+                skip_high=int(number == 0),
+                tail=number < 2,
+            )
+            for number, bar in enumerate(bars)
+        ],
         strict=True,
     )
     up = run(OCT, "es'", 16)
@@ -206,7 +216,7 @@ def _build(work: Work) -> None:
     # woodwinds (after the first accent) and the strings (after the second accent).
     reference = [
         ("es,", "bes,", "<bes es' a'>", "<e' bes' es''>"),
-        ("es,", "e", "<e' bes' es''>", "<a' es'' e''>"),
+        ("es,", "e,", "<e' bes' es''>", "<a' es'' e''>"),
     ]
     starts = ["bes''", "e'''", "des'''", "g'''", "f'''", "b'''", "e'''", "des''''"]
     for phrase in (1, 2):
@@ -219,9 +229,13 @@ def _build(work: Work) -> None:
             scale = BUILD_SCALES[level_number % 3]
             for index, (bass, fill, first, second) in enumerate(reference):
                 loud = (r"\ff" if phrase == 1 else r"\fff") if step == 0 and index == 0 else ""
+                # The very first bar comes after a run that ends high: each hand starts
+                # one eighth note later.
+                late = int(phrase == 1 and step == 0 and index == 0)
                 bar = _hammer_bar(
                     tr(bass, shift).strip(), tr(fill, shift).strip(),
                     tr(first, shift + high).strip(), tr(second, shift + high).strip(), loud,
+                    skip_low=late, skip_high=late,
                 )  # fmt: skip
                 right.append(bar[0])
                 left.append(bar[1])
@@ -271,7 +285,8 @@ def _build(work: Work) -> None:
         if number == 0:
             low[0] = (low[0][0], r"->\ff\<")
             high[0] = (high[0][0], r"\ff\<")
-        bar = hammer(low, high)
+        # The right hand comes from high chords: it starts with its third octave.
+        bar = hammer(low, high, skip_high=2 if number == 0 else 0)
         right.append(bar[0])
         left.append(bar[1])
     block.add("pno.rh", 3, " ".join(right))
@@ -300,10 +315,20 @@ def _build(work: Work) -> None:
     # --- phrase 4: the peak. Two bars of the hammer, a glissando, one stroke, and silence.
     top = [
         ("es,", "bes,", "<es'' a'' es'''>", "<e'' bes'' e'''>"),
-        ("es,", "e", "<e'' bes'' e'''>", "<a'' es''' a'''>"),
+        ("es,", "e,", "<e'' bes'' e'''>", "<a'' es''' a'''>"),
     ]
+    # The right hand comes from the low octaves, and it goes to the glissando: it starts
+    # late in the first bar, and it has a rest at the end of the second bar.
     right, left = zip(
-        *[_hammer_bar(*bar, r"\fff" if number == 0 else "") for number, bar in enumerate(top)],
+        *[
+            _hammer_bar(
+                *bar,
+                r"\fff" if number == 0 else "",
+                skip_high=2 if number == 0 else 0,
+                tail=number == 0,
+            )
+            for number, bar in enumerate(top)
+        ],
         strict=True,
     )
     block.add(
@@ -365,11 +390,13 @@ def _first_marks(text: str, marks: str) -> str:
 # ------------------------------------------------------------------ mark Z
 
 
-def _wave(chord: str, top: str, bass: str) -> tuple[str, str]:
+def _wave(chord: str, top: str, bass: str, right_ends: bool = False) -> tuple[str, str]:
     """Return one bar of 4/4: a wave through a chord, up to the note `top` and down again.
 
     The left hand starts and ends the wave. The right hand has its middle. Before
-    the wave, the left hand plays the bass note `bass` as a short octave.
+    the wave, the left hand plays the bass note `bass` as a short octave. If
+    `right_ends` is true, the right hand has the end of the wave also: the left
+    hand is then free to go to the bass of the subsequent bar.
     """
     names = chord.split()
     for name in names:
@@ -388,6 +415,13 @@ def _wave(chord: str, top: str, bass: str) -> tuple[str, str]:
                     rf"r4 \tuplet 6/4 {{ {up[6]}16( {' '.join(up[7:12])} }} "
                     rf"\tuplet 6/4 {{ {down[0]}16 {' '.join(down[1:6])}) }} r4 |"
                 )
+                if right_ends:
+                    left = low + rf"\tuplet 6/4 {{ {up[0]}16( {' '.join(up[1:6])}) }} r4 r2 |"
+                    right = (
+                        rf"r4 \tuplet 6/4 {{ {up[6]}16( {' '.join(up[7:12])} }} "
+                        rf"\tuplet 6/4 {{ {down[0]}16 {' '.join(down[1:6])} }} "
+                        rf"\tuplet 6/4 {{ {down[6]}16 {' '.join(down[7:12])}) }} |"
+                    )
                 return right, left
     raise ValueError(f"no wave of the chord {chord} goes up to {top}")
 
@@ -409,22 +443,27 @@ def _cadenza(work: Work) -> None:
         low = [marked(f"<{octave(note, -1).strip()} {note}>", "->" if i == 0 else "")
                for i, note in enumerate(notes[1::2])]  # fmt: skip
         high = [marked(f"<{octave(note, -1).strip()} {note}>") for note in notes[0::2]]
-        # The right hand starts: it has the notes on the eighth notes.
-        bar = hammer(high, low)
+        # The right hand starts: it has the notes on the eighth notes. The left hand
+        # has a rest at the end of the second bar: it must go to the lowest E-flat.
+        bar = hammer(high, low, tail=number == 0)
         left.append(bar[0])
         right.append(bar[1])
+    # Two sweeps through the chords E-flat 7 and A 7. The first sweep fills its bar. The
+    # second sweep starts after a rest (the hands go down again), and it arrives at the
+    # high chord of the subsequent bar. The left hand stops earlier: it goes to the bass.
     sweep_one = run("es g bes des fis", "es", 16)
-    sweep_two = run("a cis e g bes", "a", 16)
+    sweep_two = run("a cis e g bes", "a'", 10)
+    low_two = run("a cis e g bes", "a,", 6)
     block.add(
         "pno.rh", 1,
-        _with(" ".join(right), r"\fff") + " " + _with(slurred(sweep_one), r"\<") + " | "
+        _with(" ".join(right), r"\fff") + " " + _with(slurred(sweep_one), r"\<") + " | r4. "
         + slurred(sweep_two) + " |",
     )  # fmt: skip
     block.add(
         "pno.lh", 1,
         _with(" ".join(left), r"\fff\sustainOff") + " "
-        + _with(slurred(octave(sweep_one, -2)), r"\sustainOn") + " | "
-        + _with(slurred(octave(sweep_two, -2)), r"\sustainOff\sustainOn") + " |",
+        + _with(slurred(octave(sweep_one, -2)), r"\sustainOn") + " | r4. "
+        + _with(slurred(low_two), r"\sustainOff\sustainOn") + " r4 |",
     )  # fmt: skip
     block.close()
 
@@ -458,7 +497,11 @@ def _cadenza(work: Work) -> None:
         ("b cis e g", "b'''", "a,"),
         ("a cis e g", "cis''''", "a,"),
     ]
-    right, left = zip(*[_wave(*wave) for wave in waves], strict=True)
+    # In the last wave the right hand has the end: the left hand goes to the low D.
+    right, left = zip(
+        *[_wave(*wave, right_ends=number == len(waves) - 1) for number, wave in enumerate(waves)],
+        strict=True,
+    )
     levels = [r"\p\<", "", r"\mf\<", "", r"\f\<", r"\ff"]
     block.add("pno.rh", 1, " ".join(right))
     block.add(
@@ -534,22 +577,25 @@ def _return(work: Work) -> None:
               r"c'2.:32 r4 |")  # fmt: skip
     block.add("perc5", 2, r"R1*2 | c'1:32\mf\< ~ | c'2.:32\fff r4 |")
     block.add("perc6", 2, r"""\switch "tam-tams" R1*2 | c'1\ff\lv | R1 |""")
-    # The piano: the trill becomes two chords in alternate hands.
-    pair = "<a' cis'' g''>32 <bes' es'' g''>"
-    bar = " ".join([pair] * 16)
-    last = " ".join([pair] * 12) + " r4"
-    block.add(
-        "pno.rh", 2,
-        _with32(bar, r"\mp\<") + " | " + bar + " | " + _with32(bar, r"\f") + " | " + last + " |",
-    )  # fmt: skip
-    low_pair = "<es,, es,>32 <a,, a,>"
-    low_bar = " ".join([low_pair] * 16)
-    low_last = " ".join([low_pair] * 12) + " r4"
-    block.add(
-        "pno.lh", 2,
-        _with32(low_bar, r"\mp\<\sustainOff") + " | " + low_bar + " | " + low_bar
-        + " | " + low_last + " |",
-    )  # fmt: skip
+    # The piano: the trill becomes a tremolo of two chords, one chord in each hand (the
+    # chords A 7 and E-flat of the cadenza). The left hand plays on the sixteenth notes,
+    # and the right hand plays between them: together they make thirty-second notes.
+    # The first form of this passage had the two chords in each hand, with octaves that
+    # leap in the left hand. The owner of the project found that a pianist cannot play
+    # such music. The orchestra has the bass notes.
+    low_chord, high_chord = "<a cis' g'>", "<bes' es'' g''>"
+
+    def tremolo(strokes: int, marks: str) -> tuple[str, str]:
+        """Return the two hands for a number of sixteenth notes: the right, then the left."""
+        low = " ".join([f"{low_chord}16{marks}"] + [low_chord] * (strokes - 1))
+        between = [f"{high_chord}16{marks}"] + [high_chord] * (strokes - 2)
+        return "r32 " + " ".join(between) + f" {high_chord}32", low
+
+    bars = [tremolo(16, r"\mf\<"), tremolo(16, ""), tremolo(16, r"\ff"), tremolo(12, "")]
+    block.add("pno.rh", 2, " | ".join(right for right, _left in bars) + " r4 |")
+    left_bars = [left for _right, left in bars]
+    left_bars[0] = left_bars[0].replace(r"\mf\<", r"\mf\<\sustainOff", 1)
+    block.add("pno.lh", 2, " | ".join(left_bars) + " r4 |")
     block.close()
 
 

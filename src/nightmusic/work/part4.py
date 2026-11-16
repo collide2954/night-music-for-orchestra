@@ -750,7 +750,7 @@ def _main_climax(work: Work) -> None:
     )  # fmt: skip
     block.add(
         "acc.rh", 1,
-        with_last(fill(dyn(WARM_CHORDS, r"\ff"), low), r"<d'' g'' c''' f'''>1"),
+        with_last(fill(dyn(WARM_CHORDS, r"\ff"), low), r"<g'' c''' f'''>1"),
     )  # fmt: skip
     block.add(
         "timp", 1,

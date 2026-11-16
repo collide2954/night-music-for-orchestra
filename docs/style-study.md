@@ -450,12 +450,12 @@ The table shows how frequently a bar comes again with no change. Each value is a
 | Measure | Verklärte Nacht | New work, complete | New work, part 1 | New work, part 2 | New work, part 3 | New work, part 4 | New work, part 5 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Full texture: bar is the same as the bar before | 2.4 % | 0.7 % | 0.0 % | 1.9 % | 0.0 % | 0.0 % | 0.0 % |
-| Full texture: bar is the same as one of the 8 bars before | 5.1 % | 5.1 % | 0.0 % | 6.6 % | 0.0 % | 0.0 % | 19.3 % |
-| Full texture: bar is the same at a different pitch | 3.9 % | 0.5 % | 0.0 % | 0.0 % | 1.5 % | 0.8 % | 0.0 % |
-| Full texture: bar has the same rhythm with different notes | 8.7 % | 13.3 % | 0.0 % | 13.6 % | 24.4 % | 10.2 % | 4.8 % |
-| One voice: bar is the same as one of its 8 bars before | 10.2 % | 37.8 % | 26.1 % | 35.8 % | 30.7 % | 20.1 % | 60.6 % |
-| One voice: bar is the same at a different pitch | 8.5 % | 21.7 % | 2.3 % | 26.2 % | 31.9 % | 14.3 % | 12.4 % |
-| Bars in a block of 4 bars that is the same as an earlier block | 0.0 % | 2.7 % | 0.0 % | 1.9 % | 0.0 % | 0.0 % | 14.5 % |
+| Full texture: bar is the same as one of the 8 bars before | 5.1 % | 2.4 % | 0.0 % | 6.6 % | 0.0 % | 0.0 % | 0.0 % |
+| Full texture: bar is the same at a different pitch | 3.9 % | 0.2 % | 0.0 % | 0.0 % | 0.0 % | 0.8 % | 0.0 % |
+| Full texture: bar has the same rhythm with different notes | 8.7 % | 12.6 % | 0.0 % | 13.6 % | 20.7 % | 10.2 % | 6.0 % |
+| One voice: bar is the same as one of its 8 bars before | 10.2 % | 28.9 % | 26.1 % | 35.8 % | 30.6 % | 20.1 % | 21.9 % |
+| One voice: bar is the same at a different pitch | 8.5 % | 23.2 % | 2.3 % | 26.2 % | 31.0 % | 14.3 % | 19.3 % |
+| Bars in a block of 4 bars that is the same as an earlier block | 0.0 % | 0.7 % | 0.0 % | 1.9 % | 0.0 % | 0.0 % | 0.0 % |
 
 Data files: [`research/measured/repetition.csv`](../research/measured/repetition.csv), [`research/measured/work_repetition.csv`](../research/measured/work_repetition.csv)
 
@@ -465,17 +465,17 @@ The table measures the new work with the method of table M11. "The turn" is the 
 
 | Measure | Range of the profile "Transfigured" | Verklärte Nacht | New work, complete | New work, before the turn | New work, after the turn | New work, part 1 | New work, part 2 | New work, part 3 | New work, part 4 | New work, part 5 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Chords: share built from thirds | 0.62 to 0.72 | 68.0 % | 40.7 % | 34.9 % | 48.6 % | 48.4 % | 50.1 % | 12.6 % | 55.8 % | 33.2 % |
-| Chords: share with a semitone clash | 0.20 to 0.28 | 23.8 % | 53.9 % | 71.4 % | 30.1 % | 59.0 % | 62.4 % | 85.8 % | 27.7 % | 35.4 % |
-| Chords: share with a 3-semitone cluster | 0.00 to 0.02 | 1.0 % | 15.8 % | 24.8 % | 3.6 % | 13.3 % | 5.4 % | 51.8 % | 0.8 % | 9.6 % |
-| Chords: share in one whole-tone scale | 0.09 to 0.16 | 12.9 % | 2.0 % | 2.8 % | 0.9 % | 2.8 % | 2.7 % | 2.9 % | 1.3 % | 0.0 % |
-| Chords: mean pitch classes | - | 3.42 | 4.42 | 4.65 | 4.10 | 4.19 | 4.20 | 5.33 | 4.10 | 4.09 |
-| Share of sounding time: major and minor triads | - | 14.9 % | 13.4 % | 8.1 % | 23.3 % | 13.2 % | 10.7 % | 3.4 % | 25.8 % | 19.0 % |
-| Share of sounding time: vagrant chords | - | 17.5 % | 4.9 % | 6.6 % | 1.7 % | 11.8 % | 9.6 % | 1.5 % | 2.5 % | 0.3 % |
-| Share of sounding time: dominant chords | 0.05 to 0.07 | 5.7 % | 6.3 % | 5.0 % | 8.7 % | 1.0 % | 8.7 % | 1.3 % | 11.2 % | 4.3 % |
-| Share of sounding time: other seventh and ninth chords | - | 7.3 % | 6.5 % | 3.6 % | 11.8 % | 7.6 % | 3.7 % | 2.5 % | 17.0 % | 2.9 % |
-| Mean pitch classes that sound together | - | 2.82 | 3.72 | 3.63 | 3.90 | 3.36 | 3.32 | 4.09 | 4.09 | 3.56 |
-| Mean distinct pitch classes in one window | 7 to 8 | 7.57 | 5.08 | 5.20 | 4.85 | 4.39 | 5.50 | 5.01 | 5 | 4.60 |
+| Chords: share built from thirds | 0.62 to 0.72 | 68.0 % | 41.2 % | 34.9 % | 49.7 % | 48.4 % | 50.1 % | 12.6 % | 55.8 % | 36.6 % |
+| Chords: share with a semitone clash | 0.20 to 0.28 | 23.8 % | 53.5 % | 71.4 % | 29.4 % | 59.0 % | 62.4 % | 85.8 % | 27.7 % | 33.2 % |
+| Chords: share with a 3-semitone cluster | 0.00 to 0.02 | 1.0 % | 15.8 % | 24.8 % | 3.6 % | 13.3 % | 5.4 % | 52.0 % | 0.8 % | 9.6 % |
+| Chords: share in one whole-tone scale | 0.09 to 0.16 | 12.9 % | 2.2 % | 2.8 % | 1.5 % | 2.8 % | 2.7 % | 2.9 % | 1.3 % | 1.8 % |
+| Chords: mean pitch classes | - | 3.42 | 4.42 | 4.66 | 4.10 | 4.19 | 4.20 | 5.34 | 4.10 | 4.09 |
+| Share of sounding time: major and minor triads | - | 14.9 % | 13.6 % | 8.1 % | 24.0 % | 13.2 % | 10.7 % | 3.4 % | 25.8 % | 20.9 % |
+| Share of sounding time: vagrant chords | - | 17.5 % | 5.0 % | 6.6 % | 2.0 % | 11.8 % | 9.6 % | 1.5 % | 2.5 % | 1.1 % |
+| Share of sounding time: dominant chords | 0.05 to 0.07 | 5.7 % | 6.4 % | 5.1 % | 8.9 % | 1.0 % | 8.7 % | 1.3 % | 11.2 % | 5.0 % |
+| Share of sounding time: other seventh and ninth chords | - | 7.3 % | 6.5 % | 3.6 % | 11.8 % | 7.6 % | 3.7 % | 2.5 % | 17.0 % | 3.1 % |
+| Mean pitch classes that sound together | - | 2.82 | 3.73 | 3.63 | 3.91 | 3.36 | 3.32 | 4.09 | 4.09 | 3.59 |
+| Mean distinct pitch classes in one window | 7 to 8 | 7.57 | 5.09 | 5.20 | 4.88 | 4.39 | 5.50 | 5.01 | 5 | 4.68 |
 
 Data file: [`research/measured/work_harmony.csv`](../research/measured/work_harmony.csv)
 
@@ -485,55 +485,55 @@ Data file: [`research/measured/work_harmony.csv`](../research/measured/work_harm
 
 | Player | Share of the time | Range in use | Notes in the low third | Notes in the middle third | Notes in the high third | Techniques |
 | --- | --- | --- | --- | --- | --- | --- |
-| fl1 | 37.9 % | 94.6 % | 2.0 % | 38.8 % | 59.2 % | tremolo; trill |
-| fl2 | 32.3 % | 75.7 % | 1.0 % | 40.7 % | 58.4 % | grace notes; tremolo; trill |
-| fl3 | 22.6 % | 88.2 % | 35.6 % | 61.8 % | 2.5 % | tremolo; trill |
-| ob1 | 32.2 % | 81.8 % | 16.2 % | 64.0 % | 19.8 % | tremolo |
-| ob2 | 26.1 % | 81.8 % | 16.3 % | 64.1 % | 19.6 % | grace notes; tremolo |
+| fl1 | 37.9 % | 94.6 % | 2.0 % | 39.0 % | 59.0 % | tremolo; trill |
+| fl2 | 32.3 % | 75.7 % | 1.0 % | 40.9 % | 58.2 % | grace notes; tremolo; trill |
+| fl3 | 22.6 % | 88.2 % | 35.9 % | 61.6 % | 2.5 % | tremolo; trill |
+| ob1 | 32.2 % | 81.8 % | 16.2 % | 64.2 % | 19.6 % | tremolo |
+| ob2 | 26.1 % | 81.8 % | 16.3 % | 64.3 % | 19.4 % | grace notes; tremolo |
 | ob3 | 6.8 % | 71.9 % | 21.6 % | 69.1 % | 9.3 % | grace notes |
-| cl1 | 36.6 % | 72.7 % | 16.0 % | 68.7 % | 15.3 % | grace notes; tremolo |
-| cl2 | 30.5 % | 68.2 % | 6.1 % | 72.1 % | 21.8 % | tremolo |
-| cl3 | 25.7 % | 58.3 % | 61.7 % | 38.3 % | 0.0 % | grace notes |
+| cl1 | 36.6 % | 72.7 % | 16.0 % | 68.9 % | 15.1 % | grace notes; tremolo |
+| cl2 | 30.5 % | 68.2 % | 6.1 % | 72.4 % | 21.5 % | tremolo |
+| cl3 | 25.7 % | 58.3 % | 60.2 % | 39.8 % | 0.0 % | grace notes |
 | cbcl | 25.7 % | 62.8 % | 23.0 % | 72.9 % | 4.1 % | grace notes |
-| bn1 | 40.8 % | 73.8 % | 24.0 % | 71.3 % | 4.7 % | - |
-| bn2 | 38.1 % | 64.3 % | 31.3 % | 65.9 % | 2.8 % | grace notes |
-| bn3 | 33.2 % | 81.8 % | 11.1 % | 62.8 % | 26.1 % | - |
-| hn1 | 50.6 % | 69.0 % | 0.2 % | 46.2 % | 53.6 % | desk: solo; mute: on |
+| bn1 | 40.8 % | 73.8 % | 24.0 % | 69.9 % | 6.1 % | - |
+| bn2 | 38.1 % | 64.3 % | 31.3 % | 64.3 % | 4.4 % | grace notes |
+| bn3 | 33.2 % | 81.8 % | 11.1 % | 60.9 % | 28.1 % | - |
+| hn1 | 50.7 % | 69.0 % | 0.2 % | 46.2 % | 53.6 % | desk: solo; mute: on |
 | hn2 | 47.1 % | 64.3 % | 1.9 % | 61.1 % | 37.0 % | mute: on |
-| hn3 | 47.6 % | 61.9 % | 0.2 % | 69.1 % | 30.7 % | mute: on |
+| hn3 | 47.7 % | 61.9 % | 0.2 % | 69.1 % | 30.7 % | mute: on |
 | hn4 | 45.7 % | 83.3 % | 8.3 % | 69.8 % | 22.0 % | mute: on |
-| hn5 | 14.4 % | 50.0 % | 0.0 % | 47.5 % | 52.5 % | - |
-| hn6 | 14.4 % | 50.0 % | 0.0 % | 60.2 % | 39.8 % | - |
-| tpt1 | 23.4 % | 75.0 % | 6.6 % | 68.1 % | 25.3 % | mute: on |
-| tpt2 | 22.1 % | 68.8 % | 14.1 % | 76.1 % | 9.8 % | - |
+| hn5 | 14.3 % | 50.0 % | 0.0 % | 37.6 % | 62.4 % | - |
+| hn6 | 14.3 % | 50.0 % | 0.0 % | 53.9 % | 46.1 % | - |
+| tpt1 | 23.5 % | 75.0 % | 6.6 % | 68.1 % | 25.3 % | mute: on |
+| tpt2 | 22.2 % | 68.8 % | 14.1 % | 76.1 % | 9.8 % | - |
 | tpt3 | 18.3 % | 71.9 % | 25.5 % | 66.0 % | 8.5 % | - |
-| tbn1 | 27.5 % | 79.4 % | 35.2 % | 58.7 % | 6.1 % | - |
-| tbn2 | 27.3 % | 82.3 % | 48.9 % | 45.3 % | 5.8 % | - |
-| btbn | 24.6 % | 64.1 % | 50.1 % | 49.5 % | 0.4 % | - |
-| tuba | 26.0 % | 69.2 % | 56.8 % | 40.7 % | 2.6 % | - |
-| timp | 32.4 % | 81.8 % | 63.0 % | 31.6 % | 5.5 % | mallet: soft; tremolo |
+| tbn1 | 27.5 % | 79.4 % | 34.4 % | 59.5 % | 6.1 % | - |
+| tbn2 | 27.3 % | 82.3 % | 48.1 % | 46.1 % | 5.8 % | - |
+| btbn | 24.6 % | 64.1 % | 48.3 % | 51.2 % | 0.4 % | - |
+| tuba | 26.0 % | 69.2 % | 55.2 % | 42.3 % | 2.6 % | - |
+| timp | 32.0 % | 81.8 % | 63.6 % | 31.9 % | 4.5 % | mallet: soft; tremolo |
 | perc1 | 14.4 % | 29.2 % | 67.2 % | 32.8 % | 0.0 % | tremolo |
 | perc2 | 42.0 % | 86.1 % | 18.1 % | 77.8 % | 4.2 % | motor: on |
-| perc3 | 15.0 % | - | - | - | - | tremolo |
-| perc4 | 17.0 % | - | - | - | - | tremolo |
-| perc5 | 11.3 % | - | - | - | - | tremolo |
-| perc6 | 11.1 % | - | - | - | - | tremolo |
+| perc3 | 14.8 % | - | - | - | - | tremolo |
+| perc4 | 16.8 % | - | - | - | - | tremolo |
+| perc5 | 10.8 % | - | - | - | - | tremolo |
+| perc6 | 11.6 % | - | - | - | - | tremolo |
 | harp.rh | 32.7 % | 56.2 % | 0.0 % | 35.4 % | 64.6 % | harmonic |
 | harp.lh | 18.8 % | 53.8 % | 52.3 % | 47.7 % | 0.0 % | - |
 | cimb.rh | 3.2 % | 36.8 % | 0.0 % | 46.0 % | 54.0 % | tremolo |
-| cimb.lh | 16.5 % | 42.1 % | 64.9 % | 35.1 % | 0.0 % | tremolo |
+| cimb.lh | 16.5 % | 42.1 % | 62.7 % | 37.2 % | 0.0 % | tremolo |
 | mand | 10.7 % | 68.4 % | 23.8 % | 57.0 % | 19.2 % | tremolo |
 | cel.rh | 13.2 % | 58.3 % | 2.8 % | 45.5 % | 51.7 % | - |
 | cel.lh | 0.0 % | - | - | - | - | no notes |
-| pno.rh | 55.2 % | 78.2 % | 1.8 % | 63.3 % | 34.9 % | glissando; grace notes |
-| pno.lh | 44.9 % | 85.1 % | 72.7 % | 26.6 % | 0.7 % | grace notes; tremolo |
-| acc.rh | 45.8 % | 48.6 % | 0.0 % | 72.2 % | 27.8 % | - |
+| pno.rh | 54.1 % | 78.2 % | 1.9 % | 61.6 % | 36.5 % | glissando; grace notes |
+| pno.lh | 45.6 % | 85.1 % | 64.7 % | 34.6 % | 0.7 % | grace notes; tremolo |
+| acc.rh | 45.5 % | 48.6 % | 0.0 % | 72.0 % | 28.0 % | - |
 | acc.lh | 0.0 % | - | - | - | - | no notes |
-| vn1 | 74.4 % | 84.0 % | 7.3 % | 77.6 % | 15.1 % | desk: solo; glissando; harmonic; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo |
-| vn2 | 87.7 % | 78.0 % | 48.2 % | 51.3 % | 0.5 % | col legno; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
-| va | 121.6 % | 85.0 % | 40.3 % | 56.1 % | 3.6 % | col legno; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
+| vn1 | 74.1 % | 84.0 % | 7.4 % | 78.8 % | 13.8 % | desk: solo; glissando; harmonic; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo |
+| vn2 | 87.3 % | 78.0 % | 48.9 % | 50.6 % | 0.5 % | col legno; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
+| va | 121.3 % | 85.0 % | 40.8 % | 55.4 % | 3.7 % | col legno; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
 | vc | 117.0 % | 87.5 % | 52.1 % | 45.5 % | 2.4 % | desk: solo; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
-| cb | 79.8 % | 62.8 % | 47.6 % | 50.8 % | 1.6 % | mute: on; pizzicato; sul tasto; tremolo |
+| cb | 79.8 % | 62.8 % | 46.5 % | 51.8 % | 1.6 % | mute: on; pizzicato; sul tasto; tremolo |
 
 Instruments in the list of the orchestra that have no notes: marimba, singing bowls, temple blocks, claves, guiro, cowbells, finger cymbals, wind chimes, waterphone.
 

@@ -105,7 +105,7 @@ The column "Share" gives the position as a part of the length of the work.
 | | FF | 493 to 520 | 27:30 | 0.801 | Tranquillo (52) | D | Calm. The themes as soft solos. The chorale in D major. |
 | 5 | GG | 521 to 530 | 29:45 | 0.866 | Lento, come un'alba (50) | D | First light: the harmonic series on D, from the lowest note up. |
 | | HH | 531 to 546 | 30:33 | 0.890 | Andante, con moto (60) | D | The warm theme and the song theme at the same time. |
-| | JJ | 547 to 582 | 31:37 | 0.921 | Con slancio (eighth note = 264) | D, F-sharp, B-flat, D | The rhythm of the heavy section comes back in D major. The riff, the calls of the brass, and the bells have the light state of the motto. Then hammer strokes on the chord of D major. |
+| | JJ | 547 to 582 | 31:37 | 0.921 | Con slancio (eighth note = 264) | D, F-sharp, B-flat, D | The rhythm of the heavy section comes back in D major. The riff has the four forms of part 2 with the light state of the motto, in a different sequence in each phrase. The bells ring the three notes of the motto as bell ringers do: each bar has a new sequence. The calls of the brass and the runs of the woodwinds have four forms each. Then hammer strokes on the chord of D major. |
 | | KK | 583 to 603 | 32:34 | 0.949 | Maestoso (50) | D | The chorale in D major, fff, with bright metal: the glockenspiel rings each chord, the celesta runs through it, the harp rolls it, and the crotales come in at the peak of the first phrase. Rolls of the suspended cymbal go to each new phrase. The last chord: the tubular bells, the glockenspiel, and the crotales ring the notes of the motto at three speeds. The triangle has a long roll, the flutes have a trill, and the piano has fast lines up the keyboard. |
 
 ## Proportions
@@ -207,7 +207,9 @@ Functions make the other forms of a theme:
 
 The command `nightmusic check` finds notes that are out of the range of an instrument.
 It also finds a change of instrument, and a change of tuning of the timpani, for which the player has too little time.
-It also finds a chord that one hand of the piano, the celesta, the accordion, or the harp cannot reach: a chord wider than a tenth, or a chord with too many notes (a rolled chord of a keyboard instrument can be two octaves wide).
+It also finds a chord that one hand of the piano, the celesta, the accordion, or the harp cannot reach: a chord wider than a ninth (harp: a tenth), or a chord with too many notes (a rolled chord of a keyboard instrument can be two octaves wide).
+For each hand of a keyboard player, it measures each move of the hand against the time for the move: a leap of an octave needs 0.19 s, and a leap of two octaves needs 0.34 s. One hand cannot play chords faster than 7 in a second. The owner of the project found that the first form of the piano part was "almost impossible to play": it had leaps of two octaves in a sixteenth note, and a tremolo of two far chords in one hand.
+It also finds a hairpin that goes over a silence. A player cannot make a rest louder: the code stops each hairpin at the start of a silence of two quarter notes or more, and it gives a dynamic mark to each entry after the silence.
 
 The command `nightmusic docs` writes the bar numbers, the times, and the measured values of the work into this document and into the file `README.md`.
 A test makes sure that these values are up to date.

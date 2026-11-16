@@ -18,7 +18,6 @@ from ..compose.tools import (
     bars,
     double,
     dyn,
-    figure,
     fill,
     first,
     invert,
@@ -32,6 +31,7 @@ from ..compose.tools import (
     tr,
 )
 from ..notation.work import Work
+from . import heavy
 
 # The agitated theme (4 bars), on D.
 AGITATED = r"""
@@ -640,14 +640,7 @@ def _chase_end(work: Work) -> None:
     eight = rests(7, 8, 8)
     block = Block(s, eight, eight, eight, eight)
 
-    # R = the root. L, M, H = the low, the middle, and the high note of the cell.
-    # ">" = an accent. "." = a rest.
-    forms = {
-        "A": "R> . R> . H> M L | R> R . L> . R> H",
-        "B": "R> R . H> . M> L | R> . L R> . H> M",
-        "C": "R> . H R> . L M> | . R> R . H> . R>",
-        "D": "R> L M H> . R> . | H> M L R> R . R>",
-    }
+    # The forms of the riff are in `heavy.py`: the heavy section of part 5 has them too.
     orders = ["ABCD", "BDAC", "CADB", "DCBA"]
     cells = [
         {"R": "b,,", "L": "c,", "M": "es,", "H": "f,"},
@@ -666,55 +659,18 @@ def _chase_end(work: Work) -> None:
     for phrase in (1, 2, 3, 4):
         level, root, cell = levels[phrase - 1], roots[phrase - 1], cells[phrase - 1]
         shift = 3 * (phrase - 1)
-        music_of: dict[str, list[str]] = {
-            name: [] for name in ("low", "gaps", "taiko", "bass drum", "timp", "toms", "snare")
-        }
+        music_of = heavy.layers(orders[phrase - 1], cell, root, tom_notes)
+        music_of["low"] = [tr(bar, shift) for bar in music_of["low"]]
         chords: dict[str, list[str]] = {name: [] for name in ("va", "vn2", "vn1", "pno", "one")}
-        tom = 0
-        for unit, letter in enumerate(orders[phrase - 1]):
-            for bar_text in forms[letter].split("|"):
-                marks = bar_text.split()
-                riff = [
-                    None if m == "." else (cell[m[0]], "->" if m.endswith(">") else "")
-                    for m in marks
-                ]
-                music_of["low"].append(tr(figure(riff), shift))
-                music_of["gaps"].append(figure([("X", "->") if m == "." else None for m in marks]))
-                music_of["taiko"].append(
-                    figure(
-                        [
-                            None if m == "." else ("c'", "->" if m.endswith(">") else "")
-                            for m in marks
-                        ]
-                    )
-                )
-                # The bass drum: the accents of the root at the start of a beat group.
-                beat = [
-                    ("c'", "->") if m == "R>" and i in (0, 2, 4) else None
-                    for i, m in enumerate(marks)
-                ]
-                music_of["bass drum"].append(figure(beat))
-                music_of["timp"].append(
-                    figure([(root, "->") if m == "R>" else None for m in marks])
-                )
-                # The tom-toms: the rests of the riff in the last beat group.
-                # The snare drum: the other rests.
-                toms: list[tuple[str, str] | None] = []
-                snare: list[tuple[str, str] | None] = []
-                for index, mark in enumerate(marks):
-                    free = mark == "."
-                    toms.append((tom_notes[tom % 4], "") if free and index >= 4 else None)
-                    snare.append(("c'", "->") if free and index < 4 else None)
-                    tom += 1 if free and index >= 4 else 0
-                music_of["toms"].append(figure(toms))
-                music_of["snare"].append(figure(snare))
+        for unit in range(len(orders[phrase - 1])):
             # The chords: a different position of the same notes in each second unit.
             lift = shift + (3 if unit % 2 else 0)
-            gap_bars = " ".join(music_of["gaps"][-2:])
+            gap_bars = " ".join(music_of["gaps"][2 * unit : 2 * unit + 2])
             chords["va"].append(fill(tr(r"<f b>1", lift), gap_bars))
             chords["vn2"].append(fill(tr(r"<d' gis'>1", lift), gap_bars))
             chords["vn1"].append(fill(tr(r"<b' f''>1", lift), gap_bars))
-            chords["pno"].append(fill(tr(r"<f b d' gis'>1", lift), gap_bars))
+            # The piano has the four notes in a close position: one hand can reach them.
+            chords["pno"].append(fill(tr(r"<b d' f' gis'>1", lift), gap_bars))
         text = {name: " ".join(parts) for name, parts in music_of.items()}
         block.add(
             "cb tuba btbn bn3 cbcl cl3 vc:1 bn1:1 bn2:1 cimb.lh:1", phrase, text["low"], level
@@ -797,7 +753,7 @@ def _chase_end(work: Work) -> None:
     s.write("vn2", hammer(r"<es' as'>1"))
     s.write("vn1", hammer(r"<d'' d'''>1"))
     s.write("pno.lh", hammer(r"<d, d>1"))
-    s.write("pno.rh", hammer(r"<b es' as' d''>1"))
+    s.write("pno.rh", hammer(r"<es' as' b' d''>1"))  # a close position: one hand can reach it
     s.write("timp", hammer(r"<d>1", "A"))
     strokes = r"c'8->\ff r c'8-> r c'8-> r4 |"
     # The bass drum, the taiko, and the snare drum have the rhythm of the strokes.
@@ -1153,7 +1109,7 @@ def _first_climax(work: Work) -> None:
     block.add("pno.lh", 1, times(r"<d,, d,>1\fff-^ |", 8))
     block.add(
         "pno.rh", 1,
-        r"<f' a' d''>1\fff-^ | <ges' bes' es''>1-^ | <f' des'' as''>1-^ | <f' cis'' g''>1-^ | "
+        r"<f' a' d''>1\fff-^ | <ges' bes' es''>1-^ | <des'' f'' as''>1-^ | <f' cis'' g''>1-^ | "
         r"<f' a' d''>1-^ | <ges' bes' es''>1-^ | <d' as' es''>1-^ | <d' as' es''>1-^ |",
     )  # fmt: skip
     block.close()
