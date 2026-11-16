@@ -623,22 +623,101 @@ def _main_climax(work: Work) -> None:
     structure.tempo(s.bar(1), 1, 54, "Maestoso, con tutta la forza")
     block = Block(s, rests(4, 4, 8), rests(4, 4, 4))
 
-    # Phrase 1 (8 bars): the theme.
+    # Phrase 1 (8 bars). The owner of the project asked: do not show the theme too
+    # frequently, and put the strings in their highest register at some times. Thus the
+    # theme is in the middle of the orchestra, and three more layers are around it:
+    # - The theme: six horns and two trumpets in unison, and the glockenspiel.
+    # - A new melody above the theme: the violins in octaves, in their highest register.
+    # - Trades: the woodwinds (beats 1 and 2) and the violas and cellos (beats 3 and 4)
+    #   have figures of sixteenth notes through the chords. No two bars have the same figure.
+    # - The last bar is a chord of all twelve notes from two interval types: fifths from
+    #   the bass note A (A, E, B, F-sharp, C-sharp, G-sharp), and above them fourths from D
+    #   (D, G, C, F, B-flat, E-flat). Its highest note, E-flat, is the dark note of the
+    #   motto. It goes down to D in the subsequent bar.
     theme = dyn(WARM, r"\fff")
-    block.add("vn1:1 vn2:1 va vc tpt1 tpt2 hn5 hn6", 1, theme)
-    # The piccolo has the highest octave: the theme goes to D7, above the range of the flute.
-    block.add("fl1:1 fl2:1 fl3:2 ob1:1 ob2:1 cl1:1 cl2:1 perc4:2", 1, theme)
+    block.add("hn1 hn2 hn3 hn4 hn5 hn6 tpt1 tpt2 perc4:2", 1, theme)
+
+    def with_last(text: str, last: str) -> str:
+        """Return 8 bars of music with a different last bar."""
+        parts = [part.strip() for part in text.split("|") if part.strip()]
+        return " | ".join([*parts[:7], last]) + " |"
+
+    above = (
+        r"fis'''2.\fff( a'''4 | b'''2 a'''2) | g'''2( fis'''4 d''''4 ~ | "
+        r"d''''2 cis''''4 a'''4) | a'''2( d''''2 | e''''2 d''''4 cis''''4) | b'''2( e''''2 ~ |"
+    )
+    block.add("vn1", 1, above + r" e''''4) es''''2.:32 |")
+    block.add("vn2", 1, octave(above, -1) + r" e'''4) bes'''2.:32 |")
+    block.add("fl3", 1, above + r" e''''4) c''''2. |")
+
+    shapes = {
+        "up": (0, 1, 2, 3, 4, 3, 2, 1),
+        "down": (4, 3, 2, 1, 0, 1, 2, 3),
+        "broken": (0, 2, 1, 3, 2, 4, 3, 1),
+    }
+
+    def figure_of(chord: str, shape: str, marks: str = "") -> str:
+        notes = chord.split()
+        line = [notes[index] for index in shapes[shape]]
+        return f"{line[0]}16{marks}( {' '.join(line[1:])})"
+
+    # The chords of the figures: for the woodwinds (the first half of each bar), and
+    # for the violas (the second half). The last bar has the chord of twelve notes.
+    high = [
+        ("d'' fis'' a'' d''' fis'''", "up"), ("e'' gis'' b'' e''' gis'''", "broken"),
+        ("d'' g'' b'' d''' g'''", "down"), ("e'' a'' d''' e''' a'''", "up"),
+        ("fis'' a'' d''' fis''' a'''", "broken"), ("e'' gis'' b'' d''' e'''", "down"),
+        ("g'' b'' d''' g''' b'''", "up"),
+    ]  # fmt: skip
+    low = [
+        ("d' fis' a' d'' fis''", "down"), ("d' fis' a' d'' fis''", "up"),
+        ("b d' g' b' d''", "broken"), ("a cis' e' a' cis''", "down"),
+        ("a d' fis' a' d''", "up"), ("a d' fis' a' d''", "broken"),
+        ("b d' g' b' d''", "down"),
+    ]  # fmt: skip
+    winds = " ".join(
+        figure_of(chord, shape, r"\fff" if index == 0 else "") + " r2 |"
+        for index, (chord, shape) in enumerate(high)
+    )
+    strings = " ".join(
+        "r2 " + figure_of(chord, shape, r"\fff" if index == 0 else "") + " |"
+        for index, (chord, shape) in enumerate(low)
+    )
+    block.add("fl1", 1, winds + r" f'''1 |")
+    block.add("fl2", 1, winds + r" c'''1 |")
+    block.add("ob1", 1, octave(winds, -1) + r" g''1 |")
+    block.add("ob2", 1, octave(winds, -1) + r" d''1 |")
+    block.add("cl1", 1, octave(winds, -1) + r" cis'1 |")
+    block.add("cl2", 1, octave(winds, -1) + r" gis'1 |")
+    block.add("va", 1, strings + r" <cis' gis'>1:32 |")
+    block.add("vc", 1, octave(strings, -1) + r" <e, b,>1:32 |")
+
     bass, tenor, alto, top = lines(dyn(WARM_CHORDS, r"\fff"))
-    block.add("hn4 btbn bn1 bn2 cl3 tuba:-1 bn3:-1 cbcl:-1 cb:-1", 1, bass)
-    block.add("hn3 tbn2", 1, tenor)
-    block.add("hn2 tbn1", 1, alto)
-    block.add("hn1 tpt3", 1, top)
-    block.add("pno.lh", 1, double(dyn(WARM_BASS, r"\fff"), -1))
+    block.add("tuba:-1 bn3:-1 cbcl:-1 cb:-1", 1, bass)
+    block.add("btbn cl3", 1, with_last(bass, r"e,1"))
+    block.add("bn2", 1, with_last(bass, r"b,1"))
+    block.add("bn1", 1, with_last(bass, r"fis1"))
+    block.add("tbn2", 1, with_last(tenor, r"b,1"))
+    block.add("tbn1", 1, with_last(alto, r"fis1"))
+    block.add("tpt3", 1, with_last(top, r"cis'1"))
+    block.add(
+        "pno.lh", 1, with_last(double(dyn(WARM_BASS, r"\fff"), -1), r"<a,, e, b, fis>1\arpeggio")
+    )
     full = {4: r"<B C D B' C' D'>1", 2: r"<B C D B' C' D'>2"}
     rolled = {4: full[4] + r"\arpeggio", 2: full[2] + r"\arpeggio"}
-    block.add("pno.rh", 1, fill(dyn(WARM_CHORDS, r"\fff"), full))
-    block.add("harp.rh", 1, fill(dyn(WARM_CHORDS, r"\ff"), rolled))
-    block.add("acc.rh", 1, fill(dyn(WARM_CHORDS, r"\ff"), full))
+    block.add(
+        "pno.rh", 1,
+        with_last(fill(dyn(WARM_CHORDS, r"\fff"), full), r"<cis' gis' d'' g'' c'''>1\arpeggio"),
+    )  # fmt: skip
+    block.add(
+        "harp.rh", 1,
+        with_last(fill(dyn(WARM_CHORDS, r"\ff"), rolled), r"<fis cis' gis'>1\arpeggio"),
+    )  # fmt: skip
+    block.add("harp.lh", 1, rests(4, 4, 7) + r" <a,, e, b,>1\ff\arpeggio |")
+    block.add(
+        "acc.rh", 1,
+        with_last(fill(dyn(WARM_CHORDS, r"\ff"), full), r"<d'' g'' c''' f'''>1"),
+    )  # fmt: skip
     block.add(
         "timp", 1,
         fill(r"<d,>1\fff <d,>1 <g,>1 <a,>1 <d,>1 <a,>1 <g,>1 <a,>1", r"A4-> A2.:32 |"),
@@ -668,7 +747,8 @@ def _main_climax(work: Work) -> None:
     motto = r"d'1\fff-^ | e'1-^ | a'1-^\> ~ | a'1\mf |"
     block.add("tpt1 tpt2 tpt3 hn1 hn2 hn3 hn4 hn5 hn6 tbn1:-1 tbn2:-1", 2, motto)
     fade = r"X1:32\fff ~ | X1:32\> ~ | X1:32 ~ | X1:32\mf |"
-    block.add("vn1", 2, fill(r"<fis'' d'''>1", fade))
+    # The first violins stay in their highest register: E-flat 7 goes down to D7.
+    block.add("vn1", 2, fill(r"<fis''' d''''>1", fade))
     block.add("vn2", 2, fill(r"<a' fis''>1", fade))
     block.add("va", 2, fill(r"<d' a'>1", fade))
     block.add("vc", 2, fill(r"<d a>1", fade))
