@@ -201,5 +201,5 @@ make study
 - The style study measures open data from other authors. These data have their own licences.
   See [`research/README.md`](research/README.md).
 - The sample libraries have their own licences. See [`src/nightmusic/audio/library.py`](src/nightmusic/audio/library.py).
-- The piano of the audio master is the Salamander Grand Piano V3 by Alexander Holm
+- An optional second piano of the audio is the Salamander Grand Piano V3 by Alexander Holm
   (Creative Commons Attribution 3.0, <https://github.com/sfzinstruments/SalamanderGrandPiano>).

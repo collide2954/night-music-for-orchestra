@@ -140,26 +140,32 @@ A measurement compared two free pianos with one chord at each dynamic mark.
 | Muse Keys, grand piano | 190 MB | 28 dB. The marks f, ff, and fff are in a range of 2 dB. | 0.7 dB: a loud note has the tone of a medium note. |
 | Salamander Grand Piano V3 (Yamaha C5, 16 dynamic levels for each sampled key, 48 kHz, 24 bit) | 1.2 GB | 22 dB in the samples; 33 dB with the level table of this project | 3.4 dB from mp to ff, and 20 dB from ppp to mp: a soft note is dark, a loud note is bright. |
 
-The audio uses the Salamander Grand Piano. Its author is Alexander Holm. Its licence is Creative Commons Attribution 3.0.
-The module [`audio/piano.py`](../src/nightmusic/audio/piano.py) plays the samples:
+The owner of the project heard the same music with the two pianos and selected the piano of Muse Keys: "Old piano is better".
+A measurement is not a sound: the ears of the owner make this decision.
+Thus the audio uses the piano of Muse Keys.
+
+The piano has two roles:
+
+| Role | Where | Level |
+| --- | --- | --- |
+| The soloist | The interlude (from the mark W to the mark BB) | 3 dB louder. With this level, the piano of the toccata has the level of the full orchestra, and it is 3 dB below the chord of twelve notes. |
+| An instrument of the orchestra | All other sections | The level of Muse Keys with no change. |
+
+MuseScore renders the piano as a stem of its own. Thus the mix can give it the level of its role.
+The table of the measured levels has a row for the piano also (see "How the dynamic marks get balanced levels").
+
+The second piano stays in the project as an option.
+The module [`audio/piano.py`](../src/nightmusic/audio/piano.py) plays the samples of the Salamander Grand Piano (author: Alexander Holm; licence: Creative Commons Attribution 3.0):
 
 - The loudness of a note selects one of the 16 dynamic levels of its key.
 - The pedal marks of the score hold the notes. With no pedal, the damper stops the string when the key goes up. The highest keys have no dampers.
 - A staccato note is short. A new stroke on a key stops the old sound of that key.
 - The notes of a rolled chord start one after the other, from the lowest note.
 - The noise of a key that goes up and the noise of the pedal are in the sound at a low level.
-- Each stroke has a small difference of time (some milliseconds) and of loudness, as the strokes of a pianist have. The owner of the project heard the exact fast lines of the last chord as "rigid".
+- Each stroke has a small difference of time (some milliseconds) and of loudness, as the strokes of a pianist have.
+- As the soloist, this piano is at the front of the stage. As an instrument of the orchestra, it is at its seat in the hall model (on the left, at the back).
 
-The piano has two roles, and each role has its place in the hall:
-
-| Role | Where | Place | Level |
-| --- | --- | --- | --- |
-| The soloist | The interlude (from the mark W to the mark BB) | In the middle of the stage, at the front. The stereo picture is narrower than that of the samples. Some reverberation of the hall. | A chord at f is 6 dB louder than the same chord of the piano of Muse Keys: the balance of a concerto recording. |
-| An instrument of the orchestra | All other sections | At its seat: on the left, at the back. The hall model of the project gives it the direct sound, the first reflections, and the reverberation for that seat. | The level of the piano of Muse Keys. |
-
-A measurement showed why the two roles are necessary: with the level of the soloist, the piano in the heavy section of part 5 was as loud as the woodwinds, the brass, and the strings together. The owner of the project heard that the piano lines of the last chord did not blend.
-
-If the samples are not on the computer, the piano of Muse Keys plays. The variable `NIGHTMUSIC_PIANO=muse` selects that piano for a comparison.
+The variable `NIGHTMUSIC_PIANO=salamander` selects this piano.
 To get the samples: `git clone --depth 1 https://github.com/sfzinstruments/SalamanderGrandPiano.git .cache/samples/salamander`.
 
 ## How the master sets the loudness

@@ -96,10 +96,10 @@ def _trades(work: Work) -> None:
     block = Block(s, four, four, four, four)
 
     # ---- phrase 1: two bars of the piano, two bars of the woodwinds (a minor third higher)
-    block.add("pno.rh", 1, _with(CRICKET, r"\mp\leggiero") + " " + BIRD + " " + REST * 2)
+    block.add("pno.rh", 1, _with(CRICKET, r"\p\leggiero") + " " + BIRD + " " + REST * 2)
     block.add(
         "pno.lh", 1,
-        r"es8-.\mp r4 es8-. r4 bes,8-. r8 | bes,8-. r4 es8-. r4 as,8-. r8 | " + REST * 2,
+        r"es8-.\p r4 es8-. r4 bes,8-. r8 | bes,8-. r4 es8-. r4 as,8-. r8 | " + REST * 2,
     )  # fmt: skip
     winds = _with(tr(CRICKET, 3), r"\p") + " " + tr(BIRD, 3)
     block.add("fl1 fl2 fl3 perc2", 1, REST * 2 + winds)
@@ -113,11 +113,11 @@ def _trades(work: Work) -> None:
     # ---------------------------- phrase 2: one bar each, on A and on C, a little louder
     block.add(
         "pno.rh", 2,
-        _with(tr(CRICKET, 6), r"\mf") + " " + REST + tr(BIRD, 9) + " " + REST,
+        _with(tr(CRICKET, 6), r"\mp") + " " + REST + tr(BIRD, 9) + " " + REST,
     )  # fmt: skip
     block.add(
         "pno.lh", 2,
-        r"a8-.\mf r4 a8-. r4 e8-. r8 | " + REST + r"c8-. r4 c8-. r4 ges8-. r8 | " + REST,
+        r"a8-.\mp r4 a8-. r4 e8-. r8 | " + REST + r"c8-. r4 c8-. r4 ges8-. r8 | " + REST,
     )  # fmt: skip
     winds = REST + _with(tr(BIRD, 6), r"\mp") + " " + REST + octave(tr(CRICKET, 9), -1)
     block.add("fl1 fl2 fl3 perc2", 2, winds)

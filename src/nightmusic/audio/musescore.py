@@ -184,13 +184,15 @@ def silent_notes(work: Work) -> list[tuple[str, int, float]]:
     return found
 
 
-def continuous_slides(score: str) -> str:
+def continuous_slides(score: str, keyboard: bool = False) -> str:
     """Make each slide between two notes a continuous change of pitch.
 
     MuseScore plays a slide from a MusicXML file as a sequence of semitones.
-    The play style "portamento" gives the slide of a string player.
+    The play style "portamento" gives the slide of a string player. A keyboard
+    instrument cannot do this: its slide is on the white keys.
     """
-    return score.replace("<Glissando>", "<Glissando><glissandoStyle>portamento</glissandoStyle>")
+    style = "whitekeys" if keyboard else "portamento"
+    return score.replace("<Glissando>", f"<Glissando><glissandoStyle>{style}</glissandoStyle>")
 
 
 def mixer_tracks(score: str, names: list[str]) -> list[dict]:
@@ -229,7 +231,8 @@ def prepare_file(packed: Path, profile: str, names: list[str] | None = None) -> 
     for name, data in contents.items():
         if name.endswith(".mscx"):
             changed, count = play_techniques(data.decode("utf-8"))
-            changed = continuous_slides(changed)
+            keyboard = bool(names) and all(part.startswith(KEYBOARD_PARTS) for part in names)
+            changed = continuous_slides(changed, keyboard)
             contents[name] = changed.encode("utf-8")
             if names is not None:
                 tracks = mixer_tracks(changed, names)
@@ -293,23 +296,29 @@ STEMS = {
     "strings": ("strings",),
 }
 
-# The source of the piano sound: "salamander" (the samples of the Salamander Grand
-# Piano, with the code of `piano.py`) or "muse" (the piano of Muse Keys). The owner
-# of the project asked for a better piano sound. A measurement of the piano of Muse
-# Keys showed that its tone is almost the same from mp to fff (the share of the
-# sound above 2 kHz changes by 0.7 dB): a loud note is only a louder note. If the
-# samples of the other piano are not on the computer, the piano of Muse Keys plays.
-PIANO_SOURCE = "salamander"
-# The level of the piano in the mix, in dB. The piano has two roles (see `add_piano`).
-# As one instrument of the orchestra, it is at its seat: with -6 dB, a chord at f has
-# the level of the piano of Muse Keys. As the soloist of the interlude, it is at the
-# front of the stage, and it is 6 dB louder than the piano of Muse Keys (at the front,
-# -9 dB gives the level of that piano): this is the balance of a concerto recording.
-# A measurement of the heavy section of part 5 showed why the two roles are necessary:
+# The source of the piano sound: "muse" (the piano of Muse Keys, with MuseScore) or
+# "salamander" (the samples of the Salamander Grand Piano, with the code of
+# `piano.py`). The owner of the project asked for a better piano sound, compared the
+# two pianos in the same music, and selected the piano of Muse Keys: "Old piano is
+# better". The other piano stays as an option (the variable `NIGHTMUSIC_PIANO`).
+PIANO_SOURCE = "muse"
+# The piano has two roles. Between the marks of `PIANO_SOLO_MARKS` it is the soloist
+# of the interlude. In all other sections it is one instrument of the orchestra. A
+# measurement of the heavy section of part 5 showed why the two roles are necessary:
 # with the level of the soloist, the piano was as loud there as the woodwinds, the
 # brass, and the strings together.
+# - The piano of Muse Keys is a stem of its own (`PIANO_STEM`). As the soloist it is
+#   `PIANO_MUSE_SOLO_DB` louder: the balance of a concerto recording. A measurement
+#   of the interlude gave this value: with 3 dB, the piano of the toccata has the
+#   level of the full orchestra, and it is 3 dB below the chord of twelve notes.
+# - The piano of this project (see `add_piano`): at its seat in the orchestra, -6 dB
+#   gives a chord at f the level of the piano of Muse Keys. As the soloist it is at
+#   the front of the stage, 6 dB louder than that piano.
+PIANO_STEM = "piano"
+PIANO_MUSE_SOLO_DB = 3.0
 PIANO_GAIN_DB = -6.0
 PIANO_SOLO_GAIN_DB = -3.0
+KEYBOARD_PARTS = ("Piano", "Celesta")  # parts whose slides are on the white keys
 PIANO_SOLO_MARKS = ("W", "BB")  # the piano is the soloist from the first mark to the second
 PIANO_FADE_SECONDS = 2.0  # the time of the change between the two roles
 PIANO_PART_SECONDS = 120.0  # the code renders the piano in parts of this length
@@ -368,7 +377,10 @@ def add_piano(total: np.ndarray, work: Work, begin: float) -> None:
 
 
 # Level of each stem in the mix, in dB.
-STEM_GAIN_DB = {"woodwinds": 0.0, "brass": 0.0, "percussion": 0.0, "keys": 0.0, "strings": 0.0}
+STEM_GAIN_DB = {
+    "woodwinds": 0.0, "brass": 0.0, "percussion": 0.0, "keys": 0.0, "strings": 0.0,
+    PIANO_STEM: 0.0,
+}  # fmt: skip
 
 # The equalization of the mix. The loud passages of the mix (the loudest tenth of its
 # seconds) were compared with those of the five reference recordings of real
@@ -412,9 +424,15 @@ def render_stems(
     """
 
     def one(name: str) -> tuple[str, np.ndarray | None]:
-        families = STEMS[name]
-        players = {p.id for p in work.orchestra.players if p.family in families}
-        if own_piano():
+        # The piano is not in the stem of the keyboard instruments: it has its own stem,
+        # or the code of this project renders it.
+        if name == PIANO_STEM:
+            if own_piano():
+                return name, None
+            players = set(piano.PLAYERS)
+        else:
+            families = STEMS[name]
+            players = {p.id for p in work.orchestra.players if p.family in families}
             players -= set(piano.PLAYERS)
         text, names = musicxml.score(work, bars, players=players)
         if not names:
@@ -439,7 +457,7 @@ def render_stems(
         return name, audio
 
     with ThreadPoolExecutor(max_workers=PARALLEL_RENDERS) as pool:
-        results = list(pool.map(one, STEMS))
+        results = list(pool.map(one, [*STEMS, PIANO_STEM]))
     return {name: audio for name, audio in results if audio is not None}
 
 
@@ -517,6 +535,11 @@ def render_master(
         if name in stemtone.RIDES:
             audio, largest = stemtone.ride(audio, *stemtone.RIDES[name])
             print(f"musescore: stem {name}: largest slow level change {largest:+.1f} dB")
+        if name == PIANO_STEM:
+            # The piano of Muse Keys is louder while it is the soloist.
+            role = piano_role(work, begin, len(audio))
+            audio *= (10.0 ** (PIANO_MUSE_SOLO_DB * role / 20.0))[:, None]
+            print(f"musescore: piano: Muse Keys, {PIANO_MUSE_SOLO_DB:+.1f} dB as the soloist")
         total[: len(audio)] += np.float32(dsp.db(STEM_GAIN_DB[name])) * audio
     total[: len(others)] += np.float32(gain) * others
     if own_piano():

@@ -33,8 +33,8 @@ FAMILIES = ("woodwinds", "brass", "strings")
 # soft marks of these instruments were much too soft (celesta: the mark p was 30 dB
 # below the mark f; harp: 27 dB; xylophone: 37 dB).
 STRUCK = (
-    "harp", "celesta", "glockenspiel", "crotales", "vibraphone", "marimba", "xylophone",
-    "tubular bells",
+    "harp", "celesta", "piano", "glockenspiel", "crotales", "vibraphone", "marimba",
+    "xylophone", "tubular bells",
 )  # fmt: skip
 TEMPO = 120  # quarter notes in a minute: one bar of 4/4 is 2 s
 BAR_SECONDS = 2.0
