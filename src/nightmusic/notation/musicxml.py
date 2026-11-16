@@ -715,6 +715,13 @@ def score(
     return text, names
 
 
+def pedal_changes(work: Work, player_id: str) -> list[tuple[Fraction, str]]:
+    """Return the pedal marks of one player: the position, and "start" or "stop"."""
+    state = _State(work.orchestra.player(player_id).instruments[0])
+    _walk(work.music_of(player_id).children, Fraction(0), Fraction(1), 0, state, [])
+    return state.pedals
+
+
 def _pedal_marks(
     changes: list[tuple[Fraction, str]], begin: Fraction, end: Fraction
 ) -> list[tuple[Fraction, str]]:

@@ -36,7 +36,6 @@ from ..compose.tools import (
     tr,
 )
 from ..notation.work import Work
-from . import interlude
 
 # The warm theme (8 bars), in D major.
 WARM = r"""
@@ -99,7 +98,6 @@ BELLS_OFF_BEAT = r"r16 e'''8 a''' e''' a''' e''' a''' e''' a'''16 |"
 
 
 def write(work: Work) -> None:
-    interlude.write_light_piano(work)
     _warm_theme(work)
     _shimmer(work)
     _broad(work)
@@ -138,7 +136,6 @@ def _warm_theme(work: Work) -> None:
     structure.tempo(s.bar(1), 1, 52, "Adagio cantabile")
     eight = rests(4, 4, 8)
     block = Block(s, eight, eight)
-
     # ------------------------------------------------------------ the first time
     # Chords: D, D augmented | G-sharp half-diminished, A | D, F-sharp 7 |
     # French sixth on B-flat, A | D, D-sharp diminished 7 | G-sharp half-diminished,
@@ -253,6 +250,9 @@ def _warm_theme(work: Work) -> None:
         "perc1", 2,
         r"""\switch "suspended cymbals" R1*4 | c'1:32\ppp\< | c'2:32\pp\> r2\! | R1*2 |""",
     )  # fmt: skip
+    # After the toccata: the percussion players take the instruments of the bright half.
+    block.start("perc2", r'\switch "vibraphone"')
+    block.start("perc4", r'\switch "glockenspiel"')
     block.close()
 
 

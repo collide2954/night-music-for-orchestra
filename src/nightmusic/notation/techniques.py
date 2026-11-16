@@ -86,6 +86,10 @@ TECHNIQUES: dict[str, Technique] = {
         _T("subito", "sub.", italic=True, below=True),
         _T("pocoapoco", "poco a poco", italic=True, below=True),
         _T("niente", "niente", italic=True, below=True),
+        _T("martellato", "martellato", italic=True, below=True),
+        _T("brillante", "brillante", italic=True, below=True),
+        _T("leggiero", "leggiero", italic=True, below=True),
+        _T("senzaped", "senza Ped.", italic=True, below=True),
     ]
 }
 

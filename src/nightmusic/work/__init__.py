@@ -43,7 +43,6 @@ RITARDANDI = [
 FERMATAS = [
     ("D", 3.0),  # the end of part 1: the note A
     ("S", 3.0),  # the end of part 2: the note A-flat
-    ("X", 3.0),  # the end of part 3: the last notes of the piano, in E-flat minor
     ("EE", 3.0),  # the end of part 4: D major, very soft
 ]
 LAST_FERMATA = 5.0  # the last chord of the work

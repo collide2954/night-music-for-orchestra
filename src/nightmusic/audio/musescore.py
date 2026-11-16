@@ -34,7 +34,7 @@ import numpy as np
 from ..compose import stats
 from ..notation import musicxml, playback
 from ..notation.work import Work
-from . import dsp, reference, stemtone
+from . import dsp, piano, reference, stemtone
 
 PROFILE = "Muse Sounds"
 MASTER_VOLUME_DB = -18.0  # level of the master control of MuseScore for the render
@@ -278,6 +278,25 @@ STEMS = {
     "strings": ("strings",),
 }
 
+# The source of the piano sound: "salamander" (the samples of the Salamander Grand
+# Piano, with the code of `piano.py`) or "muse" (the piano of Muse Keys). The owner
+# of the project asked for a better piano sound. A measurement of the piano of Muse
+# Keys showed that its tone is almost the same from mp to fff (the share of the
+# sound above 2 kHz changes by 0.7 dB): a loud note is only a louder note. If the
+# samples of the other piano are not on the computer, the piano of Muse Keys plays.
+PIANO_SOURCE = "salamander"
+# The level of the piano in the mix, in dB. With -9 dB, a chord at f has the level
+# of the piano of Muse Keys. The piano is the soloist of the interlude: it is 6 dB
+# louder than that, as the solo piano of a concerto recording is.
+PIANO_GAIN_DB = -3.0
+
+
+def own_piano() -> bool:
+    """Return true if the code of this project renders the piano (not MuseScore)."""
+    source = os.environ.get("NIGHTMUSIC_PIANO", PIANO_SOURCE)
+    return source == "salamander" and piano.available()
+
+
 # Level of each stem in the mix, in dB.
 STEM_GAIN_DB = {"woodwinds": 0.0, "brass": 0.0, "percussion": 0.0, "keys": 0.0, "strings": 0.0}
 
@@ -325,6 +344,8 @@ def render_stems(
     def one(name: str) -> tuple[str, np.ndarray | None]:
         families = STEMS[name]
         players = {p.id for p in work.orchestra.players if p.family in families}
+        if own_piano():
+            players -= set(piano.PLAYERS)
         text, names = musicxml.score(work, bars, players=players)
         if not names:
             return name, None
@@ -424,6 +445,10 @@ def render_master(
             print(f"musescore: stem {name}: largest slow level change {largest:+.1f} dB")
         total[: len(audio)] += np.float32(dsp.db(STEM_GAIN_DB[name])) * audio
     total[: len(others)] += np.float32(gain) * others
+    if own_piano():
+        solo = piano.place(piano.render(work, begin, length / dsp.RATE))[:length]
+        total[: len(solo)] += np.float32(dsp.db(PIANO_GAIN_DB)) * solo
+        print(f"musescore: piano: Salamander Grand Piano, {PIANO_GAIN_DB:+.1f} dB")
     equalize(total)
     # The soft passages of Muse Sounds are much softer than those of the open
     # samples: the gain riding of the master can do more.

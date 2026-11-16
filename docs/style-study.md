@@ -449,13 +449,13 @@ The table shows how frequently a bar comes again with no change. Each value is a
 
 | Measure | Verklärte Nacht | New work, complete | New work, part 1 | New work, part 2 | New work, part 3 | New work, part 4 | New work, part 5 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Full texture: bar is the same as the bar before | 2.4 % | 0.7 % | 0.0 % | 1.9 % | 0.0 % | 0.0 % | 0.0 % |
-| Full texture: bar is the same as one of the 8 bars before | 5.1 % | 5.6 % | 0.0 % | 7.0 % | 0.0 % | 0.0 % | 20.5 % |
-| Full texture: bar is the same at a different pitch | 3.9 % | 0.2 % | 0.0 % | 0.0 % | 0.0 % | 0.6 % | 0.0 % |
-| Full texture: bar has the same rhythm with different notes | 8.7 % | 8.9 % | 0.0 % | 13.6 % | 1.3 % | 9.2 % | 7.2 % |
-| One voice: bar is the same as one of its 8 bars before | 10.2 % | 39.5 % | 26.1 % | 36.2 % | 38.6 % | 18.7 % | 63.8 % |
-| One voice: bar is the same at a different pitch | 8.5 % | 18.9 % | 2.3 % | 26.2 % | 0.6 % | 14.7 % | 12.0 % |
-| Bars in a block of 4 bars that is the same as an earlier block | 0.0 % | 2.8 % | 0.0 % | 1.9 % | 0.0 % | 0.0 % | 14.5 % |
+| Full texture: bar is the same as the bar before | 2.4 % | 0.8 % | 0.0 % | 1.9 % | 0.0 % | 0.0 % | 0.0 % |
+| Full texture: bar is the same as one of the 8 bars before | 5.1 % | 5.8 % | 0.0 % | 6.6 % | 0.0 % | 0.0 % | 20.5 % |
+| Full texture: bar is the same at a different pitch | 3.9 % | 0.2 % | 0.0 % | 0.0 % | 0.0 % | 0.8 % | 0.0 % |
+| Full texture: bar has the same rhythm with different notes | 8.7 % | 10.2 % | 0.0 % | 13.6 % | 8.3 % | 10.2 % | 7.2 % |
+| One voice: bar is the same as one of its 8 bars before | 10.2 % | 39.0 % | 26.1 % | 35.8 % | 32.4 % | 20.2 % | 61.8 % |
+| One voice: bar is the same at a different pitch | 8.5 % | 20.0 % | 2.3 % | 26.2 % | 23.7 % | 14.4 % | 12.5 % |
+| Bars in a block of 4 bars that is the same as an earlier block | 0.0 % | 3.0 % | 0.0 % | 1.9 % | 0.0 % | 0.0 % | 14.5 % |
 
 Data files: [`research/measured/repetition.csv`](../research/measured/repetition.csv), [`research/measured/work_repetition.csv`](../research/measured/work_repetition.csv)
 
@@ -465,17 +465,17 @@ The table measures the new work with the method of table M11. "The turn" is the 
 
 | Measure | Range of the profile "Transfigured" | Verklärte Nacht | New work, complete | New work, before the turn | New work, after the turn | New work, part 1 | New work, part 2 | New work, part 3 | New work, part 4 | New work, part 5 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Chords: share built from thirds | 0.62 to 0.72 | 68.0 % | 43.9 % | 38.6 % | 49.1 % | 48.4 % | 50.7 % | 10.9 % | 54.7 % | 34.2 % |
-| Chords: share with a semitone clash | 0.20 to 0.28 | 23.8 % | 50.3 % | 68.9 % | 32.0 % | 59.0 % | 61.8 % | 86.8 % | 30.8 % | 35.4 % |
-| Chords: share with a 3-semitone cluster | 0.00 to 0.02 | 1.0 % | 14.3 % | 25.7 % | 3.1 % | 13.3 % | 5.4 % | 70.3 % | 0.7 % | 9.6 % |
-| Chords: share in one whole-tone scale | 0.09 to 0.16 | 12.9 % | 1.6 % | 2.0 % | 1.2 % | 2.8 % | 2.7 % | 0.4 % | 1.7 % | 0.0 % |
-| Chords: mean pitch classes | - | 3.42 | 4.37 | 4.62 | 4.12 | 4.19 | 4.19 | 5.62 | 4.14 | 4.06 |
-| Share of sounding time: major and minor triads | - | 14.9 % | 14.8 % | 9.1 % | 22.7 % | 13.2 % | 10.7 % | 3.9 % | 24.1 % | 19.6 % |
-| Share of sounding time: vagrant chords | - | 17.5 % | 5.0 % | 7.3 % | 1.7 % | 11.8 % | 9.9 % | 0.0 % | 2.5 % | 0.2 % |
-| Share of sounding time: dominant chords | 0.05 to 0.07 | 5.7 % | 6.6 % | 5.4 % | 8.1 % | 1.0 % | 8.7 % | 0.3 % | 9.7 % | 4.6 % |
-| Share of sounding time: other seventh and ninth chords | - | 7.3 % | 8.1 % | 4.1 % | 13.5 % | 7.6 % | 3.7 % | 3.6 % | 18.4 % | 3.1 % |
-| Mean pitch classes that sound together | - | 2.82 | 3.76 | 3.64 | 3.93 | 3.36 | 3.32 | 4.43 | 4.11 | 3.54 |
-| Mean distinct pitch classes in one window | 7 to 8 | 7.57 | 4.75 | 4.80 | 4.69 | 4.39 | 5.50 | 3.48 | 4.90 | 4.24 |
+| Chords: share built from thirds | 0.62 to 0.72 | 68.0 % | 43.1 % | 38.3 % | 48.7 % | 48.4 % | 50.1 % | 13.2 % | 55.8 % | 33.9 % |
+| Chords: share with a semitone clash | 0.20 to 0.28 | 23.8 % | 51.0 % | 68.5 % | 30.3 % | 59.0 % | 62.4 % | 83.2 % | 28.0 % | 35.3 % |
+| Chords: share with a 3-semitone cluster | 0.00 to 0.02 | 1.0 % | 15.4 % | 25.3 % | 3.7 % | 13.3 % | 5.4 % | 65.8 % | 0.9 % | 9.6 % |
+| Chords: share in one whole-tone scale | 0.09 to 0.16 | 12.9 % | 1.5 % | 2.0 % | 0.9 % | 2.8 % | 2.7 % | 0.4 % | 1.3 % | 0.0 % |
+| Chords: mean pitch classes | - | 3.42 | 4.37 | 4.61 | 4.09 | 4.19 | 4.20 | 5.49 | 4.11 | 4.07 |
+| Share of sounding time: major and minor triads | - | 14.9 % | 15.0 % | 9.7 % | 23.5 % | 13.2 % | 10.7 % | 5.9 % | 25.8 % | 19.6 % |
+| Share of sounding time: vagrant chords | - | 17.5 % | 5.1 % | 7.3 % | 1.6 % | 11.8 % | 9.6 % | 0.7 % | 2.4 % | 0.3 % |
+| Share of sounding time: dominant chords | 0.05 to 0.07 | 5.7 % | 6.7 % | 5.4 % | 8.7 % | 1.0 % | 8.7 % | 0.0 % | 11.2 % | 4.3 % |
+| Share of sounding time: other seventh and ninth chords | - | 7.3 % | 7.1 % | 4.2 % | 11.8 % | 7.6 % | 3.7 % | 3.8 % | 17.0 % | 2.9 % |
+| Mean pitch classes that sound together | - | 2.82 | 3.77 | 3.69 | 3.89 | 3.36 | 3.32 | 4.61 | 4.10 | 3.54 |
+| Mean distinct pitch classes in one window | 7 to 8 | 7.57 | 4.96 | 5.11 | 4.71 | 4.39 | 5.50 | 4.54 | 5 | 4.24 |
 
 Data file: [`research/measured/work_harmony.csv`](../research/measured/work_harmony.csv)
 
@@ -485,55 +485,55 @@ Data file: [`research/measured/work_harmony.csv`](../research/measured/work_harm
 
 | Player | Share of the time | Range in use | Notes in the low third | Notes in the middle third | Notes in the high third | Techniques |
 | --- | --- | --- | --- | --- | --- | --- |
-| fl1 | 35.1 % | 94.6 % | 3.3 % | 43.5 % | 53.2 % | grace notes |
-| fl2 | 30.7 % | 75.7 % | 1.1 % | 45.0 % | 53.9 % | grace notes |
-| fl3 | 19.2 % | 76.5 % | 38.7 % | 59.4 % | 1.9 % | - |
-| ob1 | 28.3 % | 81.8 % | 20.7 % | 62.2 % | 17.1 % | - |
-| ob2 | 23.4 % | 81.8 % | 17.9 % | 63.2 % | 18.8 % | grace notes |
-| ob3 | 7.6 % | 78.1 % | 24.3 % | 67.8 % | 7.8 % | grace notes |
-| cl1 | 34.0 % | 72.7 % | 19.7 % | 66.3 % | 14.0 % | grace notes |
-| cl2 | 25.7 % | 65.9 % | 6.8 % | 73.1 % | 20.1 % | - |
-| cl3 | 23.4 % | 58.3 % | 63.1 % | 36.9 % | 0.0 % | grace notes |
-| cbcl | 22.4 % | 62.8 % | 16.3 % | 78.8 % | 4.9 % | grace notes |
-| bn1 | 37.4 % | 73.8 % | 24.5 % | 70.8 % | 4.7 % | - |
-| bn2 | 34.8 % | 64.3 % | 29.0 % | 68.3 % | 2.7 % | grace notes |
-| bn3 | 29.6 % | 81.8 % | 6.4 % | 64.6 % | 29.0 % | - |
-| hn1 | 49.9 % | 64.3 % | 0.2 % | 51.0 % | 48.9 % | desk: solo; mute: on |
-| hn2 | 41.9 % | 64.3 % | 2.2 % | 68.7 % | 29.1 % | mute: on |
-| hn3 | 43.6 % | 61.9 % | 0.2 % | 69.0 % | 30.8 % | mute: on |
-| hn4 | 40.6 % | 83.3 % | 9.4 % | 69.7 % | 20.9 % | mute: on |
-| hn5 | 13.9 % | 50.0 % | 0.0 % | 47.5 % | 52.5 % | - |
-| hn6 | 13.9 % | 50.0 % | 0.0 % | 60.2 % | 39.8 % | - |
-| tpt1 | 20.3 % | 68.8 % | 7.6 % | 75.8 % | 16.7 % | mute: on |
-| tpt2 | 19.0 % | 68.8 % | 16.3 % | 75.6 % | 8.0 % | - |
-| tpt3 | 15.8 % | 71.9 % | 29.7 % | 62.2 % | 8.1 % | - |
-| tbn1 | 24.1 % | 79.4 % | 38.9 % | 54.3 % | 6.9 % | - |
-| tbn2 | 23.9 % | 79.4 % | 46.4 % | 47.1 % | 6.5 % | - |
-| btbn | 21.8 % | 64.1 % | 50.7 % | 48.8 % | 0.5 % | - |
-| tuba | 22.9 % | 66.7 % | 55.0 % | 42.1 % | 2.9 % | - |
-| timp | 28.1 % | 81.8 % | 57.0 % | 36.7 % | 6.4 % | mallet: soft; tremolo |
-| perc1 | 9.1 % | - | - | - | - | tremolo |
-| perc2 | 46.0 % | 58.1 % | 23.5 % | 75.7 % | 0.8 % | bowed; motor: on |
-| perc3 | 13.8 % | - | - | - | - | tremolo |
-| perc4 | 16.2 % | - | - | - | - | tremolo |
-| perc5 | 6.1 % | - | - | - | - | - |
-| perc6 | 10.7 % | - | - | - | - | tremolo |
-| harp.rh | 31.4 % | 56.2 % | 0.0 % | 37.0 % | 63.0 % | harmonic |
-| harp.lh | 7.5 % | 38.8 % | 70.1 % | 29.9 % | 0.0 % | - |
-| cimb.rh | 3.1 % | 36.8 % | 0.0 % | 46.0 % | 54.0 % | tremolo |
-| cimb.lh | 15.8 % | 42.1 % | 64.9 % | 35.1 % | 0.0 % | tremolo |
-| mand | 10.3 % | 68.4 % | 23.8 % | 57.0 % | 19.2 % | tremolo |
-| cel.rh | 12.3 % | 58.3 % | 0.0 % | 27.6 % | 72.4 % | - |
+| fl1 | 38.1 % | 94.6 % | 2.5 % | 42.4 % | 55.1 % | - |
+| fl2 | 32.0 % | 75.7 % | 1.2 % | 44.1 % | 54.7 % | grace notes |
+| fl3 | 21.7 % | 88.2 % | 36.5 % | 60.5 % | 3.0 % | - |
+| ob1 | 31.9 % | 81.8 % | 19.7 % | 62.7 % | 17.6 % | - |
+| ob2 | 26.4 % | 81.8 % | 17.9 % | 63.9 % | 18.2 % | grace notes |
+| ob3 | 7.3 % | 71.9 % | 21.6 % | 69.1 % | 9.3 % | grace notes |
+| cl1 | 37.3 % | 72.7 % | 18.5 % | 67.6 % | 13.9 % | grace notes |
+| cl2 | 30.1 % | 68.2 % | 8.3 % | 72.1 % | 19.6 % | - |
+| cl3 | 26.4 % | 58.3 % | 62.4 % | 37.6 % | 0.0 % | grace notes |
+| cbcl | 25.5 % | 62.8 % | 16.5 % | 78.9 % | 4.6 % | grace notes |
+| bn1 | 42.2 % | 73.8 % | 24.0 % | 71.0 % | 4.9 % | - |
+| bn2 | 39.3 % | 64.3 % | 29.2 % | 67.8 % | 3.0 % | grace notes |
+| bn3 | 33.7 % | 81.8 % | 6.6 % | 65.6 % | 27.8 % | - |
+| hn1 | 52.4 % | 64.3 % | 0.2 % | 49.9 % | 49.9 % | desk: solo; mute: on |
+| hn2 | 48.5 % | 64.3 % | 2.1 % | 66.3 % | 31.6 % | mute: on |
+| hn3 | 49.1 % | 61.9 % | 0.2 % | 68.3 % | 31.5 % | mute: on |
+| hn4 | 47.0 % | 83.3 % | 9.1 % | 68.8 % | 22.2 % | mute: on |
+| hn5 | 15.6 % | 50.0 % | 0.0 % | 47.5 % | 52.5 % | - |
+| hn6 | 15.6 % | 50.0 % | 0.0 % | 60.2 % | 39.8 % | - |
+| tpt1 | 23.2 % | 68.8 % | 7.3 % | 74.8 % | 17.9 % | mute: on |
+| tpt2 | 21.8 % | 68.8 % | 15.7 % | 76.0 % | 8.4 % | - |
+| tpt3 | 17.9 % | 71.9 % | 28.8 % | 63.4 % | 7.8 % | - |
+| tbn1 | 27.6 % | 79.4 % | 37.8 % | 55.6 % | 6.6 % | - |
+| tbn2 | 27.5 % | 79.4 % | 46.2 % | 47.5 % | 6.3 % | - |
+| btbn | 24.7 % | 64.1 % | 50.0 % | 49.5 % | 0.5 % | - |
+| tuba | 26.1 % | 69.2 % | 54.7 % | 42.5 % | 2.8 % | - |
+| timp | 32.7 % | 81.8 % | 60.6 % | 33.6 % | 5.8 % | mallet: soft; tremolo |
+| perc1 | 9.7 % | - | - | - | - | tremolo |
+| perc2 | 44.3 % | 86.1 % | 24.2 % | 72.2 % | 3.6 % | motor: on |
+| perc3 | 14.1 % | - | - | - | - | tremolo |
+| perc4 | 18.1 % | - | - | - | - | tremolo |
+| perc5 | 8.2 % | - | - | - | - | - |
+| perc6 | 12.3 % | - | - | - | - | tremolo |
+| harp.rh | 34.6 % | 56.2 % | 0.0 % | 36.8 % | 63.2 % | harmonic |
+| harp.lh | 7.0 % | 38.8 % | 65.2 % | 34.8 % | 0.0 % | - |
+| cimb.rh | 3.4 % | 36.8 % | 0.0 % | 46.0 % | 54.0 % | tremolo |
+| cimb.lh | 17.7 % | 42.1 % | 64.9 % | 35.1 % | 0.0 % | tremolo |
+| mand | 11.5 % | 68.4 % | 23.8 % | 57.0 % | 19.2 % | tremolo |
+| cel.rh | 12.4 % | 51.7 % | 0.0 % | 28.6 % | 71.4 % | - |
 | cel.lh | 0.0 % | - | - | - | - | no notes |
-| pno.rh | 66.0 % | 66.7 % | 3.1 % | 82.5 % | 14.4 % | grace notes |
-| pno.lh | 47.2 % | 51.7 % | 83.3 % | 16.7 % | 0.0 % | grace notes; tremolo |
-| acc.rh | 55.6 % | 48.6 % | 0.0 % | 72.0 % | 28.0 % | - |
+| pno.rh | 59.9 % | 66.7 % | 2.8 % | 80.8 % | 16.4 % | - |
+| pno.lh | 38.7 % | 59.8 % | 77.3 % | 22.7 % | 0.0 % | grace notes; tremolo |
+| acc.rh | 62.4 % | 48.6 % | 0.0 % | 72.0 % | 28.0 % | - |
 | acc.lh | 0.0 % | - | - | - | - | no notes |
-| vn1 | 82.5 % | 84.0 % | 7.4 % | 78.8 % | 13.8 % | desk: solo; harmonic; mute: on; sul ponticello; sul tasto; tremolo; vibrato: none |
-| vn2 | 87.7 % | 78.0 % | 56.4 % | 43.3 % | 0.4 % | mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
-| va | 120.9 % | 85.0 % | 42.0 % | 53.9 % | 4.1 % | mute: on; sul ponticello; sul tasto; tremolo; vibrato: none |
-| vc | 108.7 % | 85.4 % | 48.3 % | 48.9 % | 2.8 % | desk: solo; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
-| cb | 76.7 % | 62.8 % | 52.8 % | 45.3 % | 1.9 % | mute: on; pizzicato; sul tasto; tremolo |
+| vn1 | 75.6 % | 84.0 % | 7.0 % | 79.1 % | 13.9 % | desk: solo; harmonic; mute: on; spiccato; sul ponticello; sul tasto; tremolo |
+| vn2 | 89.9 % | 78.0 % | 50.9 % | 48.8 % | 0.3 % | col legno; mute: on; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
+| va | 126.4 % | 85.0 % | 40.8 % | 55.3 % | 3.9 % | col legno; mute: on; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
+| vc | 121.8 % | 85.4 % | 49.9 % | 47.5 % | 2.5 % | desk: solo; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none |
+| cb | 83.6 % | 62.8 % | 50.1 % | 48.1 % | 1.8 % | mute: on; pizzicato; sul tasto; tremolo |
 
 Instruments in the list of the orchestra that have no notes: marimba, crotales, singing bowls, triangle, temple blocks, claves, guiro, cowbells, finger cymbals, wind chimes, waterphone.
 
@@ -1011,6 +1011,25 @@ The table gives devices of composers after 1900. The first edition of the study 
 
 Data file: [`research/tables/devices.csv`](../research/tables/devices.csv)
 
+### S16. The piano as a soloist with the orchestra
+
+The owner of the project asked for a piano interlude that is virtuosic, "almost like a small piano concerto". The table gives how the reference composers and two other composers write for a solo piano with an orchestra.
+
+| Device | Content | Parameters | Example | Source | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| Night music, then a fast scherzo with no warning | The slow movement starts with a calm chorale of muted strings, built from open fourths and fifths. Its middle part is a fast scherzo: "The wild, demonic scherzo, which makes up the middle portion of the movement, begins without warning" | Form: slow, fast, slow. The full concerto is an arch: fast, slow, fast, slow, fast | Bartók, Piano Concerto no. 2 (1931), second movement (Adagio, Presto, Adagio) | listeners-bartok2 | R |
+| The piano as a percussion instrument | "the solo piano is treated as a percussion instrument". The percussion is near the soloist: "The percussion (including timpani) must be placed directly next to the piano (behind the piano)" | A pianist: the second concerto is one of the most difficult works of the repertoire | Bartók, Piano Concertos no. 1 (1926) and no. 2 (1931) | listeners-bartok2; wiki-bartokpc1 | R |
+| The soloist starts with a cadenza | After some bars of the brass, the piano comes in with "an extended cadenza accompanied by percussion and harp". The cadenza gives the first theme: "a savage three-note motto" | The motto has three notes | Corigliano, Piano Concerto (1968), first movement | wise-coriglianopc | R |
+| Two opposed metamorphoses | In the development, the savage motto becomes a lyrical theme, and the lyrical theme becomes the savage motto: "each one becomes the other" |  | Corigliano, Piano Concerto (1968), first movement | wise-coriglianopc | R |
+| A loud peak, then a sudden pianissimo | The energy has its peak in a run of the piano. The run stops on the first note of the orchestra. Then a sudden pianissimo of the full orchestra changes the tempo and the mood |  | Corigliano, Piano Concerto (1968), first movement | wise-coriglianopc | R |
+| Irregular rhythm | "The rhythms throughout the work are highly irregular and meters change often" |  | Corigliano, Piano Concerto (1968) | wise-coriglianopc | R |
+| Tone clusters as structure | The main theme of the last movement is a fugato that "utilizes orchestral and piano tone-clusters as an integral part of its structure" |  | Corigliano, Piano Concerto (1968), fourth movement | wise-coriglianopc | R |
+| The cadenza carries the form | The cadenza is not an addition. It carries the recapitulation and goes to the climax of the movement. The orchestra comes back at the peak: "the orchestra announces its return, strings and timpani swelling furiously from p to ff" | The cadenza is about 5 minutes of a movement of 10 to 12 minutes | Prokofiev, Piano Concerto no. 2 (1913, new version 1923), first movement | wiki-prokofievpc2 | R |
+| Contrast makes the soloist clear | "Bring out the soloist as much as possible by contrast": in tone colour, in register, or in rhythm. The piano can use a register that the orchestra does not use. Rests, plucked basses, and short notes make the orchestra light |  | Belkin's notes on orchestral accompaniment | belkin-accompaniment | R |
+| Dialogue of equal partners | "Sometimes use dialogue, sometimes have each accompany the other". In loud passages, the soloist and the orchestra alternate: "This gives the illusion of a confrontation between equals". An orchestra that only murmurs in the background makes the result feeble |  | Belkin's notes; Beethoven, Piano Concerto no. 5, first movement, bar 304 and after | belkin-accompaniment | R |
+
+Data file: [`research/tables/concertante.csv`](../research/tables/concertante.csv)
+
 ### S11. Night music and melody from different regions of the world
 
 The table lists possible material from different regions. Most rows have the code K: the study did not read a source for them. The design stage must check the selected rows with primary sources.
@@ -1245,3 +1264,8 @@ Data file: [`research/tables/profiles.csv`](../research/tables/profiles.csv)
 | `wiki-metricmod` | Wikipedia. Metric modulation. Read 2026-11-15. <https://en.wikipedia.org/wiki/Metric_modulation> | read |
 | `wiki-spectral` | Wikipedia. Spectral music. Read 2026-11-15. <https://en.wikipedia.org/wiki/Spectral_music> | read |
 | `reference` | Standard reference knowledge. The study did not read a source for these rows. Check each row before critical use. | not read |
+| `listeners-bartok2` | The Listeners' Club. Bartók's Second Piano Concerto: Brilliance, Structure and Symmetry. 2022. Read 2026-11-15. <https://thelistenersclub.com/2022/08/08/bartoks-second-piano-concerto-brilliance-structure-and-symmetry/> | read |
+| `wiki-bartokpc1` | Wikipedia. Piano Concerto No. 1 (Bartók). Read 2026-11-15. <https://en.wikipedia.org/wiki/Piano_Concerto_No._1_(Bart%C3%B3k)> | read |
+| `wise-coriglianopc` | Wise Music Classical. John Corigliano: Concerto for Piano and Orchestra (1968). Page of the publisher with the programme note of the composer. Read 2026-11-15. <https://www.wisemusicclassical.com/work/26971/Concerto-for-Piano-and-Orchestra--John-Corigliano/> | read |
+| `wiki-prokofievpc2` | Wikipedia. Piano Concerto No. 2 (Prokofiev). Read 2026-11-15. <https://en.wikipedia.org/wiki/Piano_Concerto_No._2_(Prokofiev)> | read |
+| `belkin-accompaniment` | Belkin, Alan. Orchestration: Orchestral Accompaniment. Read 2026-11-15. <https://alanbelkinmusic.com/orchestration-orchestral-accompaniment/> | read |

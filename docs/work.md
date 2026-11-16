@@ -9,7 +9,7 @@ The style study ([`style-study.md`](style-study.md)) gives the measured values t
 | Item | Value |
 | --- | --- |
 | Form | One movement in five linked parts |
-| Length | 579 bars, 35.8 minutes |
+| Length | 539 bars, 31.9 minutes |
 | Tonic | D |
 | Orchestra | 99 players (see [`design/orchestra.toml`](../design/orchestra.toml)) |
 | Score | In C. Instruments that sound one or two octaves from the written note keep that difference. |
@@ -48,7 +48,8 @@ The note A-flat is the pivot of the work.
 | Chase theme | Mark G (bar 5), clarinet and violas | The walking theme, fast, in 7/8. Each bar is a minor third higher. |
 | Heavy riff | Mark M, low instruments | The notes of the motto as a riff of two bars in 7/8. The drums, the horns, and the high strings play in its gaps. |
 | Warm theme | Mark Y, cellos | A broad melody in D major. It starts with the motto in its shimmer state. |
-| Lonely melody of the piano | Mark W (bar 11), piano | The notes of the warm theme with the dark form of the motto, in bare octaves. It prepares the warm theme. |
+| Hammer theme of the piano | Mark W (bar 7), piano | The cell A-flat, A, D, E-flat (two tritones a semitone apart) in alternate hands, with accents in the rhythm 3 + 3 + 2. |
+| Theme in the forge | Mark X, piano | The notes of the warm theme with the dark form of the motto (D, E-flat, A-flat, G; B-flat, A-flat, G-flat, E-flat), in hammered octaves. |
 
 After the turn, the themes of the dark parts come back in major keys:
 
@@ -71,39 +72,39 @@ The column "Share" gives the position as a part of the length of the work.
 | Part | Mark | Bars | Time | Share | Tempo | Centre | Contents |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | | 1 to 8 | 0:00 | 0.000 | Molto lento, misterioso (quarter note = 44) | D | A low D. The walking theme and its mirror form. |
-| | A | 9 to 20 | 0:43 | 0.020 | | D | The long song (English horn). The motto as a "star" in the celesta. |
-| | B | 21 to 28 | 1:49 | 0.051 | | D | The chorale (muted horns). |
-| | C | 29 to 38 | 2:32 | 0.071 | | D, then A | The motto in the bass clarinet. The part stops on the note A. |
-| 2 | D | 39 to 50 | 3:32 | 0.099 | Poco più mosso, inquieto (66) | D, F, A-flat | The agitated theme three times, each time a minor third higher. |
-| | E | 51 to 62 | 4:16 | 0.119 | | D, then F | The first crest: the chorale in the full brass. Then a clarinet alone. |
-| | F | 63 to 78 | 5:01 | 0.140 | Un poco più tranquillo (60) | F | The song theme, two times. |
-| | G | 79 to 90 | 5:59 | 0.167 | Presto, alla bulgarese (eighth note = 276) | B | The chase: an ostinato of the motto notes, then the chase theme. |
-| | H | 91 to 106 | 6:17 | 0.176 | | D, F | The chase theme higher and louder. |
-| | J | 107 to 122 | 6:42 | 0.187 | | E | Sudden silence. Short calls above a soft ostinato. |
-| | K | 123 to 130 | 7:06 | 0.198 | | C, E-flat | The chase theme in the metres 7/8, 7/8, 9/8, and 5/8. |
-| | L | 131 to 142 | 7:18 | 0.204 | | F | Three voices with the same line, one bar apart. |
-| | M | 143 to 182 | 7:36 | 0.213 | Pesante e feroce (eighth note = 276) | B, D, F, A-flat | The heavy section: the low instruments hammer a riff of the motto notes. The riff has four forms, and it changes in each unit of two bars. The drums, the horns, and the high strings play in its gaps. In the last phrase, the horns answer the theme of the trumpets with its mirror form. Then hammer strokes of the full orchestra. |
-| | N | 183 to 194 | 8:37 | 0.241 | Pesante (72) | D, F, A-flat | The motto in long notes, three times. |
-| | O | 195 to 210 | 9:17 | 0.260 | Meno mosso, molto espressivo (58) | B | The song theme in the strings. Then it goes up by minor thirds. |
-| | P | 211 to 238 | 10:24 | 0.290 | Agitato (72 to 100) | A to C-sharp | The way up. The bass goes up by semitones. The calls of the brass come nearer together. |
-| | Q | 239 to 246 | 11:45 | 0.328 | Largamente, con tutta la forza (54) | D | The first climax: the chorale, fff. It stops on the motto as a chord. |
-| | R | 247 to 252 | 12:20 | 0.345 | Lento (50) | D, then A-flat | One stroke. Only the tritone and the note A-flat stay. |
-| 3 | S | 253 to 262 | 12:55 | 0.361 | Lento, immobile (60) | A-flat | A soft cluster of five semitones. A cycle of gongs. Calls of the night. |
-| | T | 263 to 274 | 13:55 | 0.389 | | A-flat | A melody with quarter-tones for the alto flute. |
-| | U | 275 to 284 | 15:07 | 0.422 | | A-flat | The motto as a distant chorale in four octaves: dark, then twilight. |
-| | V | 285 to 294 | 16:07 | 0.450 | | E-flat | One cello sings above a drone. The harmony goes to E-flat minor. |
-| | W | 295 to 328 | 17:07 | 0.478 | Lento, come un notturno (54) | E-flat | The piano interlude, first half. The piano takes the night music: the cluster as a figure, the calls, and a lonely melody in bare octaves (the warm theme with the dark form of the motto). The alto flute follows the piano. A distant music box in 7/8. |
-| 4 | X | 329 to 364 | 19:28 | 0.544 | Molto adagio, luminoso (52) | D | The turn: the piano goes from E-flat minor down one semitone to D major. Then the piano interlude, second half: bells, waves with the warm theme hidden in their long notes, and the chorale of part 3 with whole tones. The piano asks with the first two notes of the warm theme. |
-| | Y | 365 to 380 | 22:05 | 0.617 | Adagio cantabile (52) | D | The warm theme in the cellos, with notes that are not in the chords. Then a variation: horn 1 and the English horn have the plain theme, the violins have a decorated form, and the bass holds the note A. The chords go from one group of instruments to the subsequent group. |
-| | Z | 381 to 404 | 23:19 | 0.651 | Più mosso, scintillante (66) | F-sharp | The song theme in a major key, with interlocking bells. |
-| | AA | 405 to 428 | 24:46 | 0.692 | Largamente, con calore (58) | B-flat, then to D-flat | The warm theme in the four horns, then in the violins. |
-| | BB | 429 to 456 | 26:26 | 0.738 | Con moto (60 to 76) | D-flat | The way up: the walking theme in a major key. Calls with the light state of the motto. |
-| | CC | 457 to 468 | 28:05 | 0.784 | Maestoso, con tutta la forza (54) | D | The main climax: the warm theme, fff. |
-| | DD | 469 to 496 | 28:58 | 0.809 | Tranquillo (52) | D | Calm. The themes as soft solos. The chorale in D major. |
-| 5 | EE | 497 to 506 | 31:13 | 0.872 | Lento, come un'alba (50) | D | First light: the harmonic series on D, from the lowest note up. |
-| | FF | 507 to 522 | 32:01 | 0.894 | Andante, con moto (60) | D | The warm theme and the song theme at the same time. |
-| | GG | 523 to 558 | 33:05 | 0.924 | Con slancio (eighth note = 264) | D, F-sharp, B-flat, D | The rhythm of the heavy section comes back in D major. The riff, the calls of the brass, and the bells have the light state of the motto. Then hammer strokes on the chord of D major. |
-| | HH | 559 to 579 | 34:03 | 0.951 | Maestoso (50) | D | The chorale in D major, fff. The last chord. |
+| | A | 9 to 20 | 0:43 | 0.023 | | D | The long song (English horn). The motto as a "star" in the celesta. |
+| | B | 21 to 28 | 1:49 | 0.057 | | D | The chorale (muted horns). |
+| | C | 29 to 38 | 2:32 | 0.080 | | D, then A | The motto in the bass clarinet. The part stops on the note A. |
+| 2 | D | 39 to 50 | 3:32 | 0.111 | Poco più mosso, inquieto (66) | D, F, A-flat | The agitated theme three times, each time a minor third higher. |
+| | E | 51 to 62 | 4:16 | 0.134 | | D, then F | The first crest: the chorale in the full brass. Then a clarinet alone. |
+| | F | 63 to 78 | 5:01 | 0.157 | Un poco più tranquillo (60) | F | The song theme, two times. |
+| | G | 79 to 90 | 5:59 | 0.188 | Presto, alla bulgarese (eighth note = 276) | B | The chase: an ostinato of the motto notes, then the chase theme. |
+| | H | 91 to 106 | 6:17 | 0.197 | | D, F | The chase theme higher and louder. |
+| | J | 107 to 122 | 6:42 | 0.210 | | E | Sudden silence. Short calls above a soft ostinato. |
+| | K | 123 to 130 | 7:06 | 0.223 | | C, E-flat | The chase theme in the metres 7/8, 7/8, 9/8, and 5/8. |
+| | L | 131 to 142 | 7:18 | 0.229 | | F | Three voices with the same line, one bar apart. |
+| | M | 143 to 182 | 7:36 | 0.239 | Pesante e feroce (eighth note = 276) | B, D, F, A-flat | The heavy section: the low instruments hammer a riff of the motto notes. The riff has four forms, and it changes in each unit of two bars. The drums, the horns, and the high strings play in its gaps. In the last phrase, the horns answer the theme of the trumpets with its mirror form. Then hammer strokes of the full orchestra. |
+| | N | 183 to 194 | 8:37 | 0.271 | Pesante (72) | D, F, A-flat | The motto in long notes, three times. |
+| | O | 195 to 210 | 9:17 | 0.292 | Meno mosso, molto espressivo (58) | B | The song theme in the strings. Then it goes up by minor thirds. |
+| | P | 211 to 238 | 10:24 | 0.326 | Agitato (72 to 100) | A to C-sharp | The way up. The bass goes up by semitones. The calls of the brass come nearer together. |
+| | Q | 239 to 246 | 11:45 | 0.369 | Largamente, con tutta la forza (54) | D | The first climax: the chorale, fff. It stops on the motto as a chord. |
+| | R | 247 to 252 | 12:20 | 0.387 | Lento (50) | D, then A-flat | One stroke. Only the tritone and the note A-flat stay. |
+| 3 | S | 253 to 262 | 12:55 | 0.405 | Lento, immobile (60) | A-flat | A soft cluster of five semitones. A cycle of gongs. Calls of the night. |
+| | T | 263 to 274 | 13:55 | 0.437 | | A-flat | A melody with quarter-tones for the alto flute. |
+| | U | 275 to 284 | 15:07 | 0.474 | | A-flat | The motto as a distant chorale in four octaves: dark, then twilight. |
+| | V | 285 to 294 | 16:07 | 0.506 | | E-flat | One cello sings above a drone. The harmony goes to E-flat minor. |
+| | W | 295 to 316 | 17:07 | 0.537 | Risvegliando (60), then Allegro barbaro, martellato (eighth note = 264) | A-flat; then D, E-flat, A-flat | The piano interlude: a small piano concerto. One note of the night comes faster and faster, until it is a hammer. Then the hammer theme of the piano (the cell A-flat, A, D, E-flat; the Bulgarian rhythm 3 + 3 + 2), and the answer of the full orchestra. |
+| | X | 317 to 324 | 17:54 | 0.562 | | E-flat, then G-flat | The theme in the forge: the piano hammers the warm theme with the dark form of the motto, in octaves. Then the horns have it, and the piano runs above them. (The other sections of the interlude are not written at this time: the trades, the cadenza, and the loud peak before the turn.) |
+| 4 | Y | 325 to 340 | 18:09 | 0.570 | Adagio cantabile (52) | D | The warm theme in the cellos, with notes that are not in the chords. Then a variation: horn 1 and the English horn have the plain theme, the violins have a decorated form, and the bass holds the note A. The chords go from one group of instruments to the subsequent group. |
+| | Z | 341 to 364 | 19:23 | 0.608 | Più mosso, scintillante (66) | F-sharp | The song theme in a major key, with interlocking bells. |
+| | AA | 365 to 388 | 20:51 | 0.654 | Largamente, con calore (58) | B-flat, then to D-flat | The warm theme in the four horns, then in the violins. |
+| | BB | 389 to 416 | 22:30 | 0.706 | Con moto (60 to 76) | D-flat | The way up: the walking theme in a major key. Calls with the light state of the motto. |
+| | CC | 417 to 428 | 24:09 | 0.758 | Maestoso, con tutta la forza (54) | D | The main climax: the warm theme, fff. |
+| | DD | 429 to 456 | 25:03 | 0.786 | Tranquillo (52) | D | Calm. The themes as soft solos. The chorale in D major. |
+| 5 | EE | 457 to 466 | 27:17 | 0.856 | Lento, come un'alba (50) | D | First light: the harmonic series on D, from the lowest note up. |
+| | FF | 467 to 482 | 28:05 | 0.881 | Andante, con moto (60) | D | The warm theme and the song theme at the same time. |
+| | GG | 483 to 518 | 29:10 | 0.915 | Con slancio (eighth note = 264) | D, F-sharp, B-flat, D | The rhythm of the heavy section comes back in D major. The riff, the calls of the brass, and the bells have the light state of the motto. Then hammer strokes on the chord of D major. |
+| | HH | 519 to 539 | 30:07 | 0.945 | Maestoso (50) | D | The chorale in D major, fff. The last chord. |
 
 ## Proportions
 
@@ -112,13 +113,13 @@ The form plan ([`design/form.toml`](../design/form.toml)) uses these proportions
 
 | Event | Plan (share of the time) | The work |
 | --- | --- | --- |
-| First climax | 0.39 | 0.328 to 0.345 |
-| Start of part 3 | 0.400 | 0.361 |
-| Point most distant from the tonic | 0.48 | 0.422 to 0.450 |
-| Turn to D major | 0.54 | 0.544 |
-| Main climax | 0.77 | 0.784 to 0.809 |
-| Start of part 5 | 0.855 | 0.872 |
-| Last arrival on the tonic | 0.975 | 0.975 |
+| First climax | 0.39 | 0.369 to 0.387 |
+| Start of part 3 | 0.400 | 0.405 |
+| Point most distant from the tonic | 0.48 | 0.474 to 0.506 |
+| Turn to D major | 0.54 | 0.570 |
+| Main climax | 0.77 | 0.758 to 0.786 |
+| Start of part 5 | 0.855 | 0.856 |
+| Last arrival on the tonic | 0.975 | 0.972 |
 
 ## Targets and the work
 
@@ -128,10 +129,10 @@ The loudness of a moment is the loudest dynamic mark in effect at that moment.
 
 | Value | Target | The work |
 | --- | --- | --- |
-| Share of the time: p or softer | 0.55 to 0.68 | 0.53 |
-| Share of the time: mp or mf | 0.08 to 0.14 | 0.17 |
-| Share of the time: f or louder | 0.18 to 0.28 | 0.30 |
-| Bars for each tempo mark | 5 to 13 | 10.0 |
+| Share of the time: p or softer | 0.55 to 0.68 | 0.48 |
+| Share of the time: mp or mf | 0.08 to 0.14 | 0.16 |
+| Share of the time: f or louder | 0.18 to 0.28 | 0.36 |
+| Bars for each tempo mark | 5 to 13 | 10.2 |
 
 The share of the soft levels is a little below the target, and the share of the loud levels is above the target.
 The causes are the heavy sections of parts 2 and 5, and the ending with the full orchestra, fff.

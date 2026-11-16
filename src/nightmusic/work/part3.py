@@ -94,7 +94,7 @@ def write(work: Work) -> None:
     _lonely_melody(work)
     _distant_chorale(work)
     _drone_and_song(work)
-    interlude.write_night_piano(work)
+    interlude.write(work)
 
 
 def _night_begins(work: Work) -> None:

@@ -592,6 +592,15 @@ def _sourced_specs() -> list[TableSpec]:
             ],
         ),
         TableSpec(
+            "S16. The piano as a soloist with the orchestra",
+            TABLES_DIR / "concertante.csv",
+            [
+                "The owner of the project asked for a piano interlude that is virtuosic, "
+                '"almost like a small piano concerto". The table gives how the reference '
+                "composers and two other composers write for a solo piano with an orchestra.",
+            ],
+        ),
+        TableSpec(
             "S11. Night music and melody from different regions of the world",
             TABLES_DIR / "world.csv",
             [

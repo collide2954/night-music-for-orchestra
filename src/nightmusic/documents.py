@@ -30,14 +30,14 @@ ROOT = Path(__file__).resolve().parents[2]
 FILES = (ROOT / "docs" / "work.md", ROOT / "README.md")
 
 # The first rehearsal mark of each part. Part 1 starts before the first mark.
-PART_MARKS = {"1": "", "2": "D", "3": "S", "4": "X", "5": "EE"}
+PART_MARKS = {"1": "", "2": "D", "3": "S", "4": "Y", "5": "EE"}
 # The events of the form plan: the first bar and, for an event with a length, the bar
 # after it. "HH+11" is bar 12 of the section at the mark HH.
 EVENTS = {
     "First climax": ("Q", "R"),
     "Start of part 3": ("S", ""),
     "Point most distant from the tonic": ("U", "V"),
-    "Turn to D major": ("X", ""),
+    "Turn to D major": ("Y", ""),
     "Main climax": ("CC", "DD"),
     "Start of part 5": ("EE", ""),
     "Last arrival on the tonic": ("HH+11", ""),

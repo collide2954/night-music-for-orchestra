@@ -1,522 +1,743 @@
-"""The piano interlude across the turn (the marks W and X).
+"""The piano interlude: a small piano concerto before the turn (the marks W to Z).
 
-The owner of the project asked for an interlude with the piano as its focus,
-of about 5 minutes. The owner selected its place and its sound:
+The owner of the project asked for an interlude with the piano as its focus.
+The first form of the interlude was slow and soft. The owner rejected it:
+the interlude must be virtuosic, "almost like a small piano concerto", and
+it must give the work energy and direction. The owner selected: a toccata
+and a cadenza, and a loud peak before a sudden soft arrival of D major.
 
-- Across the turn. The interlude starts in the night music of part 3, in
-  E-flat minor. The piano makes the turn to D major. Then the piano gives the
-  warm theme to the cellos.
-- The piano leads. A soft halo answers: string harmonics, celesta,
-  vibraphone, gongs, and one or two solo winds.
+What the interlude does for the form of the work: the night music of part 3
+has no pulse and no direction. The interlude changes this state into energy.
+It starts in the night, it becomes a fast toccata, and its cadenza goes to
+the edge of D major. Thus the turn of the work is the result of a fight, not
+only a change of colour. The turn is near the golden section of the work.
 
-Material of the first half (mark W, the end of part 3):
+Material:
 
-- The cluster of the night (five adjacent semitones around A-flat) is now a
-  figure of the piano: fast notes into a held note. Each time, the figure is
-  different. At the end it has only one note, A-flat.
-- The calls of the night, as a piano plays them.
-- A lonely melody in bare octaves. Its notes are the warm theme with the
-  dark form of the motto (D, E-flat, A-flat, G; B-flat, A-flat, G-flat,
-  E-flat). The listener does not know the warm theme at this time: the
-  melody prepares it, and hides it. The alto flute follows the piano one
-  half bar later, with small differences (heterophony).
-- A distant music box in 7/8: the song theme of part 2, hidden. The eighth
-  note of the 7/8 is the eighth note of the triplets before it (a tempo
-  modulation).
+- The cell of the toccata is A-flat, A, D, E-flat: two tritones a semitone
+  apart. The dark form of the motto (D, E-flat, A-flat) is in this cell, and
+  the same form on A-flat (A-flat, A, D). The four forms of the cell on
+  A-flat, B, D, and F are in one scale: the scale of the chase of part 2.
+- The awakening (mark W, bars 1 to 6): the note A-flat of the night cluster
+  comes again and again, faster and faster, until it is a hammer.
+- The hammer theme (mark W, from bar 7): the hands alternate in sixteenth
+  notes, with accents in the Bulgarian rhythm 3 + 3 + 2. The highest notes
+  go D, E-flat, A-flat, and then up to A: the motto, and the step that the
+  turn makes later. The bass has the motto in long steps.
+- The theme in the forge (mark X): the warm theme with the dark form of the
+  motto (D, E-flat, A-flat, G; B-flat, A-flat, G-flat, E-flat), in hammered
+  octaves. After the turn, the cellos have the same notes in their light
+  form. The piano and the orchestra change roles: one has the theme, the
+  other decorates it.
 
-Material of the second half (mark X, the start of part 4):
-
-- The turn. Three voices of the piano move. The bass goes from E-flat down
-  to D. The note A-flat (now G-sharp) goes up to A. The note G-flat (now
-  F-sharp) stays: it is the common note of the two chords.
-- Waves. Each wave of the piano goes up to one long note. These long notes
-  are the notes of the warm theme, each in a different octave: the theme is
-  there, but hidden. The harmony moves by major thirds (D, F-sharp, B-flat),
-  as the keys of part 4 do it later.
-- The chorale of part 3 comes back, changed: its semitones are now whole
-  tones (the light form of the motto on A: A, B, E, then D).
-- The piano asks a question with the first two notes of the warm theme. The
-  cellos answer with the theme (mark Y).
-
-The cellos do not play in the interlude: thus their theme has a new sound.
+The orchestra is a partner, not a background: it answers, it takes the
+themes, and it trades fast figures with the piano.
 """
 
 from __future__ import annotations
 
-from ..compose.tools import Block, rests, scatter
+from collections.abc import Sequence
+
+from ..compose.tools import Block, double, octave, rests, run
 from ..notation.work import Work
 
-NIGHT_TEMPO = 54
-BOX_TEMPO = 81  # the eighth note of the 7/8 = the eighth note of a triplet at 54
-LIGHT_TEMPO = 52
-WAVE_TEMPO = 60
-PEDAL = r"\sustainOff\sustainOn"  # a change of the sustain pedal
+# The scale of the chase (semitone, whole tone), with the note names of the dark half.
+OCT = "as a b c d es f ges"
+TOCCATA = 264  # eighth notes in one minute
+EIGHT = (8, 8, (3, 3, 2))  # the metre of the toccata: 3 + 3 + 2 eighth notes
+REST = "R1 | "  # one bar of 8/8
+# The snare drum: sixteenth notes with accents on the beat groups 3 + 3 + 2.
+SNARE = "c'16 c' c' c' c' c' c'-> c' c' c' c' c' c'-> c' c' c' | "
+
+# A note for one sixteenth of a bar: its pitch (or chord) and its marks. None is a rest.
+Token = tuple[str, str] | None
 
 
-def write_night_piano(work: Work) -> None:
-    """Mark W: the piano takes the night music. E-flat minor."""
-    _entry(work)
-    _lonely_octaves(work)
-    _music_box(work)
-    _stillness(work)
+def sixteenths(tokens: Sequence[Token], grouping: tuple[int, ...] = (6, 6, 4)) -> str:
+    """Return one bar of sixteenth notes. Adjacent rests in one beat group become one rest."""
+    if sum(grouping) != len(tokens):
+        raise ValueError(f"{len(tokens)} sixteenth notes for the grouping {grouping}")
+    parts: list[str] = []
+    position = 0
+    for size in grouping:
+        group = tokens[position : position + size]
+        index = 0
+        while index < size:
+            token = group[index]
+            if token is not None:
+                parts.append(f"{token[0]}16{token[1]}")
+                index += 1
+                continue
+            count = 1
+            while index + count < size and group[index + count] is None:
+                count += 1
+            # A rest that starts between two eighth notes goes to the subsequent eighth note.
+            if index % 2 == 1:
+                parts.append("r16")
+                index, count = index + 1, count - 1
+            for length, text in ((6, "r4."), (4, "r4"), (2, "r8"), (1, "r16")):
+                while count >= length:
+                    parts.append(text)
+                    index, count = index + length, count - length
+        position += size
+    return " ".join(parts) + " |"
 
 
-def write_light_piano(work: Work) -> None:
-    """Mark X: the piano makes the turn to D major."""
-    _turn(work)
-    _waves(work)
-    _chorale_of_light(work)
-    _question(work)
+def hammer(
+    low: Sequence[Token], high: Sequence[Token], grouping: tuple[int, ...] = (6, 6, 4)
+) -> tuple[str, str]:
+    """Return one bar in which the hands alternate: the right hand, then the left hand.
+
+    The left hand plays `low` on the eighth notes. The right hand plays
+    `high` on the sixteenth notes between them.
+    """
+    left: list[Token] = []
+    right: list[Token] = []
+    for bottom, top in zip(low, high, strict=True):
+        left += [bottom, None]
+        right += [None, top]
+    return sixteenths(right, grouping), sixteenths(left, grouping)
+
+
+def marked(note: str, marks: str = "") -> Token:
+    return (note, marks)
+
+
+def accents(note: str, marks: str = "->", first: str = "") -> str:
+    """Return one bar of 8/8 with a short note on the first eighth of each beat group."""
+    return f"{note}8{marks}{first} r4 {note}8{marks} r4 {note}8{marks} r8 |"
+
+
+def slurred(notes: str) -> str:
+    """Return a run of notes with a slur from its first note to its last note."""
+    items = notes.split()
+    return f"{items[0]}( {' '.join(items[1:])})"
+
+
+def write(work: Work) -> None:
+    """Write the interlude: the marks W and X (the marks Y and Z are not written yet)."""
+    _awakening(work)
+    _hammer_theme(work)
+    _forge(work)
 
 
 # ------------------------------------------------------------------ mark W
 
 
-def _entry(work: Work) -> None:
-    """Mark W, bars 1 to 10: the piano comes out of the last note of the cello."""
-    structure = work.structure
-    s = work.section(10, 4, 4)
-    structure.mark(s.bar(1), "W")
-    structure.tempo(s.bar(1), 1, NIGHT_TEMPO, "Lento, come un notturno")
-    block = Block(s, rests(4, 4, 10))
-
-    block.add("pno.lh", 1, scatter(10, 4, 4, {
-        (1, 1): r"<es,, es,>2\pp\lv\sustainOn",
-        (1, 3): r"\grace { ges16( g as a } bes2)\ppp",
-        (3, 2): r"\grace { bes16( a as g } ges2.)\sustainOff\sustainOn",
-        (5, 2.5): r"\grace { g16( as a } bes4.)",
-        (6, 1): r"<es,, es,>1\pp\lv\sustainOff\sustainOn",
-        (7, 2): r"<ges g as a bes>2.\ppp\arpeggio",
-        (9, 1): r"\grace { ges16( g as } a2)\sustainOff\sustainOn",
-        (10, 3): r"\grace { bes16( a } as2)",
-    }))  # fmt: skip
-    block.add("pno.rh", 1, scatter(10, 4, 4, {
-        (2, 4): r"\ottava #1 d''''8\pp( es''''8) \ottava #0",
-        (4, 2): r"\grace { d'''16 } es'''8-.\p es'''8-. es'''4--",
-        (6, 2): r"as''8\pp as''8 \tuplet 3/2 { as''8 as'' as'' } as''16 as'' as'' as'' | as''4--",
-        (8, 3): r"<as'' as'''>4\p( <g'' g'''>4)",
-        (9, 2.5): r"d'''8\pp( es'''4)",
-    }))  # fmt: skip
-
-    # The last chord of the strings (mark V) continues and goes to nothing.
-    block.add("vn2", 1, r"ges'1\> ~ | ges'2 r2\! | R1*8 |")
-    block.add("va", 1, r"<bes es'>1\> ~ | <bes es'>2 r2\! | R1*8 |")
-    block.add("cb", 1, r"es,1\> ~ | es,2 r2\! | R1*8 |")
-
-    # The cycle of the gongs continues, but more slowly.
-    block.add("perc1", 1, scatter(10, 4, 4, {(1, 1): r"c'1\pp\lv"}))
-    block.add("perc3", 1, scatter(10, 4, 4, {(4, 1): r"es'1\p\lv", (9, 3): r"g2\pp\lv"}))
-    block.add("perc2", 1, scatter(10, 4, 4, {(7, 1): r"<bes d'>1\pp\lv"}))
-    block.close()
-
-
-def _lonely_octaves(work: Work) -> None:
-    """Mark W, bars 11 to 18: the lonely melody in bare octaves. The alto flute follows."""
-    s = work.section(8, 4, 4)
-    block = Block(s, rests(4, 4, 8))
-
-    # The two hands are three octaves apart. Between the phrases, the left hand
-    # plays the cluster figure.
-    block.add("pno.rh", 1, scatter(8, 4, 4, {
-        (1, 1): r"d''2\p( es''2 ~ | es''2.)",
-        (3, 2): r"\grace { bes''16 } as''2\p( g''4 ~ | g''2)",
-        (5, 3): r"bes''4\mp( as''4 | ges''2. es''4 ~ | es''1)",
-    }))  # fmt: skip
-    block.add("pno.lh", 1, scatter(8, 4, 4, {
-        (1, 1): r"d,2\p\sustainOff\sustainOn( es,2 ~ | es,2.)",
-        (2, 4): r"\grace { ges16( g as a } bes4)\ppp",
-        (3, 2): r"\grace { bes,16 } as,2\p\sustainOff\sustainOn( g,4 ~ | g,2)",
-        (4, 3): r"\grace { bes16( a as g } ges2)\ppp",
-        (5, 3): r"bes,4\mp\sustainOff\sustainOn( as,4 | ges,2. es,4 ~ | es,1)",
-        # Triplets: their eighth note is the eighth note of the music box.
-        (8, 1): r"\tuplet 3/2 { as8\ppp\sustainOff\sustainOn( a bes } \tuplet 3/2 { a8 as g } "
-                r"\tuplet 3/2 { as8 a bes } \tuplet 3/2 { a8 as g) }",
-    }))  # fmt: skip
-
-    # The alto flute follows the melody one half bar later, with quarter-tones.
-    block.add("fl2", 1, scatter(8, 4, 4, {
-        (1, 3): r"d'2\pp\espr( | es'2.)",
-        (3, 4): r"as'4\pp( ~ | as'4 aseh'4 g'2)",
-        (6, 2): r"bes'4\p( as'4 ges'4 ~ | ges'4 geseh'4 es'2 ~ | es'2\> ~ es'4)\ppp",
-    }))  # fmt: skip
-
-    # The halo: natural harmonics of the first violins (the notes G and D of the
-    # night scale), the vibraphone with a bow, a gong, the celesta.
-    block.add(
-        "vn1", 1,
-        r"R1*2 | <g'' d'''>1\ppp\flageolet\< ~ | <g'' d'''>1\pp ~ | <g'' d'''>1 ~ | "
-        r"<g'' d'''>1\> ~ | <g'' d'''>1 ~ | <g'' d'''>2 r2\! |",
-        r"\senzasord\ord\nonvib",
-    )  # fmt: skip
-    block.add("perc2", 1, scatter(8, 4, 4, {
-        (2, 1): r"es''1\pp\bowed\lv", (4, 1): r"g''1\pp\lv", (7, 1): r"es''1\pp\lv",
-    }))  # fmt: skip
-    block.add("perc3", 1, scatter(8, 4, 4, {(3, 1): r"as1\p\lv", (7, 1): r"es1\pp\lv"}))
-    block.add("harp.lh", 1, scatter(8, 4, 4, {(1, 1): r"es,,4\pp", (5, 3): r"bes,,4\pp"}))
-    block.add("cel.rh", 1, scatter(8, 4, 4, {(8, 2): r"d''''8\ppp( es''''8)"}))
-    block.close()
-
-
-def _music_box(work: Work) -> None:
-    """Mark W, bars 19 to 26: a distant music box in 7/8. The song theme of part 2, hidden."""
-    structure = work.structure
-    s = work.section(8, 7, 8, (2, 2, 3))
-    structure.tempo(
-        s.bar(1), 1, BOX_TEMPO, "Poco mosso, come un carillon lontano (croma = croma della terzina)"
-    )
-    rest = "R1*7/8 |"
-    block = Block(s, rests(7, 8, 8))
-
-    block.add(
-        "pno.rh", 1,
-        r"bes''8-.\pp bes''8-. as''16( ges'' as''8) f''4-- es''8-. | "
-        r"f''8-. ges''8-. f''8-. es''8-. des''4. | "
-        r"ges''8-. ges''8-. f''16( es'' f''8) des''4-- ces''8-. | "
-        r"des''8-. es''8-. des''8-. ces''8-. bes'4. | "
-        r"bes'8-.\< des''8-. es''8-. f''8-. ges''4-- as''8-. | "
-        r"bes''8-. as''8-. bes''8-. ces'''8-. des'''4.\mp | "
-        r"ces'''8-.\> bes''8-. as''16( ges'' as''8) f''4-- d''8-. | "
-        r"es''4.--\pp ~ es''2 |",
-    )  # fmt: skip
-    block.add(
-        "pno.lh", 1,
-        r"<es bes>2..\ppp\lv\sustainOff | " + rest + r" <es bes es'>2..\ppp\lv | "
-        r"r4 r4 \grace { ges16( g as } a4.)\ppp | <es bes>2..\ppp\lv | " + rest
-        + r" <es, bes,>2..\ppp\lv | r4 r4 \grace { g16( } as4.)\ppp |",
-    )  # fmt: skip
-    # The celesta doubles some bars of the tune one octave higher: the colour changes.
-    block.add(
-        "cel.rh", 1,
-        rest * 2 + r"ges'''8-.\ppp ges'''8-. f'''16( es''' f'''8) des'''4-- ces'''8-. | "
-        r"des'''8-. es'''8-. des'''8-. ces'''8-. bes''4. | " + rest
-        + r" bes'''8-.\ppp as'''8-. bes'''8-. ces''''8-. des''''4. | " + rest * 2,
-    )  # fmt: skip
-    block.add(
-        "perc4", 1,
-        rest + r"r4 r4 c'16\ppp c' c' c' c'8 | " + rest * 2
-        + r"c'16\ppp c' c' c' c'8 r8 r4. | " + rest * 3,
-    )  # fmt: skip
-    block.add(
-        "vn2", 1,
-        r"es'8\ppp\pizz r8 r4 r4. | " + rest + r" bes8 r8 r4 r4. | " + rest
-        + r" es'8 r8 r4 r4. | " + rest + r" ges'8 r8 r4 r4. | " + rest,
-    )  # fmt: skip
-    block.close()
-
-
-def _stillness(work: Work) -> None:
-    """Mark W, bars 27 to 34: the end of the melody. The piano stops on three notes."""
-    structure = work.structure
-    s = work.section(8, 4, 4)
-    structure.tempo(s.bar(1), 1, NIGHT_TEMPO, "Tempo del notturno")
-    structure.change(s.bar(7), 1, "poco rit.")
-    structure.arrive(s.bar(8), 4, 44)
-    block = Block(s, rests(4, 4, 8))
-
-    block.add("pno.rh", 1, scatter(8, 4, 4, {
-        (1, 1): r"bes''2.\p( as''4 ~ | as''2 ges''2 ~ | ges''1 | es''1)",
-        (6, 1): r"ges'4--\ppp ges'4-- ges'2--",
-        (8, 1): r"ges'1--\ppp\fermata",
-    }))  # fmt: skip
-    block.add("pno.lh", 1, scatter(8, 4, 4, {
-        (1, 1): r"bes,2.\p\sustainOn( as,4 ~ | as,2 ges,2 ~ | ges,1 | es,1)",
-        (5, 2): r"\grace { g16( as } a2.)\ppp\sustainOff\sustainOn",
-        (7, 1): r"\grace { g16( } as1)\ppp\sustainOff\sustainOn",
-        (8, 1): r"<es,, es,>1\ppp\fermata",
-    }))  # fmt: skip
-    block.add("fl2", 1, scatter(8, 4, 4, {
-        (2, 3): r"bes'2\pp( | as'2 ges'2 ~ | ges'2 es'2 ~ | es'1)\>",
-        (7, 3): r"ges'2\ppp( ~ | ges'1)\fermata",
-    }))  # fmt: skip
-    block.add("vn2", 1, r"R1*5 | ges'1\ppp\arco ~ | ges'1 ~ | ges'1\fermata |", r"\consord")
-    block.add("perc1", 1, scatter(8, 4, 4, {(5, 1): r"c'1\ppp\lv"}))
-    block.add("perc3", 1, scatter(8, 4, 4, {(4, 1): r"es1\pp\lv"}))
-    block.add("cel.rh", 1, scatter(8, 4, 4, {(5, 4): r"d''''8\ppp( es''''8)"}))
-    block.close()
-
-
-# ------------------------------------------------------------------ mark X
-
-
-def _turn(work: Work) -> None:
-    """Mark X, bars 1 to 6: the turn. The piano goes from E-flat minor to D major."""
+def _awakening(work: Work) -> None:
+    """Mark W, bars 1 to 6: one note of the night becomes a hammer."""
     structure = work.structure
     s = work.section(6, 4, 4)
-    structure.mark(s.bar(1), "X")
-    structure.tempo(s.bar(1), 1, LIGHT_TEMPO, "Molto adagio, luminoso")
+    structure.mark(s.bar(1), "W")
+    structure.tempo(s.bar(1), 1, 60, "Risvegliando")
+    structure.change(s.bar(3), 1, "accelerando molto")
+    structure.arrive(s.bar(6), 4, 126)
     block = Block(s, rests(4, 4, 6))
+    four = (4, 4, 4, 4)
 
-    # The bass: E-flat to D. The middle: G-sharp to A. The bell: G-flat is now F-sharp.
-    block.add(
-        "pno.lh", 1,
-        r"<d,, d,>2\pp\lv\sustainOff\sustainOn gis2\pp( | a1) | "
-        r"<d, a,>1\ppp\lv\sustainOff\sustainOn | "
-        r"r2 <d a fis'>2\pp\arpeggio | <d,, d,>1\pp\lv\sustainOff\sustainOn | R1 |",
-    )  # fmt: skip
-    block.add(
-        "pno.rh", 1,
-        r"fis'4--\ppp fis'4-- fis'2-- | r2 <a'' a'''>2\pp\lv | d'''4\pp( e''' gis''' a''') | "
-        r"R1 | r2 <fis'' a'' e'''>2\pp\arpeggio | R1 |",
-    )  # fmt: skip
+    # The note A-flat, slower than a pulse, then faster and faster (a written
+    # acceleration). Then the hands alternate, and the cluster of the night opens:
+    # first its semitones, then the notes D and E-flat of the cell.
+    def bar(low: list[str], high: str, level: str, strong: str = "") -> tuple[str, str]:
+        bottom = [marked(note, "->" if note == strong else "") for note in low]
+        bottom[0] = (bottom[0][0], bottom[0][1] + level)
+        top = [marked(high)] * 8
+        top[0] = (high, level)
+        return hammer(bottom, top, four)
 
-    # The halo comes in after the piano: it holds the notes that the piano played.
-    block.add("vn2", 1, r"R1 | fis'1\ppp\< ~ | fis'1\pp ~ | fis'1 ~ | fis'1 ~ | fis'1 |",
-              r"\senzasord\ord\vib")  # fmt: skip
-    block.add("va", 1, r"R1*2 | <a d'>1\ppp ~ | <a d'>1 ~ | <a d'>1 ~ | <a d'>1 |",
-              r"\senzasord\ord\vib")  # fmt: skip
-    block.add("cb", 1, r"R1*2 | d,1\ppp ~ | d,1 ~ | d,1 ~ | d,1 |", r"\senzasord")
-    block.add(
-        "vn1",
-        1,
-        r"R1*3 | <a'' d'''>1\ppp\flageolet\< ~ | <a'' d'''>1\pp ~ | <a'' d'''>1 |",
+    low_a, low_b, low_c = "<as,, as,>", "<a,, a,>", "<d, d>"
+    bars = [
+        bar(["as"] * 8, "<g a>", r"\mp"),
+        bar(["<ges as>"] * 8, "<a bes>", r"\mf\<"),
+        bar(
+            [low_a, "<ges as>", "<ges as>", low_a, "<ges as>", "<ges as>", low_a, "<ges as>"],
+            "<a bes d'>",
+            r"\f",
+            low_a,
+        ),
+    ]
+    last_low = [low_a, "<as d'>", "<as d'>", low_b, "<as d'>", "<as d'>", low_c, "<as d'>"]
+    last_high = ["<a d' es'>"] * 3 + ["<d' es' as'>"] * 3 + ["<es' as' a'>"] * 2
+    last = hammer(
+        [
+            marked(note, "->" + (r"\ff\<" if i == 0 else "") if "," in note else "")
+            for i, note in enumerate(last_low)
+        ],
+        [marked(note, r"\ff\<" if i == 0 else "") for i, note in enumerate(last_high)],
+        four,
     )
-    block.add("perc2", 1, r"R1 | r2 <d' fis' a'>2\pp\mallets\motoron\lv | R1*4 |")
-    block.add("cel.rh", 1, r"R1 | r2 a'''2\pp\lv | r4 d''''4\ppp( e'''' gis'''' | a''''2.) r4 | "
-              r"R1*2 |")  # fmt: skip
-    block.add("perc4", 1, r"""\switch "glockenspiel" R1 | r2 a''2\pp\lv | R1*3 | """
-              r"r4 a'''2.\pp\lv |")  # fmt: skip
-    block.add("harp.lh", 1, r"R1*2 | <d, a, d>1\pp\arpeggio\lv | R1*3 |")
-    block.add("harp.rh", 1, r"R1*4 | r2 <a' d'' fis''>2\pp\arpeggio\lv | R1 |")
-    block.add("hn1", 1, r"R1*3 | r2 a2\ppp\< ~ | a1\pp ~ | a1\> |")
-    block.add("fl2", 1, r"""\switch "flute" R1*6 |""")
+    block.add(
+        "pno.lh",
+        1,
+        r"as2\pp--\senzaped as4-- as4-- | "
+        r"as8\<-- as-- as-- as-- \tuplet 3/2 { as8 as as } \tuplet 3/2 { as8 as as } | "
+        + " ".join(left for _right, left in bars)
+        + " "
+        + last[1],
+    )
+    block.add("pno.rh", 1, "R1*2 | " + " ".join(right for right, _left in bars) + " " + last[0])
+
+    # The last chord of the strings (mark V) continues and goes to nothing.
+    block.add("vn2", 1, r"ges'1\> ~ | ges'2 r2\! | R1*4 |")
+    block.add("va", 1, r"<bes es'>1\> ~ | <bes es'>2 r2\! | R1*4 |")
+    block.add(
+        "cb",
+        1,
+        r"es,1\> ~ | es,2 r2\! | R1*2 | as,,4->\mf\pizz\senzasord r4 as,,4-> r4 | "
+        r"as,,4->\f r8 a,,4-> r8 d,4-> |",
+    )
+    block.add(
+        "vc",
+        1,
+        r"R1*4 | as,4->\mf\pizz\tutti\senzasord r4 as,4-> r4 | "
+        r"as,4->\f r8 a,4-> r8 d4-> |",
+    )
+
+    # The percussion and the low brass grow with the piano.
+    block.add("perc1", 1, r"c'1\pp\lv | R1*5 |")
+    block.add("timp", 1, r"R1*2 | as,1:32\ppp\< ~ | as,1:32 ~ | as,1:32\p\< ~ | as,1:32\mf |")
+    block.add("perc3", 1, r"""\switch "bass drum" R1*4 | c'1:32\pp\< ~ | c'1:32\mp |""")
+    block.add("perc6", 1, r"""\switch "tom-toms" R1*5 | r2 a16\mp\< a c' c' e' e' e' e'\f |""")
+    block.add("perc5", 1, r"""\switch "snare drum" R1*6 |""")
+    block.add("perc2", 1, r"""\switch "xylophone" R1*6 |""")
+    stopped = r"R1*4 | A1\p\<\stopped ~ | A1\ff |"
+    for player, note in (("hn1", "es'"), ("hn2", "d'"), ("hn3", "a"), ("hn4", "as")):
+        block.add(player, 1, stopped.replace("A", note))
+    for player, note in (("tbn1", "a"), ("tbn2", "d"), ("btbn", "as,"), ("tuba", "as,,")):
+        block.add(player, 1, rf"R1*5 | {note}1\mp\< |")
+    # The woodwinds run up to the first chord of the toccata.
+    rush = "r2 r4 " + slurred(run(OCT, "d''", 8, 32)) + " |"
+    block.add("fl1 fl2 cl2", 1, "R1*5 | " + rush.replace("d''32(", r"d''32\f\<("))
+    block.add(
+        "fl3", 1, r"""\switch "piccolo" R1*5 | """ + octave(rush, 1).replace("32(", r"32\f\<(")
+    )
+    block.start("fl2", r'\switch "flute"')
     block.add("cl1", 1, r"""\switch "clarinet in B-flat" R1*6 |""")
     block.add("ob2", 1, r"""\switch "oboe" R1*6 |""")
     block.add("bn2", 1, r"""\switch "bassoon" R1*6 |""")
     block.close()
 
 
-# One bar of the waves: (shape, the notes for the left hand, the notes for the right
-# hand, the long note, the dynamic mark or ""). The shapes are:
-# A: the left hand goes up (beat 1), the right hand goes up (beat 2), the long note (beats 3, 4).
-# B: as A, but the right hand goes up for two beats. The long note is on beat 4.
-# C: the long note first (beats 1, 2), then the hands go down (beats 3, 4).
-# F: as A, but the long note is a full chord above a bass octave (the loudest bar).
-WAVES = [
-    ("A", "d, a, d e fis a", "d' e' fis' a' b' cis''", "d''", r"\pp"),
-    ("C", "d, a,", "cis''' a'' fis'' e'' cis'' a' | fis' e' cis' a fis e", "e'''", ""),
-    ("A", "d, a, e gis b e'", "gis' a' b' cis'' e'' fis''", "gis''", ""),
-    ("A", "a,, e, a, d e a", "d' e' a' d'' e'' fis''", "a'''", r"\p"),
-    ("C", "b,, g, d", "a'' fis'' d'' b' a' g' | fis' d' b a g d", "b''", r"\mp"),
-    ("A", "b,, fis, b, d fis a", "d' fis' a' b' d'' fis''", "a''", ""),
-    (
-        "B",
-        "fis,, cis, fis, ais, cis fis",
-        "ais cis' fis' gis' ais' cis'' | fis'' gis'' ais'' cis''' dis''' eis'''",
-        "fis'''",
-        r"\pp",
-    ),
-    (
-        "C",
-        "fis,, cis, fis,",
-        "ais'' gis'' fis'' eis'' cis'' ais' | gis' fis' eis' cis' ais gis",
-        "cis'''",
-        "",
-    ),
-    (
-        "B",
-        "bes,, f, bes, d f bes",
-        "d' e' f' a' bes' d'' | e'' f'' a'' bes'' c''' d'''",
-        "e'''",
-        r"\p",
-    ),
-    ("C", "bes,, f,", "bes'' a'' f'' d'' bes' a' | f' d' bes a f d", "d'''", ""),
-    ("A", "bes,, fis, bes, d fis bes", "bes d' e' fis' bes' d''", "fis''", r"\mp"),
-    ("F", "a,, e, a, d fis a", "d' fis' a' d'' fis'' a''", "<d''' fis''' a''' d''''>", r"\f"),
-    ("A", "a,, e, a, d e g", "b d' e' g' b' d''", "e'''", r"\mp"),
-    ("C", "a,, e, a,", "b'' g'' e'' cis'' b' g' | e' cis' b g e cis", "cis'''", ""),
+# The hammer theme. For each bar: the bass note of the accents, the note that the left
+# hand plays between the accents, and the two chords of the right hand. In each beat
+# group the right hand plays the first chord, and the second chord on its last note.
+HAMMER_BARS = [
+    # Phrase 1: the cell on A-flat. The highest notes go D, E-flat, A-flat, A.
+    ("d,", "as,", "<as d'>", "<a es'>"),
+    ("es,", "a,", "<a es'>", "<d' as'>"),
+    ("as,", "d", "<d' as'>", "<es' a'>"),
+    # Phrase 2: a minor third higher (the cell on B). The highest notes go F, G-flat, B, C.
+    ("f,", "b,", "<b f'>", "<c' ges'>"),
+    ("ges,", "c", "<c' ges'>", "<f' b'>"),
+    ("b,", "f", "<f' b'>", "<ges' c''>"),
 ]
 
 
-def _wave(shape: str, left: str, right: str, long: str, mark: str) -> tuple[str, str]:
-    """Return one bar of a wave: the music of the right hand and of the left hand."""
-    if shape in ("A", "F"):
-        first = left.split()
-        tail = rf"<{first[0]} {first[2]}>2" if shape == "F" else "r2"
-        low = rf"\tuplet 6/4 {{ {first[0]}16{mark}{PEDAL}( {' '.join(first[1:])}) }} r4 {tail} |"
-        notes = right.split()
-        top = rf"\ottava #1 {long}2) \ottava #0" if shape == "F" else rf"{long}2)"
-        high = rf"r4 \tuplet 6/4 {{ {notes[0]}16( {' '.join(notes[1:])} }} {top} |"
-        return high, low
-    if shape == "B":
-        first = left.split()
-        low = rf"\tuplet 6/4 {{ {first[0]}16{mark}{PEDAL}( {' '.join(first[1:])}) }} r4 r2 |"
-        one, two = (part.split() for part in right.split("|"))
-        high = (
-            rf"r4 \tuplet 6/4 {{ {one[0]}16( {' '.join(one[1:])} }} "
-            rf"\tuplet 6/4 {{ {two[0]}16 {' '.join(two[1:])} }} {long}4) |"
+def _hammer_bar(bass: str, fill: str, first: str, second: str, level: str) -> tuple[str, str]:
+    """Return one bar of the hammer theme: the right hand and the left hand."""
+    low_octave = f"<{bass}, {bass}>"
+    low = [
+        marked(low_octave, "->" + level),
+        marked(fill),
+        marked(fill),
+        marked(low_octave, "->"),
+        marked(fill),
+        marked(fill),
+        marked(low_octave, "->"),
+        marked(fill),
+    ]
+    high = [
+        marked(first, level),
+        marked(first),
+        marked(second, "->"),
+        marked(first),
+        marked(first),
+        marked(second, "->"),
+        marked(first),
+        marked(second, "->"),
+    ]
+    return hammer(low, high)
+
+
+def _hammer_theme(work: Work) -> None:
+    """Mark W, bars 7 to 22: the hammer theme, and the answer of the full orchestra."""
+    structure = work.structure
+    s = work.section(16, *EIGHT)
+    structure.tempo(s.bar(1), 1, TOCCATA, "Allegro barbaro, martellato", unit="8")
+    four = REST * 4
+    block = Block(s, four, four, four, four)
+
+    # ------------------------------------------------------- phrase 1: the piano alone
+    right, left = zip(
+        *[
+            _hammer_bar(*bar, r"\f" if number == 0 else "")
+            for number, bar in enumerate(HAMMER_BARS[:3])
+        ],
+        strict=True,
+    )
+    down = run(OCT, "a''", 16, down=True)
+    block.add(
+        "pno.rh", 1, " ".join(right) + " " + slurred(down).replace("a''16(", r"a''16\<(") + " |"
+    )
+    block.add("pno.lh", 1, " ".join(left) + " " + slurred(octave(down, -2)) + " |")
+    # The first chord: all four notes of the cell, in the full orchestra.
+    chord = {
+        "tuba": "d,,",
+        "btbn": "d,",
+        "tbn2": "as,",
+        "tbn1": "d",
+        "hn4": "as",
+        "hn3": "a",
+        "hn2": "d'",
+        "hn1": "es'",
+        "tpt3": "a'",
+        "tpt2": "d''",
+        "tpt1": "es''",
+        "bn3": "d,",
+        "bn2": "as,",
+        "bn1": "d",
+        "cl3": "as",
+        "cl1": "d'",
+        "cl2": "as'",
+        "ob2": "a'",
+        "ob1": "es''",
+        "fl2": "a''",
+        "fl1": "d'''",
+        "fl3": "es''''",
+        "vn1": "<d'' a''>",
+        "vn2": "<es' as'>",
+        "va": "<d a>",
+    }
+    for player, note in chord.items():
+        marks = r"\senzasord\ord" if player in ("vn1", "vn2", "va") else ""
+        marks += r"\open" if player.startswith("hn") else ""
+        block.add(player, 1, rf"{note}8-^\ff{marks} r4 r4. r4 | " + REST * 3)
+    block.add("perc1", 1, r"""\switch "crash cymbals" c'8\ff\lv r4 r4. r4 | """ + REST * 3)
+    block.add("perc3", 1, r"c'8->\ff r4 r4. r4 | " + REST * 3)
+    # The low strings and the timpani have the bass of the accents: the motto in long steps.
+    bass = " ".join(
+        accents(note, "->", r"\f" if number == 0 else "")
+        for number, note in enumerate(["d,", "es,", "as,"])
+    )
+    block.add("timp", 1, bass + " " + REST)
+    block.add("vc", 1, bass + " " + REST)
+    block.add("cb", 1, bass + " " + REST)
+    block.add(
+        "perc2",
+        1,
+        " ".join(
+            accents(note, "->", r"\f" if number == 0 else "")
+            for number, note in enumerate(["d''", "es''", "as''"])
         )
-        return high, low
-    one, two = (part.split() for part in right.split("|"))
-    high = rf"{long}2{mark}( \tuplet 6/4 {{ {one[0]}16 {' '.join(one[1:])}) }} r4 |"
-    low = rf"<{left}>2{PEDAL}\arpeggio r4 \tuplet 6/4 {{ {two[0]}16( {' '.join(two[1:])}) }} |"
-    return high, low
-
-
-def _waves(work: Work) -> None:
-    """Mark X, bars 7 to 22: waves of the piano. The warm theme is in the long notes, hidden."""
-    structure = work.structure
-    s = work.section(16, 4, 4)
-    structure.tempo(s.bar(1), 1, WAVE_TEMPO, "Poco più mosso, fluido")
-    block = Block(s, rests(4, 4, 16))
-
-    right, left = [], []
-    for wave in WAVES:
-        high, low = _wave(*wave)
-        right.append(high)
-        left.append(low)
-    # The last two bars: the long notes only, above the last waves of the left hand.
-    right.append(r"b''2\mp( a''2) |")
-    left.append(
-        r"\tuplet 6/4 { a,,16\sustainOff\sustainOn( e, a, b, d g) } r4 "
-        r"\tuplet 6/4 { a,,16\sustainOff\sustainOn( e, a, cis e g) } r4 |"
+        + " r4. r4. a''8-> r8 |",
     )
-    right.append(r"fis''2\>( e''2)\pp |")
-    left.append(r"<a,, a,>1\pp\lv\sustainOff\sustainOn |")
-    block.add("pno.rh", 1, " ".join(right))
-    block.add("pno.lh", 1, " ".join(left))
-
-    # The flute: the lonely melody of part 3, now with major intervals.
-    block.add("fl1", 1, scatter(16, 4, 4, {
-        (4, 3): r"a'4\p\dolce( b'4 | cis''2.)",
-        (8, 2): r"fis''4\p( gis''4 ais''4)",
-        (9, 1): r"bes''2\pp ~ bes''4",
-        (12, 1): r"a'4\mf( b'4 cis''2 | \grace { d''16 } cis''4 d''4 cis''4 b'4 | "
-                 r"a'2.\>) r4\!",
-    }))  # fmt: skip
     block.add(
-        "hn1",
+        "perc4",
         1,
-        r"a1\pp ~ | a1 ~ | a1\> ~ | a1\ppp | R1*2 | cis'1\pp ~ | cis'1 | d'1 ~ | d'1 | R1 | "
-        r"a1\mf\> ~ | a1 ~ | a1\pp ~ | a1 | R1 |",
+        accents("c'", "", r"\mf")
+        + " "
+        + accents("d'", "")
+        + " "
+        + accents("c'", "")
+        + " c'16 c' d' d' c' c' d' d' c' c' d' d' c' d' c' d' |",
     )
 
-    # The strings hold the harmony. The first violins: natural harmonics, and their
-    # highest register for the keys that have no natural harmonics.
-    block.add(
-        "vn1", 1,
-        r"<a'' d'''>1\pp\flageolet ~ | <a'' d'''>1 | <b'' e'''>1\flageolet ~ | <b'' e'''>1 | "
-        r"<d''' a'''>1\flageolet ~ | <d''' a'''>1 | <ais''' cis''''>1\ppp\sultasto ~ | "
-        r"<ais''' cis''''>1 | <bes''' d''''>1\pp ~ | <bes''' d''''>1 ~ | <bes''' d''''>1\< | "
-        r"<a''' d''''>1\mf\ord\> ~ | <a''' d''''>1 | <e''' a'''>1\pp\flageolet ~ | "
-        r"<e''' a'''>1 ~ | <e''' a'''>1 |",
-        r"\div",
-    )  # fmt: skip
-    block.add(
-        "vn2", 1,
-        r"<fis' a'>1\pp( ~ | <fis' a'>1 | <gis' b'>1 | <e' a'>1) | <fis' a'>1( ~ | <fis' a'>1) | "
-        r"<fis' ais'>1\ppp( | <eis' ais'>1) | <f' bes'>1\pp( | <f' a'>1 | <fis' bes'>1\< | "
-        r"<fis' a'>1\mp\>) | <e' g'>1\pp( ~ | <e' g'>1 | <d' g'>2 <cis' fis'>2 | <cis' e'>1) |",
-    )  # fmt: skip
-    block.add(
-        "va", 1,
-        r"<d' e'>1\pp( | <cis' e'>1 | <d' e'>1 | <d' e'>2 <cis' e'>2) | <b d'>1( ~ | <b d'>1) | "
-        r"<ais cis'>1\ppp( ~ | <ais cis'>1) | <d' e'>1\pp( | <bes d'>1 ~ | <bes d'>1\< | "
-        r"<a d'>1\mp\>) | <b d'>1\pp( | <b cis'>1 | <a b>1 | <g a>1) |",
-    )  # fmt: skip
-    block.add("cb", 1, scatter(16, 4, 4, {
-        (1, 1): r"d,4\pp\pizz", (3, 1): r"d,4", (4, 1): r"a,,4", (5, 1): r"b,,4",
-        (7, 1): r"fis,,4\ppp", (9, 1): r"bes,,4\pp", (12, 1): r"a,,4\mp", (13, 1): r"a,,4\pp",
-        (16, 1): r"a,,4",
-    }))  # fmt: skip
-
-    # Bells.
-    block.add("cel.rh", 1, scatter(16, 4, 4, {
-        (2, 3): r"r16 cis''''8\ppp a''' cis'''' a'''16",
-        (6, 3): r"r16 d''''8\ppp b''' d'''' b'''16",
-        (10, 3): r"r16 d''''8\ppp a''' d'''' a'''16",
-        (14, 3): r"r16 e''''8\ppp cis'''' e'''' cis''''16",
-    }))  # fmt: skip
-    block.add("perc2", 1, scatter(16, 4, 4, {
-        (1, 1): r"<d' fis' a' e''>1\pp\lv", (3, 1): r"<e' gis' b'>1\lv",
-        (5, 1): r"<b d' fis' a'>1\lv", (7, 1): r"<fis' ais' cis''>1\ppp\lv",
-        (9, 1): r"<f' bes' d'' e''>1\pp\lv", (12, 1): r"<d' fis' a' d''>1\mf\lv",
-        (14, 1): r"<e' g' b' cis''>1\pp\lv",
-    }))  # fmt: skip
-    block.add("harp.lh", 1, scatter(16, 4, 4, {
-        (1, 1): r"<d,, d,>4\pp", (5, 1): r"<b,, b,>4", (7, 1): r"<fis,, fis,>4\ppp",
-        (9, 1): r"<bes,, bes,>4\pp", (12, 1): r"<a,, a,>4\mp",
-    }))  # fmt: skip
-    block.add("perc3", 1, scatter(16, 4, 4, {(1, 1): r"d1\p\lv", (12, 1): r"d1\mp\lv"}))
-    block.add("perc1", 1, scatter(16, 4, 4, {(7, 1): r"c'1\ppp\lv"}))
-    block.close()
-
-
-def _chorale_of_light(work: Work) -> None:
-    """Mark X, bars 23 to 30: the distant chorale of part 3, now near and with whole tones."""
-    structure = work.structure
-    s = work.section(8, 4, 4)
-    structure.tempo(s.bar(1), 1, LIGHT_TEMPO, "Tempo I, come un corale")
-    block = Block(s, rests(4, 4, 8))
-
-    block.add(
-        "pno.rh", 1,
-        r"<fis b e' a'>2\pp\arpeggio( <fis a d' b'>2\arpeggio | "
-        r"<e' a' cis'' e''>2\arpeggio <d' fis' a' d''>2)\arpeggio | "
-        r"<e a cis' a'>2\arpeggio( <fis a d' b'>2\arpeggio | "
-        r"<d' fis' bes' fis''>2\p\arpeggio <cis' g' b' e''>2)\arpeggio | "
-        r"<a d' fis' a'>2\pp\arpeggio( <d' e' fis' b'>2\arpeggio | "
-        r"<d' fis' b' fis''>1\mp\arpeggio ~ | <d' g' b' fis''>1\>\arpeggio | "
-        r"<cis' g' b' e''>1)\pp\arpeggio |",
-    )  # fmt: skip
-    block.add(
-        "pno.lh", 1,
-        r"<d, a,>2\pp\sustainOff\sustainOn <d, b,>2\sustainOff\sustainOn | "
-        r"<cis, a,>2\sustainOff\sustainOn <b,, fis,>2\sustainOff\sustainOn | "
-        r"<fis, cis>2\sustainOff\sustainOn <g, d>2\sustainOff\sustainOn | "
-        r"<bes,, bes,>2\p\sustainOff\sustainOn <a,, a,>2\sustainOff\sustainOn | "
-        r"<a,, a,>2\pp\sustainOff\sustainOn <gis,, gis,>2\sustainOff\sustainOn | "
-        r"<g,, d, g,>1\mp\sustainOff\sustainOn | <a,, e, a,>1\>\sustainOff\sustainOn | "
-        r"<a,, a,>1\pp\sustainOff\sustainOn |",
-    )  # fmt: skip
-
-    # The clarinet follows the highest voice one beat later, as the alto flute did it.
-    block.add("cl2", 1, scatter(8, 4, 4, {
-        (2, 2): r"e''2\pp\dolce( d''4 ~ | d''2)",
-        (4, 2): r"fis''2\pp( e''4 ~ | e''2)",
-    }))  # fmt: skip
-    block.add("hn1", 1, r"R1*5 | fis'1\pp ~ | fis'1\> ~ | fis'2 e'2\ppp |")
-    block.add(
-        "vn1",
-        1,
-        r"<a'' d'''>1\ppp\flageolet ~ | <a'' d'''>1 ~ | <a'' d'''>1 ~ | <a'' d'''>1 ~ | "
-        r"<a'' d'''>1 ~ | <a'' d'''>1 ~ | <a'' d'''>1 ~ | <a'' d'''>1 |",
+    # --------------------------- phrase 2: a minor third higher, with the woodwinds
+    right, left = zip(
+        *[
+            _hammer_bar(*bar, r"\ff" if number == 0 else "")
+            for number, bar in enumerate(HAMMER_BARS[3:])
+        ],
+        strict=True,
     )
-    block.add("cb", 1, r"d,1\ppp\arco ~ | d,1 ~ | d,1 ~ | d,1 | R1*4 |")
-    block.close()
-
-
-def _question(work: Work) -> None:
-    """Mark X, bars 31 to 36: the piano asks with the first two notes of the warm theme."""
-    structure = work.structure
-    s = work.section(6, 4, 4)
-    structure.change(s.bar(5), 1, "poco rit.")
-    structure.arrive(s.bar(6), 4, 46)
-    block = Block(s, rests(4, 4, 6))
-
+    up = run(OCT, "c'", 16)
     block.add(
         "pno.rh",
-        1,
-        r"<fis a d' e'>1\pp\arpeggio | R1*3 | r2 d'2\pp--( | e'1--) |",
+        2,
+        " ".join(right) + " " + slurred(octave(up, 1)).replace("16(", r"16\<(", 1) + " |",
+    )
+    block.add("pno.lh", 2, " ".join(left) + " " + slurred(octave(up, -1)) + " |")
+    low_notes = ["f,", "ges,", "b,"]
+    bass = " ".join(
+        accents(note, "->", r"\f" if number == 0 else "") for number, note in enumerate(low_notes)
+    )
+    block.add("vc cb bn3 cbcl", 2, bass + " " + REST)
+    block.add("timp", 2, accents("f,", "->", r"\f") + " " + REST * 3)
+    block.add(
+        "perc6",
+        2,
+        REST
+        + " "
+        + accents("a", "->", r"\f")
+        + " "
+        + accents("c'", "->")
+        + " a16\\< a a a c' c' c' c' e' e' e' e' e'\\ff e' e' e' |",
+    )
+    # The woodwinds have the chords of the right hand on the accents.
+    for players, notes in (
+        ("ob1 cl1", ["b'", "c''", "f''"]),
+        ("ob2 cl2", ["f'", "ges'", "b'"]),
+        ("bn1 bn2", ["b", "c'", "f'"]),
+    ):
+        line = " ".join(
+            accents(note, "-.", r"\f" if number == 0 else "") for number, note in enumerate(notes)
+        )
+        block.add(players, 2, line + " " + REST)
+    # The strings hit the strings with the wood of the bow, in the rhythm 3 + 3 + 2.
+    block.add(
+        "vn2",
+        2,
+        accents("<f' b'>", "-.", r"\mf\collegno")
+        + " "
+        + accents("<ges' c''>", "-.")
+        + " "
+        + accents("<b' f''>", "-.")
+        + " "
+        + REST,
+    )
+    block.add(
+        "va",
+        2,
+        accents("<b f'>", "-.", r"\mf\collegno")
+        + " "
+        + accents("<c' ges'>", "-.")
+        + " "
+        + accents("<f' b'>", "-.")
+        + " "
+        + REST,
+    )
+    block.add(
+        "perc2",
+        2,
+        " ".join(
+            accents(note, "->", r"\f" if number == 0 else "")
+            for number, note in enumerate(["f''", "ges''", "b''"])
+        )
+        + " "
+        + slurred(octave(up, 2)).replace("16(", r"16\ff(", 1)
+        + " |",
+    )
+    block.add(
+        "perc4",
+        2,
+        accents("c'", "", r"\mf") + " " + accents("d'", "") + " " + accents("c'", "") + " " + REST,
+    )
+    block.add(
+        "fl1 fl2 fl3:1",
+        2,
+        REST * 3 + r"r4. r4. " + slurred(run(OCT, "es'''", 4)).replace("16(", r"16\ff(", 1) + " |",
+    )
+
+    # ---------------- phrase 3: the full orchestra has the accents, the piano answers
+    # The orchestra plays the chords of the cell on the accents. Between the accents
+    # the piano runs up: a confrontation of equal partners.
+    steps = [
+        ("as,", "<as d' es'>", "as'"),
+        ("a,", "<a d' es'>", "a'"),
+        ("d", "<d' es' as'>", "d''"),
+    ]
+    piano_right, piano_left = [], []
+    for number, (bass_note, chord_text, start) in enumerate(steps):
+        level = r"\ff" if number == 0 else ""
+        first = slurred(run(OCT, start, 4))
+        second = slurred(run(OCT, _up(start, 4), 4))
+        third = slurred(run(OCT, _up(start, 8), 2))
+        high_chord = octave(chord_text, 1)
+        piano_right.append(
+            f"{high_chord}8->{level} {octave(first, 1)} {high_chord}8-> {octave(second, 1)} "
+            f"{high_chord}8-> {octave(third, 1)} |"
+        )
+        low_chord = f"<{bass_note}, {bass_note}>"
+        piano_left.append(
+            f"{low_chord}8->{level} {octave(first, -1)} {low_chord}8-> {octave(second, -1)} "
+            f"{low_chord}8-> {octave(third, -1)} |"
+        )
+    # Bar 4 of the phrase: the piano alone, octaves in the two hands, down through the scale.
+    fall = run(OCT, "es''''", 8, 8, down=True)
+    block.add(
+        "pno.rh",
+        3,
+        " ".join(piano_right) + " " + double(fall, -1).replace("8", r"8->\fff", 1) + " |",
     )
     block.add(
         "pno.lh",
-        1,
-        r"<d,, d,>1\pp\lv\sustainOff\sustainOn | R1*3 | <d,, d,>1\ppp\lv\sustainOff\sustainOn | "
-        r"R1\sustainOff |",
+        3,
+        " ".join(piano_left) + " " + double(octave(fall, -2), -1).replace("8", "8->", 1) + " |",
     )
-    block.add("fl1", 1, r"r2 a'4\pp( b'4 | cis''2.\>) r4\! | R1*4 |")
-    # The call of the night was D and E-flat. Now it is D and E.
-    block.add("cel.rh", 1, r"R1*2 | r2 r4 d''''8\pp( e''''8) | R1*3 |")
-    block.add("perc2", 1, r"R1*2 | <d' a' e''>1\ppp\lv | R1*3 |")
-    block.add("perc3", 1, r"R1*3 | d1\pp\lv | R1*2 |")
-    block.add("harp.rh", 1, r"R1*3 | r2 <d'' a''>2\pp\flageolet | R1*2 |")
+    tutti = {
+        "tuba": ["as,,", "a,,", "d,"],
+        "btbn": ["as,", "a,", "d"],
+        "bn3": ["as,,", "a,,", "d,"],
+        "cbcl": ["as,,", "a,,", "d,"],
+        "cb": ["as,,", "a,,", "d,"],
+        "vc": ["as,", "a,", "d"],
+        "tbn2": ["d", "d", "as"],
+        "tbn1": ["as", "a", "d'"],
+        "hn4": ["d'", "d'", "es'"],
+        "hn3": ["es'", "es'", "as'"],
+        "hn2": ["as'", "a'", "d''"],
+        "hn1": ["as'", "a'", "d''"],
+        "tpt3": ["d''", "d''", "es''"],
+        "tpt2": ["es''", "es''", "as''"],
+        "tpt1": ["as''", "a''", "as''"],
+        "bn1": ["d", "d", "as"],
+        "bn2": ["as,", "a,", "d"],
+        "cl3": ["as", "a", "d'"],
+        "cl1": ["d''", "d''", "es''"],
+        "cl2": ["es''", "es''", "as''"],
+        "ob2": ["d''", "d''", "es''"],
+        "ob1": ["as''", "a''", "d'''"],
+        "fl2": ["es'''", "es'''", "as'''"],
+        "fl1": ["as'''", "a'''", "as'''"],
+        "fl3": ["as'''", "a'''", "d''''"],
+        "va": ["<d' as'>", "<d' a'>", "<es' as'>"],
+        "vn2": ["<es'' as''>", "<es'' a''>", "<as'' d'''>"],
+        "vn1": ["<d''' as'''>", "<d''' a'''>", "<es''' as'''>"],
+    }
+    for player, notes in tutti.items():
+        arco = r"\arco\ord" if player in ("vc", "cb", "va", "vn2") else ""
+        line = " ".join(
+            accents(note, "-^", (r"\ff" + arco) if number == 0 else "")
+            for number, note in enumerate(notes)
+        )
+        block.add(player, 3, line + " " + REST)
     block.add(
-        "vn1",
-        1,
-        r"<a'' d'''>1\ppp\flageolet ~ | <a'' d'''>1 ~ | <a'' d'''>1 ~ | <a'' d'''>1 ~ | "
-        r"<a'' d'''>1\> ~ | <a'' d'''>1 |",
+        "timp",
+        3,
+        " ".join(
+            accents(note, "->", r"\ff" if number == 0 else "")
+            for number, note in enumerate(["as,", "d,", "d,"])
+        )
+        + " "
+        + REST,
     )
-    block.add("vn2", 1, r"R1*2 | fis'1\ppp ~ | fis'1 ~ | fis'1 ~ | fis'1 |")
-    block.add("va", 1, r"R1*2 | <a d'>1\ppp ~ | <a d'>1 ~ | <a d'>1 ~ | <a d'>1 |")
-    block.add("cb", 1, r"R1*2 | d,1\ppp ~ | d,1 ~ | d,1 ~ | d,1 |")
+    block.add(
+        "perc3",
+        3,
+        accents("c'", "->", r"\ff")
+        + " "
+        + accents("c'", "->")
+        + " "
+        + accents("c'", "->")
+        + " "
+        + REST,
+    )
+    block.add("perc5", 3, SNARE.replace("16", r"16->\f", 1) + SNARE * 2 + REST)
+    block.add("perc1", 3, REST * 2 + r"c'8\ff\lv r4 r4. r4 | " + REST)
+
+    # ----------------------- phrase 4: the way to the theme, above the bass note E-flat
+    forge = [
+        ("es,", "bes,", "<bes es'>", "<a d'>"),
+        ("es,", "bes,", "<bes es'>", "<d' as'>"),
+    ]
+    right, left = zip(
+        *[_hammer_bar(*bar, r"\mf\<" if number == 0 else "") for number, bar in enumerate(forge)],
+        strict=True,
+    )
+    zigzag = [
+        "es'",
+        "ges'",
+        "f'",
+        "as'",
+        "ges'",
+        "a'",
+        "as'",
+        "b'",
+        "a'",
+        "c''",
+        "b'",
+        "d''",
+        "c''",
+        "es''",
+        "d''",
+        "f''",
+    ]
+    line = " ".join(zigzag).replace("es'", "es'16", 1)
+    higher = "es'' ges'' f'' as'' ges'' a'' as'' b'' a'' c''' b'' d''' c''' es''' d''' es'''"
+    line2 = higher.replace("es''", "es''16", 1)
+    block.add(
+        "pno.rh",
+        4,
+        " ".join(right)
+        + " "
+        + slurred(line).replace("16(", r"16\f\<(", 1)
+        + " | "
+        + slurred(line2)
+        + " |",
+    )
+    block.add(
+        "pno.lh",
+        4,
+        " ".join(left)
+        + " "
+        + slurred(octave(line, -2))
+        + " | "
+        + slurred(octave(line2, -2))
+        + " |",
+    )
+    # The strings start the motor of the subsequent section. The horns hold E-flat minor.
+    motor = "es'16 es' bes es' es' bes es' es' bes es' es' bes es' es' bes es' |"
+    block.add(
+        "va",
+        4,
+        REST * 2
+        + motor.replace("es'16", r"es'16\p\<\spicc", 1)
+        + " "
+        + motor.replace("es'16", r"es'16\mf", 1),
+    )
+    block.add(
+        "vn2",
+        4,
+        REST * 2
+        + octave(motor, 1).replace("es''16", r"es''16\p\<\arco\spicc", 1)
+        + " "
+        + octave(motor, 1).replace("es''16", r"es''16\mf", 1),
+    )
+    for player, note in (("hn1", "ges'"), ("hn2", "es'"), ("hn3", "bes"), ("hn4", "es")):
+        block.add(player, 4, rf"{note}1\p\< ~ | {note}1 ~ | {note}1 ~ | {note}1\f |")
+    block.add(
+        "vc cb",
+        4,
+        " ".join(accents("es,", "->", (r"\mf\pizz" if number == 0 else "")) for number in range(4)),
+    )
+    block.add(
+        "timp",
+        4,
+        accents("es,", "->", r"\mp\<")
+        + " "
+        + accents("es,")
+        + " "
+        + accents("es,")
+        + " es,8->\\f es, es, es,-> es, es, es,-> es, |",
+    )
+    block.add(
+        "perc5",
+        4,
+        accents("c'", "", r"\p\<")
+        + " "
+        + accents("c'", "")
+        + " "
+        + SNARE.replace("16", r"16\mf", 1)
+        + SNARE,
+    )
+    block.close()
+
+
+def _up(note: str, steps: int) -> str:
+    """Return the note that is a number of steps of the toccata scale above a note."""
+    return run(OCT, note, steps + 1).split()[-1].rstrip("0123456789")
+
+
+# ------------------------------------------------------------------ mark X
+
+# The warm theme with the dark form of the motto, in the rhythm 3 + 3 + 2 (4 bars).
+FORGE_THEME = r"d''4.-> es''4.-> as''4-> | g''2.-> r4 | bes''4.-> as''4.-> ges''4-> | es''2.-> r4 |"
+
+
+def _forge(work: Work) -> None:
+    """Mark X: the warm theme with the dark form of the motto, in hammered octaves."""
+    structure = work.structure
+    s = work.section(8, *EIGHT)
+    structure.mark(s.bar(1), "X")
+    four = REST * 4
+    block = Block(s, four, four)
+
+    # --------------------------------------------- phrase 1: the piano has the theme
+    block.add("pno.rh", 1, double(FORGE_THEME, 1).replace("4.->", r"4.->\ff", 1))
+    # The left hand: a motor of sixteenth notes on the chord of E-flat minor. In bar 2
+    # the theme has the note G above the G-flat of the left hand (major and minor together).
+    motors = [
+        "es, bes, es a es bes, es, bes, es a es bes, es, bes, es a",
+        "es, bes, es ges es bes, es, bes, es ges es bes, es, bes, es ges",
+        "es, bes, es bes es bes, es, bes, es as es bes, es, bes, es ges",
+        "es, bes, es ges es bes, es, bes, es ges es bes, es, ges, bes, es",
+    ]
+    block.add(
+        "pno.lh",
+        1,
+        " ".join(
+            slurred(motor.replace("es,", r"es,16" + (r"\f" if number == 0 else ""), 1)) + " |"
+            for number, motor in enumerate(motors)
+        ),
+    )
+    string_motor = "es'16 es' bes es' es' bes es' es' bes es' es' bes es' es' bes es' |"
+    block.add("va", 1, (string_motor * 4).replace("es'16", r"es'16\mp", 1))
+    block.add("vn2", 1, (octave(string_motor, 1) * 4).replace("es''16", r"es''16\mp", 1))
+    for player, note in (("hn1", "ges'"), ("hn2", "es'"), ("hn3", "bes"), ("hn4", "es")):
+        block.add(player, 1, rf"{note}1\mp\> ~ | {note}1\p\< ~ | {note}1\mp\> ~ | {note}1\p |")
+    block.add(
+        "vc cb",
+        1,
+        " ".join(accents("es,", "->", (r"\f" if number == 0 else "")) for number in range(4)),
+    )
+    block.add(
+        "timp",
+        1,
+        " ".join(accents("es,", "->", (r"\f" if number == 0 else "")) for number in range(4)),
+    )
+    # The woodwinds and the xylophone answer where the theme has a rest (a trade).
+    call_one = "r4. r4. " + slurred(run(OCT, "as''", 4)).replace("16(", r"16\f(", 1) + " |"
+    call_two = (
+        "r4. r4. " + slurred(run(OCT, "es'''", 4, down=True)).replace("16(", r"16\f(", 1) + " |"
+    )
+    block.add("fl1 fl2 ob1:-1 cl1:-1", 1, REST + call_one + REST + call_two)
+    block.add("perc2", 1, REST + call_one + REST + call_two)
+    block.add("perc5", 1, SNARE.replace("16", r"16\p", 1) + SNARE * 3)
+
+    # ------------------- phrase 2: the orchestra has the theme, the piano decorates it
+    # The theme is a minor third higher (F, G-flat, B, B-flat; D-flat, B, A, G-flat).
+    theme_two = r"f'4.-> ges'4.-> b'4-> | bes'2.-> r4 | des''4.-> b'4.-> a'4-> | ges'2.-> r4 |"
+    block.add("hn1 hn2 hn3 hn4", 2, theme_two.replace("4.->", r"4.->\f", 1))
+    block.add("va vc", 2, theme_two.replace("4.->", r"4.->\ff\arco\ord", 1))
+    block.add("tpt1 tpt2", 2, theme_two.replace("4.->", r"4.->\mf", 1))
+    block.add("tbn1 tbn2", 2, octave(theme_two, -1).replace("4.->", r"4.->\mf", 1))
+    # The piano: fast figures in the two hands, two octaves apart, above the theme.
+    figures = [
+        run(OCT, "f''", 8) + " " + run(OCT, "f'''", 8, down=True),
+        run(OCT, "ges''", 6) + " " + run(OCT, "es'''", 6, down=True) + " " + run(OCT, "ges''", 4),
+        run(OCT, "as''", 8) + " " + run(OCT, "as'''", 8, down=True),
+        run(OCT, "ges''", 4) + " " + run(OCT, "c'''", 4) + " " + run(OCT, "ges'''", 8, down=True),
+    ]
+    lines = [
+        " ".join(
+            part.rstrip("0123456789") if index else part
+            for index, part in enumerate(figure.split())
+        )
+        for figure in figures
+    ]
+    block.add(
+        "pno.rh",
+        2,
+        " ".join(
+            slurred(line).replace("16(", r"16\ff(" if number == 0 else "16(", 1) + " |"
+            for number, line in enumerate(lines)
+        ),
+    )
+    block.add("pno.lh", 2, " ".join(slurred(octave(line, -2)) + " |" for line in lines))
+    block.add(
+        "cb bn3 cbcl tuba",
+        2,
+        " ".join(accents("ges,", "->", (r"\f" if number == 0 else "")) for number in range(4)),
+    )
+    block.add(
+        "perc6",
+        2,
+        " ".join(
+            accents(note, "->", (r"\f" if number == 0 else ""))
+            for number, note in enumerate(["a", "c'", "a", "e'"])
+        ),
+    )
+    block.add("perc5", 2, SNARE * 4)
+    block.add(
+        "vn1 vn2",
+        2,
+        (
+            octave(
+                "ges'16 ges' des' ges' ges' des' ges' ges' des' ges' ges' des' "
+                "ges' ges' des' ges' |",
+                1,
+            )
+            * 4
+        ).replace("16", r"16\mp\spicc", 1),
+    )
     block.close()

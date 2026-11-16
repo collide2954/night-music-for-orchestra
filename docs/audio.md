@@ -128,6 +128,29 @@ The microphones of Muse Sounds are near the instruments: the mix had too much so
 
 The owner of the project must make the decision about the result: a measurement does not show if the brass sounds correct.
 
+## How the piano gets its sound
+
+The owner of the project asked for a better piano sound: the piano is the soloist of the interlude.
+A measurement compared two free pianos with one chord at each dynamic mark.
+
+| Piano | Size | Level from ppp to fff | Change of the tone from mp to fff (the share of the sound above 2 kHz) |
+| --- | --- | --- | --- |
+| Muse Keys, grand piano | 190 MB | 28 dB. The marks f, ff, and fff are in a range of 2 dB. | 0.7 dB: a loud note has the tone of a medium note. |
+| Salamander Grand Piano V3 (Yamaha C5, 16 dynamic levels for each sampled key, 48 kHz, 24 bit) | 1.2 GB | 22 dB in the samples; 33 dB with the level table of this project | 3.4 dB from mp to ff, and 20 dB from ppp to mp: a soft note is dark, a loud note is bright. |
+
+The audio uses the Salamander Grand Piano. Its author is Alexander Holm. Its licence is Creative Commons Attribution 3.0.
+The module [`audio/piano.py`](../src/nightmusic/audio/piano.py) plays the samples:
+
+- The loudness of a note selects one of the 16 dynamic levels of its key.
+- The pedal marks of the score hold the notes. With no pedal, the damper stops the string when the key goes up. The highest keys have no dampers.
+- A staccato note is short. A new stroke on a key stops the old sound of that key.
+- The noise of a key that goes up and the noise of the pedal are in the sound at a low level.
+- The piano is in the middle of the stage, at the front. Its stereo picture is narrower than that of the samples, and it gets the reverberation of the hall.
+- In the mix, a chord of the piano at f is 6 dB louder than the same chord of the piano of Muse Keys: the piano is a soloist.
+
+If the samples are not on the computer, the piano of Muse Keys plays. The variable `NIGHTMUSIC_PIANO=muse` selects that piano for a comparison.
+To get the samples: `git clone --depth 1 https://github.com/sfzinstruments/SalamanderGrandPiano.git .cache/samples/salamander`.
+
 ## How the master sets the loudness
 
 In the render of MuseScore, the soft passages are about 50 dB below the loudest passages.
