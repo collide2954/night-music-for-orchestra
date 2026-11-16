@@ -1,50 +1,50 @@
 player,share_of_time,range_used,low_third,middle_third,high_third,techniques
-fl1,0.3812,0.9459,0.02519,0.4239,0.5509,
-fl2,0.3202,0.7568,0.01225,0.4412,0.5466,grace notes
-fl3,0.2166,0.8824,0.3652,0.6045,0.0303,
-ob1,0.3192,0.8182,0.1971,0.6272,0.1758,
-ob2,0.2637,0.8182,0.179,0.639,0.182,grace notes
-ob3,0.07276,0.7188,0.2165,0.6907,0.09278,grace notes
-cl1,0.373,0.7273,0.1854,0.6758,0.1388,grace notes
-cl2,0.3008,0.6818,0.08264,0.7211,0.1963,
-cl3,0.2637,0.5833,0.624,0.376,0,grace notes
-cbcl,0.2549,0.6279,0.1649,0.7891,0.04593,grace notes
-bn1,0.4217,0.7381,0.2402,0.7105,0.04928,
-bn2,0.3928,0.6429,0.2918,0.6785,0.02966,grace notes
-bn3,0.3367,0.8182,0.06615,0.6556,0.2782,
-hn1,0.5236,0.6429,0.001745,0.4991,0.4991,desk: solo; mute: on
-hn2,0.4855,0.6429,0.02091,0.6635,0.3156,mute: on
-hn3,0.4912,0.619,0.001842,0.6832,0.3149,mute: on
-hn4,0.4705,0.8333,0.09056,0.6879,0.2216,mute: on
-hn5,0.1556,0.5,0,0.4751,0.5249,
-hn6,0.1556,0.5,0,0.6022,0.3978,
-tpt1,0.2322,0.6875,0.07265,0.7479,0.1795,mute: on
-tpt2,0.2179,0.6875,0.1565,0.7596,0.0839,
-tpt3,0.1788,0.7188,0.2883,0.6336,0.07808,
-tbn1,0.2764,0.7941,0.3775,0.5564,0.06619,
-tbn2,0.2746,0.7941,0.4622,0.4748,0.06295,
-btbn,0.2472,0.641,0.5,0.4953,0.004658,
-tuba,0.2609,0.6923,0.5472,0.4248,0.02797,
-timp,0.3268,0.8182,0.6063,0.3355,0.05814,mallet: soft; tremolo
-perc1,0.09733,,,,,tremolo
-perc2,0.4431,0.8605,0.2417,0.7219,0.03642,motor: on
-perc3,0.1415,,,,,tremolo
-perc4,0.1811,,,,,tremolo
-perc5,0.08169,,,,,
-perc6,0.1232,,,,,tremolo
-harp.rh,0.3464,0.5625,0,0.3677,0.6323,harmonic
-harp.lh,0.07017,0.3875,0.6522,0.3478,0,
-cimb.rh,0.0344,0.3684,0,0.4595,0.5405,tremolo
-cimb.lh,0.1773,0.4211,0.6494,0.3506,0,tremolo
-mand,0.1149,0.6842,0.2383,0.5701,0.1916,tremolo
-cel.rh,0.1242,0.5167,0,0.2864,0.7136,
+fl1,0.381,0.9459,0.02048,0.3909,0.5886,tremolo
+fl2,0.324,0.7568,0.009747,0.4016,0.5887,grace notes; tremolo
+fl3,0.2272,0.8824,0.3563,0.6184,0.02529,tremolo
+ob1,0.3231,0.8182,0.1634,0.6462,0.1904,tremolo
+ob2,0.2623,0.8182,0.1651,0.6362,0.1987,grace notes; tremolo
+ob3,0.06804,0.7188,0.2165,0.6907,0.09278,grace notes
+cl1,0.368,0.7273,0.1618,0.6837,0.1545,grace notes; tremolo
+cl2,0.3058,0.6818,0.06196,0.7305,0.2075,tremolo
+cl3,0.258,0.5833,0.6237,0.3763,0,grace notes
+cbcl,0.256,0.6279,0.2218,0.7354,0.0428,grace notes
+bn1,0.4101,0.7381,0.2331,0.7192,0.04762,
+bn2,0.383,0.6429,0.3056,0.6659,0.02851,grace notes
+bn3,0.3325,0.8182,0.1148,0.6248,0.2605,
+hn1,0.5071,0.6905,0.001645,0.4704,0.528,desk: solo; mute: on
+hn2,0.4714,0.6429,0.01961,0.6239,0.3565,mute: on
+hn3,0.4768,0.619,0.00173,0.6903,0.308,mute: on
+hn4,0.4574,0.8333,0.08484,0.6968,0.2184,mute: on
+hn5,0.1455,0.5,0,0.4751,0.5249,
+hn6,0.1455,0.5,0,0.6022,0.3978,
+tpt1,0.2328,0.75,0.06773,0.6972,0.2351,mute: on
+tpt2,0.2195,0.6875,0.1453,0.7621,0.09263,
+tpt3,0.1829,0.7188,0.2616,0.6512,0.08719,
+tbn1,0.2742,0.7941,0.3575,0.5801,0.06239,
+tbn2,0.2724,0.8235,0.4831,0.4576,0.05932,
+btbn,0.2469,0.641,0.5074,0.4882,0.004425,
+tuba,0.2596,0.6923,0.5726,0.401,0.0264,
+timp,0.326,0.8182,0.6285,0.3166,0.05486,mallet: soft; tremolo
+perc1,0.09964,,,,,tremolo
+perc2,0.4232,0.8605,0.1806,0.7775,0.04185,motor: on
+perc3,0.15,,,,,tremolo
+perc4,0.1707,,,,,tremolo
+perc5,0.09728,,,,,tremolo
+perc6,0.1216,,,,,tremolo
+harp.rh,0.3239,0.5625,0,0.3677,0.6323,harmonic
+harp.lh,0.06561,0.3875,0.6522,0.3478,0,
+cimb.rh,0.03217,0.3684,0,0.4595,0.5405,tremolo
+cimb.lh,0.1658,0.4211,0.6494,0.3506,0,tremolo
+mand,0.1075,0.6842,0.2383,0.5701,0.1916,tremolo
+cel.rh,0.107,0.5167,0,0.291,0.709,
 cel.lh,0,,,,,no notes
-pno.rh,0.5986,0.6667,0.02778,0.808,0.1642,
-pno.lh,0.3871,0.5977,0.7735,0.2265,0,grace notes; tremolo
-acc.rh,0.6244,0.4861,0,0.7196,0.2804,
+pno.rh,0.6587,0.7816,0.01865,0.6454,0.336,glissando; grace notes
+pno.lh,0.4146,0.8506,0.7419,0.251,0.007133,grace notes; tremolo
+acc.rh,0.5839,0.4861,0,0.7196,0.2804,
 acc.lh,0,,,,,no notes
-vn1,0.7559,0.84,0.07001,0.7907,0.1393,desk: solo; harmonic; mute: on; spiccato; sul ponticello; sul tasto; tremolo
-vn2,0.8987,0.78,0.5086,0.4882,0.003179,col legno; mute: on; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none
-va,1.264,0.85,0.4085,0.5529,0.03861,col legno; mute: on; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none
-vc,1.218,0.8542,0.4992,0.4754,0.02532,desk: solo; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none
-cb,0.836,0.6279,0.5011,0.4814,0.01751,mute: on; pizzicato; sul tasto; tremolo
+vn1,0.7449,0.84,0.07642,0.774,0.1495,desk: solo; harmonic; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo
+vn2,0.8784,0.78,0.5009,0.4955,0.003578,col legno; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none
+va,1.22,0.85,0.4074,0.555,0.03769,col legno; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none
+vc,1.176,0.875,0.5159,0.4597,0.0244,desk: solo; glissando; mute: on; pizzicato; spiccato; sul ponticello; sul tasto; tremolo; vibrato: none
+cb,0.8017,0.6279,0.486,0.4974,0.01665,mute: on; pizzicato; sul tasto; tremolo

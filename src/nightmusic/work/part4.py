@@ -107,7 +107,7 @@ def write(work: Work) -> None:
 
 
 def _warm_theme(work: Work) -> None:
-    """Mark Y: the warm theme, two times. The second time is a variation of the first time.
+    """Mark AA: the warm theme, two times. The second time is a variation of the first time.
 
     The first time (8 bars):
     - The cellos sing the theme with notes that are not in the chords: an
@@ -132,7 +132,7 @@ def _warm_theme(work: Work) -> None:
     """
     structure = work.structure
     s = work.section(16, 4, 4)
-    structure.mark(s.bar(1), "Y")
+    structure.mark(s.bar(1), "AA")
     structure.tempo(s.bar(1), 1, 52, "Adagio cantabile")
     eight = rests(4, 4, 8)
     block = Block(s, eight, eight)
@@ -151,10 +151,6 @@ def _warm_theme(work: Work) -> None:
         r"d''2\pp\flageolet\lv e''2\flageolet | gis''2\flageolet a''2\flageolet | "
         r"b''2\flageolet a''4\flageolet fis''4\flageolet | e''1\flageolet | R1*4 |",
     )  # fmt: skip
-    block.add(
-        "cel.rh", 1,
-        r"R1*4 | d'''2\pp e'''2 | gis'''4 a'''4 d''''2 | cis''''2 b'''4 a'''4 | fis'''2. e'''4 |",
-    )  # fmt: skip
     chords = r"""
         <a' d'' fis'' a''>2 <ais' d'' fis'' ais''>2 | <b' d'' fis'' gis''>2 <a' cis'' e'' a''>2 |
         <a' d'' fis'' a''>2. <ais' cis'' e'' fis''>4 | <bes' d'' e'' gis''>2 <a' cis'' e'' a''>2 |
@@ -162,6 +158,22 @@ def _warm_theme(work: Work) -> None:
         <a' b' e'' a''>2 <g' cis'' eis'' a''>2 | <a' d'' fis'' a''>2 <g' b' d'' g''>2 |
     """
     strings, woodwinds, horns = relay(chords, 3)
+    # The piano does not stop after its cadenza: it moves in fast, soft figures through
+    # the chords, one octave above them (the owner of the project selected: a loud peak,
+    # then a sudden soft arrival, and the motion does not stop). The celesta had the
+    # plain theme here before.
+    beat = "A'32( B' C' D' A'' D' C' B')"
+    ripple = {
+        2: beat.replace("32(", r"32\sustainOff\sustainOn(") + " " + beat,
+        3: beat.replace("32(", r"32\sustainOff\sustainOn(") + " " + beat + " " + beat,
+        1: beat.replace("32(", r"32\sustainOff\sustainOn("),
+    }
+    block.add("pno.rh", 1, first(fill(chords, ripple), r"\pp\leggiero", note=True))
+    block.add(
+        "pno.rh",
+        2,
+        r"<d''' a''' d''''>1\ppp\arpeggio\sustainOff\sustainOn | R1*6 | r1\sustainOff |",
+    )
     voices = lines(strings)
     block.add("vn2", 1, stack(voices[0], voices[1]), r"\sultasto")
     block.add("vn1", 1, stack(voices[2], voices[3]), r"\sultasto")
@@ -257,10 +269,10 @@ def _warm_theme(work: Work) -> None:
 
 
 def _shimmer(work: Work) -> None:
-    """Mark Z: the song theme in F-sharp major, with interlocking bells."""
+    """Mark BB: the song theme in F-sharp major, with interlocking bells."""
     structure = work.structure
     s = work.section(24, 4, 4)
-    structure.mark(s.bar(1), "Z")
+    structure.mark(s.bar(1), "BB")
     structure.tempo(s.bar(1), 1, 66, "Più mosso, scintillante")
     two, four, eight = rests(4, 4, 2), rests(4, 4, 4), rests(4, 4, 8)
     block = Block(s, two, two, eight, eight, four)
@@ -387,10 +399,10 @@ def _shimmer(work: Work) -> None:
 
 
 def _broad(work: Work) -> None:
-    """Mark AA: the warm theme in B-flat major, then the way to D-flat."""
+    """Mark CC: the warm theme in B-flat major, then the way to D-flat."""
     structure = work.structure
     s = work.section(24, 4, 4)
-    structure.mark(s.bar(1), "AA")
+    structure.mark(s.bar(1), "CC")
     structure.tempo(s.bar(1), 1, 58, "Largamente, con calore")
     four, eight = rests(4, 4, 4), rests(4, 4, 8)
     block = Block(s, eight, eight, four, four)
@@ -454,7 +466,7 @@ def _broad(work: Work) -> None:
 
 
 def _approach(work: Work) -> None:
-    """Mark BB: the way up to the main climax, above the bass note D-flat.
+    """Mark DD: the way up to the main climax, above the bass note D-flat.
 
     The walking theme of part 1 is now in a major key and goes up. The calls
     of the brass have the motto in its light form (D-flat, E-flat, A-flat).
@@ -462,7 +474,7 @@ def _approach(work: Work) -> None:
     """
     structure = work.structure
     s = work.section(28, 4, 4)
-    structure.mark(s.bar(1), "BB")
+    structure.mark(s.bar(1), "DD")
     structure.tempo(s.bar(1), 1, 60, "Con moto")
     structure.change(s.bar(5), 1, "poco a poco più mosso")
     structure.arrive(s.bar(21), 1, 76)
@@ -621,10 +633,10 @@ def _approach(work: Work) -> None:
 
 
 def _main_climax(work: Work) -> None:
-    """Mark CC: the warm theme in D major with the full orchestra, fff."""
+    """Mark EE: the warm theme in D major with the full orchestra, fff."""
     structure = work.structure
     s = work.section(12, 4, 4)
-    structure.mark(s.bar(1), "CC")
+    structure.mark(s.bar(1), "EE")
     structure.tempo(s.bar(1), 1, 54, "Maestoso, con tutta la forza")
     block = Block(s, rests(4, 4, 8), rests(4, 4, 4))
 
@@ -782,10 +794,10 @@ def _main_climax(work: Work) -> None:
 
 
 def _calm(work: Work) -> None:
-    """Mark DD: calm after the climax. The themes come back as soft solos."""
+    """Mark FF: calm after the climax. The themes come back as soft solos."""
     structure = work.structure
     s = work.section(28, 4, 4)
-    structure.mark(s.bar(1), "DD")
+    structure.mark(s.bar(1), "FF")
     structure.tempo(s.bar(1), 1, 52, "Tranquillo")
     structure.change(s.bar(25), 1, "poco rit.")
     structure.arrive(s.bar(28), 1, 44)

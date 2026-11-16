@@ -30,17 +30,17 @@ ROOT = Path(__file__).resolve().parents[2]
 FILES = (ROOT / "docs" / "work.md", ROOT / "README.md")
 
 # The first rehearsal mark of each part. Part 1 starts before the first mark.
-PART_MARKS = {"1": "", "2": "D", "3": "S", "4": "Y", "5": "EE"}
+PART_MARKS = {"1": "", "2": "D", "3": "S", "4": "AA", "5": "GG"}
 # The events of the form plan: the first bar and, for an event with a length, the bar
-# after it. "HH+11" is bar 12 of the section at the mark HH.
+# after it. "KK+11" is bar 12 of the section at the mark KK.
 EVENTS = {
     "First climax": ("Q", "R"),
     "Start of part 3": ("S", ""),
     "Point most distant from the tonic": ("U", "V"),
-    "Turn to D major": ("Y", ""),
-    "Main climax": ("CC", "DD"),
-    "Start of part 5": ("EE", ""),
-    "Last arrival on the tonic": ("HH+11", ""),
+    "Turn to D major": ("AA", ""),
+    "Main climax": ("EE", "FF"),
+    "Start of part 5": ("GG", ""),
+    "Last arrival on the tonic": ("KK+11", ""),
 }
 TARGETS: dict[str, Callable[[Stats], str]] = {
     "Share of the time: p or softer": lambda stats: f"{stats.share_p_or_softer:.2f}",
@@ -73,7 +73,7 @@ def sections(work: Work) -> dict[str, tuple[int, int]]:
 
 
 def _bar(work: Work, place: str) -> int:
-    """Return the bar number of a place such as "Q" or "HH+11"."""
+    """Return the bar number of a place such as "Q" or "KK+11"."""
     label, _, more = place.partition("+")
     return sections(work)[label][0] + int(more or 0)
 
@@ -169,8 +169,8 @@ def update_readme(text: str, work: Work, stats: Stats) -> str:
         text,
         r"The two climaxes are at \d+ minutes and at \d+ minutes\.\n?"
         r" ?The last statement starts at \d+ minutes\.",
-        f"The two climaxes are at {minute('Q')} minutes and at {minute('CC')} minutes. "
-        f"The last statement starts at {minute('HH')} minutes.",
+        f"The two climaxes are at {minute('Q')} minutes and at {minute('EE')} minutes. "
+        f"The last statement starts at {minute('KK')} minutes.",
     )
     text = _replace(text, r"complete \(\d+ bars\)", f"complete ({stats.bars} bars)")
     return _change_table(text, "| Part | Bars | Start | Contents |", part_row)

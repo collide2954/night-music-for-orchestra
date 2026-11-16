@@ -1,6 +1,6 @@
 # Night Music for Orchestra
 
-*Night Music for Orchestra* is a new work for large orchestra: one movement in five linked parts, 32 minutes.
+*Night Music for Orchestra* is a new work for large orchestra: one movement in five linked parts, 34 minutes.
 Code makes all parts of the work: the score, the parts, the audio, and the score video.
 
 The work takes its style from three sources:
@@ -31,12 +31,12 @@ Each build of the repository publishes the results in the release
 | --- | --- | --- | --- |
 | 1 | 1 to 38 | 0:00 | Very slow. A walk in the dark. One lonely melody. |
 | 2 | 39 to 252 | 3:32 | Agitation and development. A chase in uneven metres. A heavy section with drums. The first climax, then a collapse. |
-| 3 | 253 to 324 | 12:55 | The still centre. A soft cluster, a cycle of gongs, calls of the night. |
-| 4 | 325 to 456 | 18:09 | The turn to D major. Broad warm themes. A shimmer of bells. The main climax, then calm. |
-| 5 | 457 to 539 | 27:17 | First light. The themes sound together. The heavy rhythm comes back in D major. The last statement, fff. |
+| 3 | 253 to 380 | 12:55 | The still centre. A soft cluster, a cycle of gongs, calls of the night. |
+| 4 | 381 to 512 | 20:22 | The turn to D major. Broad warm themes. A shimmer of bells. The main climax, then calm. |
+| 5 | 513 to 595 | 29:30 | First light. The themes sound together. The heavy rhythm comes back in D major. The last statement, fff. |
 
 The picture shows the loudness of the audio master against the time.
-The two climaxes are at 12 minutes and at 24 minutes. The last statement starts at 30 minutes.
+The two climaxes are at 12 minutes and at 26 minutes. The last statement starts at 32 minutes.
 
 ![Loudness of the audio master against the time](docs/loudness.svg)
 
@@ -54,7 +54,7 @@ It also has four instruments that are not usual in an orchestra: cimbalom, accor
 | --- | --- | --- |
 | 1. Style study | Tables of measured and sourced style parameters | First edition complete |
 | 2. Design | Form, orchestra, and material of the work | Complete |
-| 3. Composition | The music, written as code | Second version complete (539 bars) |
+| 3. Composition | The music, written as code | Second version complete (595 bars) |
 | 4. Engraving | Conductor score and parts | Complete. See "Limits". |
 | 5. Audio | Audio from MuseScore Studio with Muse Sounds (free sample libraries) | Second version. See [`docs/audio.md`](docs/audio.md). |
 | 6. Video | Score video with part tracking | Complete |

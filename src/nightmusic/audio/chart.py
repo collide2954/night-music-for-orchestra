@@ -85,4 +85,4 @@ def loudness_chart(work: Work, audio_file: Path, output: Path) -> Path:
 def _part_starts(work: Work) -> list[int]:
     """Return the first bar of each of the five parts."""
     marks = {label: bar for bar, label in work.structure.marks.items()}
-    return [1, marks["D"], marks["S"], marks["Y"], marks["EE"]]
+    return [1, marks["D"], marks["S"], marks["AA"], marks["GG"]]

@@ -115,10 +115,13 @@ def slurred(notes: str) -> str:
 
 
 def write(work: Work) -> None:
-    """Write the interlude: the marks W and X (the marks Y and Z are not written yet)."""
+    """Write the interlude: the marks W and X here, the marks Y and Z in `cadenza.py`."""
+    from . import cadenza  # the module needs the tools of this module
+
     _awakening(work)
     _hammer_theme(work)
     _forge(work)
+    cadenza.write(work)
 
 
 # ------------------------------------------------------------------ mark W

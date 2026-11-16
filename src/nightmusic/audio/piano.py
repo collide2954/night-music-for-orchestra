@@ -199,11 +199,26 @@ def notes_of(work: Work) -> list[tuple[float, float, int, int]]:
     structure = work.structure
     found = []
     for player in PLAYERS:
-        for note in perform(work, player):
-            if note.instrument != "piano":
-                continue
+        notes = [note for note in perform(work, player) if note.instrument == "piano"]
+        for index, note in enumerate(notes):
             start = structure.seconds(note.start)
             end = structure.seconds(note.start + note.duration)
+            if note.glissando:
+                # A glissando: the white keys from this note to the subsequent note.
+                target = next(
+                    (
+                        other
+                        for other in notes[index + 1 :]
+                        if other.start >= note.start + note.duration
+                    ),
+                    None,
+                )
+                if target is not None:
+                    value = velocity(0.5 * (note.level + note.level_end), note.accent)
+                    found.extend(
+                        _glissando(start, end, round(note.midi), round(target.midi), value)
+                    )
+                    continue
             if note.grace:
                 start = max(0.0, start - 0.07 * note.grace)
                 end = start + 0.09
@@ -211,6 +226,22 @@ def notes_of(work: Work) -> list[tuple[float, float, int, int]]:
             found.append((start, _key_up(note, start, end), round(note.midi), value))
     found.sort()
     return found
+
+
+WHITE_KEYS = (0, 2, 4, 5, 7, 9, 11)
+
+
+def _glissando(
+    start: float, end: float, first: int, last: int, value: int
+) -> list[tuple[float, float, int, int]]:
+    """Return the notes of a glissando on the white keys, from `first` to before `last`."""
+    step = 1 if last >= first else -1
+    keys = [key for key in range(first, last, step) if key % 12 in WHITE_KEYS] or [first]
+    length = (end - start) / len(keys)
+    return [
+        (start + number * length, start + (number + 1.5) * length, key, value)
+        for number, key in enumerate(keys)
+    ]
 
 
 def render(work: Work, begin: float = 0.0, seconds: float | None = None) -> np.ndarray:
