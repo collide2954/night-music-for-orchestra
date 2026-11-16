@@ -168,7 +168,9 @@ def _warm_theme(work: Work) -> None:
         3: beat.replace("32(", r"32\sustainOff\sustainOn(") + " " + beat + " " + beat,
         1: beat.replace("32(", r"32\sustainOff\sustainOn("),
     }
-    block.add("pno.rh", 1, first(fill(chords, ripple), r"\pp\leggiero", note=True))
+    # The mark is mp: the piano is the soloist, and its figures must be as clear as the
+    # theme (at pp, the audio had the piano 12 dB below the strings).
+    block.add("pno.rh", 1, first(fill(chords, ripple), r"\mp\leggiero", note=True))
     block.add(
         "pno.rh",
         2,
@@ -425,7 +427,14 @@ def _broad(work: Work) -> None:
     # Phrase 2 (8 bars): the theme in the violins and woodwinds. The agitated
     # theme of part 2 is now a warm line in the cellos.
     high_theme = tr(WARM, 8)
-    block.add("vn1 vn2 fl1:1 fl2:1 ob1 ob2 cl1 cl2", 2, dyn(high_theme, r"\f\espr"))
+    block.add("vn2 fl1:1 fl2:1 ob1 ob2 cl1 cl2", 2, dyn(high_theme, r"\f\espr"))
+    # The first violins do not go down after the highest note of the theme: they go up
+    # one octave and sing the last two bars there, with a slide into the high note (the
+    # owner of the project: "i'd really like for it to go up the octave and just sing").
+    parts = [part.strip() for part in dyn(high_theme, r"\f\espr").split("|") if part.strip()]
+    start = " | ".join(parts[:6]).replace(r"bes''2)", r"bes''2\<)\glissando") + " | "
+    end = first(octave(" | ".join(parts[6:]) + " |", 1), r"\ff", note=True)
+    block.add("vn1", 2, start + end)
     block.add(
         "vc bn1 ob3 cl3:-1", 2,
         r"r8 bes8\mf\espr( c'4 ~ c'8 f'8 d'4) | r8 c'8( e'4 ~ e'8 d'8 bes4) | "

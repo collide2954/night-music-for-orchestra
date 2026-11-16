@@ -104,6 +104,35 @@ def run(scale: str, start: str, count: int, value: int = 16, *, down: bool = Fal
     return " ".join(notes)
 
 
+def sweep(
+    scale: str, start: str, sizes: Sequence[int], *, down: bool = False
+) -> list[tuple[str, int, int]]:
+    """Return a fast, free line through a scale as groups: one group for each eighth note.
+
+    `sizes` gives the number of notes of each group. A group of 4 notes is
+    thirty-second notes. A group of a different size is a tuplet in the time
+    of 4 thirty-second notes. Sizes that become larger make a written
+    acceleration: the line does not sound as a metric figure.
+
+    Each item of the result has the text of a group, and its lowest note and
+    its highest note (MIDI numbers). With these, a composer can give each
+    group to one hand of a keyboard player.
+    """
+    names = run(scale, start, sum(sizes), 32, down=down).split()
+    names[0] = names[0][:-2]  # the first note of `run` has the note value
+    groups = []
+    position = 0
+    for size in sizes:
+        chosen = names[position : position + size]
+        position += size
+        keys = [round(Pitch.parse(name).midi) for name in chosen]
+        group = " ".join([chosen[0] + "32", *chosen[1:]])
+        if size != 4:
+            group = rf"\tuplet {size}/4 {{ {group} }}"
+        groups.append((group, min(keys), max(keys)))
+    return groups
+
+
 def times(text: str, count: int) -> str:
     """Return the music repeated a number of times."""
     return " ".join([text.strip()] * count)

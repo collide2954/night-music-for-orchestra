@@ -38,7 +38,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from ..compose.tools import Block, double, octave, rests, run
+from ..compose.tools import Block, double, octave, rests, run, tr
 from ..notation.work import Work
 
 # The scale of the chase (semitone, whole tone), with the note names of the dark half.
@@ -89,14 +89,16 @@ def hammer(
     """Return one bar in which the hands alternate: the right hand, then the left hand.
 
     The left hand plays `low` on the eighth notes. The right hand plays
-    `high` on the sixteenth notes between them.
+    `high` one sixteenth note later. Each note is written as an eighth note,
+    as in the toccatas of the repertoire: thus each hand has beams, and no
+    rests between its notes. The notes are short (martellato).
     """
-    left: list[Token] = []
-    right: list[Token] = []
-    for bottom, top in zip(low, high, strict=True):
-        left += [bottom, None]
-        right += [None, top]
-    return sixteenths(right, grouping), sixteenths(left, grouping)
+    if len(low) != len(high) or 2 * len(low) != sum(grouping):
+        raise ValueError("the two hands must have one note for each eighth note of the bar")
+    left = " ".join(f"{pitch}8{marks}" for pitch, marks in low)
+    right = "r16 " + " ".join(f"{pitch}8{marks}" for pitch, marks in high[:-1])
+    right += f" {high[-1][0]}16{high[-1][1]}"
+    return right + " |", left + " |"
 
 
 def marked(note: str, marks: str = "") -> Token:
@@ -640,10 +642,10 @@ FORGE_THEME = r"d''4.-> es''4.-> as''4-> | g''2.-> r4 | bes''4.-> as''4.-> ges''
 def _forge(work: Work) -> None:
     """Mark X: the warm theme with the dark form of the motto, in hammered octaves."""
     structure = work.structure
-    s = work.section(8, *EIGHT)
+    s = work.section(16, *EIGHT)
     structure.mark(s.bar(1), "X")
     four = REST * 4
-    block = Block(s, four, four)
+    block = Block(s, four, four, four, four)
 
     # --------------------------------------------- phrase 1: the piano has the theme
     block.add("pno.rh", 1, double(FORGE_THEME, 1).replace("4.->", r"4.->\ff", 1))
@@ -743,4 +745,90 @@ def _forge(work: Work) -> None:
             * 4
         ).replace("16", r"16\mp\spicc", 1),
     )
+
+    # ---------- phrase 3: the last notes of the theme, one after the other, higher and higher
+    # The piano and the brass take the three notes that go down (from D-flat, E, G, and
+    # B-flat: a minor third higher each time). While the brass plays, the piano hammers
+    # the note at which its own line arrived, in broken octaves.
+    def tail(first: str, second: str, third: str) -> str:
+        return f"{first}4.-> {second}4.-> {third}4-> |"
+
+    def broken(note: str) -> str:
+        high = octave(note, 1).strip()
+        return " ".join([f"{note}16", high] + [note, high] * 7) + " |"
+
+    piano_one, piano_two = tail("des'''", "b''", "a''"), tail("g'''", "f'''", "es'''")
+    block.add(
+        "pno.rh", 3,
+        double(piano_one, 1).replace("4.->", r"4.->\ff", 1) + " " + broken("ges''") + " "
+        + double(piano_two, 1) + " " + broken("c'''"),
+    )  # fmt: skip
+    block.add(
+        "pno.lh", 3,
+        double(octave(piano_one, -2), -1).replace("4.->", r"4.->\ff", 1) + " " + broken("ges,")
+        + " " + double(octave(piano_two, -2), -1) + " " + broken("c"),
+    )  # fmt: skip
+    brass_one, brass_two = tail("e''", "d''", "c''"), tail("bes''", "as''", "ges''")
+    block.add(
+        "tpt1 tpt2", 3, REST + brass_one.replace("4.->", r"4.->\ff", 1) + " " + REST + brass_two
+    )
+    block.add(
+        "hn1 hn2 hn3 hn4 tbn1:-1 tbn2:-1", 3,
+        REST + octave(brass_one, -1).replace("4.->", r"4.->\ff", 1) + " " + REST
+        + octave(brass_two, -1),
+    )  # fmt: skip
+    motor = "ges'16 ges' des' ges' ges' des' ges' ges' des' ges' ges' des' ges' ges' des' ges' |"
+    block.add(
+        "vn1 vn2",
+        3,
+        (octave(motor, 1) * 2 + octave(tr(motor, 3), 1) * 2).replace("16", r"16\mf", 1),
+    )
+    block.add("va", 3, (motor * 2 + tr(motor, 3) * 2).replace("16", r"16\mf\spicc", 1))
+    low_line = " ".join(
+        accents(note, "->", r"\f" if number == 0 else "")
+        for number, note in enumerate(["ges,", "g,", "as,", "a,"])
+    )
+    block.add("cb bn3 cbcl tuba", 3, low_line)
+    block.add("vc", 3, low_line.replace("8->", r"8->\pizz", 1))
+    block.add("perc5", 3, SNARE.replace("16", r"16\mf\<", 1) + SNARE * 3)
+    block.add("perc6", 3, " ".join(accents(note, "->") for note in ["c'", "e'", "c'", "e'"]))
+
+    # ----- phrase 4: the hammer again, with the full orchestra in octaves; then a sudden stop
+    bars = [
+        ("a,", "es", "<es' a'>", "<e' bes'>"),
+        ("bes,", "e", "<e' bes'>", "<a' es''>"),
+        ("b,", "f", "<f' b'>", "<ges' c''>"),
+    ]
+    right, left = zip(
+        *[_hammer_bar(*bar, r"\ff\<" if number == 0 else "") for number, bar in enumerate(bars)],
+        strict=True,
+    )
+    rush = run(OCT, "c'", 12)
+    block.add(
+        "pno.rh",
+        4,
+        " ".join(right) + " " + slurred(octave(rush, 1)).replace("16(", r"16\fff(", 1) + " r4 |",
+    )
+    block.add("pno.lh", 4, " ".join(left) + " " + slurred(octave(rush, -1)) + " r4 |")
+    octaves = {
+        "tuba": -2, "btbn": -1, "bn3": -2, "cbcl": -2, "cb": -1, "vc": -1, "tbn2": -1, "tbn1": 0,
+        "bn1": -1, "bn2": -1, "hn4": 0, "hn3": 0, "hn2": 1, "hn1": 1, "tpt3": 1, "tpt2": 1,
+        "tpt1": 2, "cl3": 0, "cl1": 1, "cl2": 2, "ob2": 1, "ob1": 2, "fl2": 2, "fl1": 3,
+        "va": 0, "vn2": 1, "vn1": 2,
+    }  # fmt: skip
+    unison = " ".join(
+        accents(note, "-^", r"\ff\<" if number == 0 else "")
+        for number, note in enumerate(["a", "bes", "b"])
+    )
+    for player, shift in octaves.items():
+        marks = r"\arco\ord" if player in ("va", "vc", "vn1", "vn2") else ""
+        line = octave(unison, shift) if shift else unison
+        block.add(player, 4, line.replace("8-^", "8-^" + marks, 1) + " " + REST)
+    block.add("timp", 4, REST * 3 + r"es,2.:32\f\< es,8->\fff r8 |")
+    block.add(
+        "perc3",
+        4,
+        " ".join(accents("c'", "->", r"\ff" if n == 0 else "") for n in range(3)) + " " + REST,
+    )
+    block.add("perc5", 4, SNARE.replace("16", r"16\f\<", 1) + SNARE * 2 + r"c'2.:32 c'8->\fff r8 |")
     block.close()

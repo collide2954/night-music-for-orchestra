@@ -23,6 +23,8 @@ turn of the work is this step down.
 
 from __future__ import annotations
 
+import re
+
 from ..compose.tools import Block, octave, rests, run, tr
 from ..notation.work import Work
 from .interlude import (
@@ -71,9 +73,15 @@ def _cells(first: list[str] | None, second: list[str] | None, third: list[str] |
     return sixteenths(tokens)
 
 
+NOTE = re.compile(r"(?<![a-z])(?:<[^>]+>|[a-g](?:eses|isis|es|is|s)?[',]*)\d+\.*")
+
+
 def _with(text: str, marks: str) -> str:
-    """Return the music with marks on its first sixteenth note."""
-    return text.replace("16", "16" + marks, 1)
+    """Return the music with marks on its first note (a rest does not get them)."""
+    found = NOTE.search(text)
+    if found is None or not marks:
+        return text
+    return text[: found.end()] + marks + text[found.end() :]
 
 
 # ------------------------------------------------------------------ mark Y
@@ -88,10 +96,10 @@ def _trades(work: Work) -> None:
     block = Block(s, four, four, four, four)
 
     # ---- phrase 1: two bars of the piano, two bars of the woodwinds (a minor third higher)
-    block.add("pno.rh", 1, _with(CRICKET, r"\pp\leggiero") + " " + BIRD + " " + REST * 2)
+    block.add("pno.rh", 1, _with(CRICKET, r"\mp\leggiero") + " " + BIRD + " " + REST * 2)
     block.add(
         "pno.lh", 1,
-        r"es8-.\pp r4 es8-. r4 bes,8-. r8 | bes,8-. r4 es8-. r4 as,8-. r8 | " + REST * 2,
+        r"es8-.\mp r4 es8-. r4 bes,8-. r8 | bes,8-. r4 es8-. r4 as,8-. r8 | " + REST * 2,
     )  # fmt: skip
     winds = _with(tr(CRICKET, 3), r"\p") + " " + tr(BIRD, 3)
     block.add("fl1 fl2 fl3 perc2", 1, REST * 2 + winds)
@@ -105,11 +113,11 @@ def _trades(work: Work) -> None:
     # ---------------------------- phrase 2: one bar each, on A and on C, a little louder
     block.add(
         "pno.rh", 2,
-        _with(tr(CRICKET, 6), r"\mp") + " " + REST + tr(BIRD, 9) + " " + REST,
+        _with(tr(CRICKET, 6), r"\mf") + " " + REST + tr(BIRD, 9) + " " + REST,
     )  # fmt: skip
     block.add(
         "pno.lh", 2,
-        r"a8-.\mp r4 a8-. r4 e8-. r8 | " + REST + r"c8-. r4 c8-. r4 ges8-. r8 | " + REST,
+        r"a8-.\mf r4 a8-. r4 e8-. r8 | " + REST + r"c8-. r4 c8-. r4 ges8-. r8 | " + REST,
     )  # fmt: skip
     winds = REST + _with(tr(BIRD, 6), r"\mp") + " " + REST + octave(tr(CRICKET, 9), -1)
     block.add("fl1 fl2 fl3 perc2", 2, winds)
@@ -532,14 +540,14 @@ def _return(work: Work) -> None:
     last = " ".join([pair] * 12) + " r4"
     block.add(
         "pno.rh", 2,
-        _with32(bar, r"\mf\<") + " | " + bar + " | " + _with32(bar, r"\fff") + " | " + last + " |",
+        _with32(bar, r"\mp\<") + " | " + bar + " | " + _with32(bar, r"\f") + " | " + last + " |",
     )  # fmt: skip
     low_pair = "<es,, es,>32 <a,, a,>"
     low_bar = " ".join([low_pair] * 16)
-    low_last = " ".join([low_pair] * 12) + r" r4\sustainOff"
+    low_last = " ".join([low_pair] * 12) + " r4"
     block.add(
         "pno.lh", 2,
-        _with32(low_bar, r"\mf\<\sustainOff\sustainOn") + " | " + low_bar + " | " + low_bar
+        _with32(low_bar, r"\mp\<\sustainOff") + " | " + low_bar + " | " + low_bar
         + " | " + low_last + " |",
     )  # fmt: skip
     block.close()

@@ -909,7 +909,15 @@ def _song_returns(work: Work) -> None:
         r"fis''2\mf\<( g''4 a''4 | b''2. a''4) | a''2( bes''4 c'''4 | d'''2. c'''4) | "
         r"c'''2\f\<( des'''4 es'''4 | f'''2. es'''4) | des'''2\ff( c'''4 bes''4 | a''1\>) |"
     )
-    block.add("vn1 vn2:-1 fl1", 2, rise)
+    # The violins do not go down after the highest note of the line: they go up one
+    # octave and sing the last two bars there, with a slide into the high note (the
+    # owner of the project: "i'd really like for it to go up the octave and just sing").
+    parts = [part.strip() for part in rise.split("|") if part.strip()]
+    start = " | ".join(parts[:6]).replace(r"es'''4)", r"es'''4)\glissando") + " | "
+    end = " | ".join(parts[6:]) + " |"
+    block.add("vn1", 2, start + octave(end, 1))
+    block.add("vn2", 2, octave(start, -1) + end)
+    block.add("fl1", 2, rise)
     last_half = rise.split("|", 4)[4]
     block.add("ob1:-1", 2, r"R1*2 | " + rise.split("|", 2)[2])
     block.add("fl2 cl1:-1 tpt1:-1", 2, r"R1*4 | " + last_half)

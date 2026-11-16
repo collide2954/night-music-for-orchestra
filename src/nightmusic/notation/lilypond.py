@@ -245,12 +245,22 @@ def _pitches(elements: list[music.Element]) -> list[float]:
     return found
 
 
-def best_clef(base: str, instrument: Instrument | None, written: list[float]) -> str:
-    """Return the clef for a passage: the usual clef, or a better clef for its range."""
+def best_clef(
+    base: str, instrument: Instrument | None, written: list[float], current: str = ""
+) -> str:
+    """Return the clef for a passage: the usual clef, or a better clef for its range.
+
+    `current` is the clef before the passage. A hand of a keyboard instrument
+    keeps its clef until the notes are clearly in the range of the other clef.
+    """
     if not written or instrument is None or base in ("percussion", "grand"):
-        return base
+        return current or base
     ordered = sorted(written)
     median, lowest = ordered[len(ordered) // 2], ordered[0]
+    if instrument.clef == "grand":
+        if (current or base) == "bass":
+            return "treble" if median > 67 and lowest >= 57 else "bass"
+        return "bass" if median < 53 and ordered[-1] <= 64 else "treble"
     if base == "treble" and instrument.name == "horn in F" and median < 55:
         return "bass"
     if base == "bass" and instrument.name == "bass clarinet" and median > 62:
@@ -288,17 +298,25 @@ def _with_clefs(
     current = ""
     ottava = 0
     for chunk in chunks:
-        shift = emitter.interval.semitones if emitter.interval else 0
-        written = [midi + shift for midi in _pitches(chunk.children)]
-        clef = best_clef(emitter.clef_of(instrument), instrument, written)
-        if clef != current:
-            elements.append(music.Command("clef", [clef]))
-            current = clef
-        octave = best_ottava(clef, instrument, written)
-        if octave != ottava:
-            elements.append(music.Command("ottava", [f"#{octave}"]))
-            ottava = octave
-        elements.extend(chunk.children)
+        # A hand of a keyboard instrument can change its clef in each bar: its music
+        # moves through the full keyboard. Other instruments have one clef for a section.
+        grand = instrument is not None and instrument.clef == "grand"
+        units = _bars_of(chunk.children) if grand else [chunk.children]
+        for unit in units:
+            shift = emitter.interval.semitones if emitter.interval else 0
+            written = [midi + shift for midi in _pitches(unit)]
+            if grand and not written:
+                elements.extend(unit)
+                continue
+            clef = best_clef(emitter.clef_of(instrument), instrument, written, current)
+            if clef != current:
+                elements.append(music.Command("clef", [clef]))
+                current = clef
+            octave = best_ottava(clef, instrument, written)
+            if octave != ottava:
+                elements.append(music.Command("ottava", [f"#{octave}"]))
+                ottava = octave
+            elements.extend(unit)
         # A change of instrument in the chunk changes the usual clef.
         for command in _walk_commands(chunk.children):
             if command.name == "switch":
@@ -307,6 +325,20 @@ def _with_clefs(
                 current = emitter.clef_of(instrument)
     emitter.set_instrument(work.orchestra.first_instrument(player.id))
     return elements
+
+
+def _bars_of(elements: list[music.Element]) -> list[list[music.Element]]:
+    """Divide the music of a section into bars. Each bar ends with its bar check."""
+    bars: list[list[music.Element]] = []
+    current: list[music.Element] = []
+    for element in elements:
+        current.append(element)
+        if isinstance(element, music.BarCheck):
+            bars.append(current)
+            current = []
+    if current:
+        bars.append(current)
+    return bars
 
 
 def _player_music(work: Work, player: Player, *, for_part: bool) -> str:

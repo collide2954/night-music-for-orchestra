@@ -27,9 +27,11 @@ from ..compose.tools import (
     first,
     lines,
     octave,
+    plain,
     put,
     rests,
     run,
+    sweep,
     times,
     tr,
 )
@@ -346,13 +348,14 @@ def _last_statement(work: Work) -> None:
 
     # The chorale (11 bars).
     bass, tenor, alto, top = lines(dyn(CHORALE, r"\fff"))
-    block.add("tpt1:1 tpt2 ob1:1 ob2:1 fl1:2 fl2:2 fl3:2 vn1:2 vn2:1 hn5 hn6 perc4:2", 1, top)
+    block.add("tpt1:1 tpt2 ob1:1 ob2:1 fl1:2 fl2:2 fl3:2 vn1:2 vn2:1 hn5 hn6", 1, top)
     block.add("tpt3 hn1 hn3 cl1:1 cl2:1 tbn1", 1, alto)
     block.add("hn2 hn4 tbn2 va", 1, tenor)
     block.add("btbn bn1 bn2 cl3 vc tuba:-1 bn3:-1 cbcl:-1 cb:-1", 1, bass)
     block.add("pno.lh", 1, double(bass, -1))
-    block.add("pno.rh", 1, fill(dyn(CHORALE, r"\fff"), r"<B C D B' C' D'>1"))
-    block.add("acc.rh", 1, fill(dyn(CHORALE, r"\ff"), r"<B C D B' C' D'>1"))
+    # Each hand has a chord that it can reach: not more than an octave.
+    block.add("pno.rh", 1, fill(dyn(CHORALE, r"\fff"), r"<B' C' D'>1"))
+    block.add("acc.rh", 1, fill(dyn(CHORALE, r"\ff"), r"<B C D>1"))
     block.add(
         "timp", 1,
         r"d,1:32\fff | R1 | d,1:32 | R1 | g,1:32 | a,1:32 ~ | a,1:32 | d,1:32 | "
@@ -365,16 +368,30 @@ def _last_statement(work: Work) -> None:
     )  # fmt: skip
     block.add("perc5", 1, r"""\switch "tam-tams" c'1\fff\lv | R1*7 | c'1\lv | R1*2 |""")
     block.add("perc3", 1, r"c'4\fff r r2 | R1*3 | c'4 r r2 | R1*3 | c'4 r r2 | R1 | c'4 r r2 |")
+    # The owner of the project: "the ending should also use crotales and chimes and such,
+    # really let it sparkle". The bright instruments come in one after the other. The
+    # glockenspiel rings each chord in eighth notes: the note of the highest voice is on
+    # beats 1 and 3. The celesta runs through each chord, and the harp rolls each chord.
+    block.add("perc4", 1, fill(dyn(CHORALE, r"\fff"), r"D''8 C''' D''' C''' D'' C''' D''' C'''"))
     block.start("perc4", r'\switch "glockenspiel"')
-    # Hand cymbals at the start of each phrase. The suspended cymbal grows into them.
+    sparkle = r"B'16( C' D' B'' C'' D'' C'' B'' D' C' B' D' C' D' B'' D'')"
+    block.add("cel.rh", 1, fill(dyn(CHORALE, r"\ff"), sparkle))
+    block.add("harp.rh", 1, fill(dyn(CHORALE, r"\fff"), r"<B' C' D'>1\arpeggio"))
+    block.add("harp.lh", 1, fill(dyn(CHORALE, r"\fff"), r"<A, A>1\arpeggio"))
+    # The hand cymbals have the first stroke. Then their player goes to the crotales:
+    # they come in on the highest note of the first phrase, with the highest voice.
+    ringing = [bar.strip() for bar in plain(octave(top, 2)).split("|") if bar.strip()]
     block.add(
         "perc1", 1,
-        r"c'4\fff\lv r4 r2 | R1*3 | c'4\lv r4 r2 | R1*3 | c'4\lv r4 r2 | R1 | c'4\lv r4 r2 |",
+        r"""c'1\fff\lv | R1 | \switch "crotales" """
+        + first(" | ".join(ringing[2:]) + " |", r"\ff\lv"),
     )  # fmt: skip
+    # The player of the taiko goes to the suspended cymbal: a roll that grows before
+    # each phrase, and a stroke at the start of the phrase.
     block.add(
         "perc6", 1,
-        r"""\switch "suspended cymbals" R1*3 | c'1:32\mf\< | R1*3 | c'1:32\mf\< | """
-        r"R1 | c'1:32\f\< | R1 |",
+        r"""R1*3 | \switch "suspended cymbals" c'1:32\mf\< | c'4\fff\lv r4 r2 | R1*2 | """
+        r"c'1:32\mf\< | c'4\fff\lv r4 r2 | c'1:32\f\< | c'4\fff\lv r4 r2 |",
     )  # fmt: skip
 
     # The last chord (10 bars): D major. The brass has the motto in long notes.
@@ -389,7 +406,8 @@ def _last_statement(work: Work) -> None:
         + r"fis'1 ~ | fis'1 ~ | fis'1 ~ | fis'1 | fis'2.-^ r4 | fis'1-^\fermata |",
     )  # fmt: skip
     hold = r"X1:32\fff ~ | " + r"X1:32 ~ | " * 6 + r"X1:32 | X2.-^ r4 | X1-^\fermata |"
-    for player, chord in [("vn1", "fis'' d'''"), ("vn2", "a' fis''"), ("va", "d' a'"),
+    # The first violins are in their highest register (D7).
+    for player, chord in [("vn1", "fis''' d''''"), ("vn2", "a'' fis'''"), ("va", "d' a'"),
                           ("vc", "d a")]:  # fmt: skip
         block.add(player, 2, fill(f"<{chord}>1", hold))
     plain_hold = hold.replace(":32", "").replace("X", "A")
@@ -397,7 +415,10 @@ def _last_statement(work: Work) -> None:
     block.add("acc.rh", 2, fill(r"<d' fis' a' d''>1", plain_hold))
     block.add("cimb.lh", 2, fill(r"<d d'>1", hold))
     block.add("mand", 2, fill(r"<fis'' a''>1", hold))
-    block.add("fl1 fl2:-1 fl3 ob1:-1 ob2:-1 cl1:-1 cl2:-2", 2, fill(r"<d'''>1", plain_hold))
+    block.add("ob1:-1 ob2:-1 cl1:-1 cl2:-2", 2, fill(r"<d'''>1", plain_hold))
+    # The flutes and the piccolo: a long trill on the highest D.
+    trill = r"A1\fff\trill ~ | " + r"A1\trill ~ | " * 6 + r"A1\trill | A2.-^ r4 | A1-^\fermata |"
+    block.add("fl1 fl2:-1 fl3", 2, fill(r"<d'''>1", trill))
     block.add(
         "timp", 2,
         times(r"d,4->\fff a,4-> d,4-> a,4-> |", 4)
@@ -405,31 +426,139 @@ def _last_statement(work: Work) -> None:
     )  # fmt: skip
     peal = r"d'4\fff e' a' e' |"
     block.add("perc2", 2, times(peal, 8) + r" d'2. r4 | d'1\fermata |")
-    ring = r"d'''8\ff e''' a''' e''' d''' e''' a''' e''' |"
+    ring = r"d'''8\fff e''' a''' e''' d''' e''' a''' e''' |"
     block.add("perc4", 2, times(ring, 4) + r" d'''8 e''' gis''' a''' " * 2 + "| "
               + times(ring, 3) + r" a'''2. r4 | a'''1\fermata |")  # fmt: skip
     block.add("cel.rh", 2, dyn(times(BELLS_ON_BEAT, 8), r"\ff") + r" R1 | R1\fermata |")
     block.add("harp.rh", 2, dyn(times(BELLS_OFF_BEAT, 8), r"\ff")
               + r" <d' fis' a' d'' fis'' a''>2.\arpeggio r4 | "
               r"<d' fis' a' d'' fis'' a''>1\arpeggio\fermata |")  # fmt: skip
-    chord = r"<d' fis' a' d'' fis'' a''>"
-    block.add("pno.rh", 2, rf"{chord}1\fff | R1 | {chord}1 | R1 | {chord}1 | R1 | {chord}1 | R1 | "
-              rf"{chord}2.-^ r4 | {chord}1-^\fermata |")  # fmt: skip
+    # The piano: deep bell strokes (the chord goes up from stroke to stroke), and free
+    # sweeps between them, as a harp plays them. The owner of the project heard the
+    # first form of these lines (equal sextuplets, the same line two times) as "rigid",
+    # and they did not blend. Thus each sweep is different: its direction, its length,
+    # its place in the bar, and its notes. Each sweep grows, and its groups have
+    # more and more notes (a written acceleration): no group sounds as a beat.
     octave_d = r"<d,, d,>"
-    block.add("pno.lh", 2, rf"{octave_d}1\fff | R1 | {octave_d}1 | R1 | {octave_d}1 | R1 | "
-              rf"{octave_d}1 | R1 | {octave_d}2.-^ r4 | {octave_d}1-^\fermata |")  # fmt: skip
-    block.add("perc5", 2, r"c'1\fff\lv | R1*3 | c'1\lv | R1*3 | c'2.\lv r4 | c'1\lv\fermata |")
+    pentatonic, lydian = "d e fis a b", "d e fis gis a b"
+    plan = [
+        # the chord, the scale, the first note, the first eighth note, the sizes of the
+        # groups, down?, the marks of the two hands, the end of the bar in each hand
+        (r"<d' fis' a' d''>", pentatonic, "d,", 2, (4, 5, 5, 6), False,
+         r"\mf\<\quasiarpa", r"\f\<", "", r"d'''4->\ff"),
+        (r"<fis' a' d'' fis''>", lydian, "b'''", 1, (6, 5, 5, 4), True,
+         r"\f\>", r"\ff\>", r"r8 <d, a,>4->\mf", ""),
+        (r"<a' d'' fis'' a''>", pentatonic, "a,,", 1, (4, 5, 5, 6, 6), False,
+         r"\mf\<", r"\f\<", "", r"<fis''' b'''>4->\ff"),
+        (r"<d'' fis'' a'' d'''>", pentatonic, "d,,", 0, (4, 4, 5, 5, 6, 6), False,
+         r"\f\<", r"\ff\<", "", r"<a''' d''''>4->\fff"),
+    ]  # fmt: skip
+    right, left = [], []
+    for chord, scale, start, slot, sizes, down, low_marks, high_marks, low_end, high_end in plan:
+        groups = sweep(scale, start, sizes, down=down)
+        low, high = _two_hands(groups, slot, low_marks, high_marks, low_end, high_end)
+        right += [rf"{chord}1\fff", high]
+        left += [rf"{octave_d}1\fff\sustainOff\sustainOn", low]
+    last = r"<d'' fis'' a'' d'''>"
+    block.add(
+        "pno.rh", 2,
+        " | ".join(right) + rf" | {last}2.-^\fff r4 | {last}1-^\fermata |",
+    )  # fmt: skip
+    block.add(
+        "pno.lh", 2,
+        " | ".join(left) + rf" | {octave_d}2.-^\fff\sustainOff\sustainOn r4 | "
+        rf"{octave_d}1-^\sustainOff\sustainOn\fermata |",
+    )  # fmt: skip
+    # The sparkle of the last chord: four bell instruments ring the notes of the motto at
+    # four speeds (tubular bells in quarter notes, glockenspiel in eighth notes, crotales
+    # in triplets, celesta and harp between them). The triangle has a long roll.
+    ring_three = (
+        r"\tuplet 3/2 { d'''4 e''' a''' } \tuplet 3/2 { e'''4 d''' a''' } | "
+        r"\tuplet 3/2 { a'''4 e''' d''' } \tuplet 3/2 { e'''4 a''' d''' } |"
+    )
     block.add(
         "perc1", 2,
-        r"c'4\fff\lv r4 r2 | R1*3 | c'4\lv r4 r2 | R1*3 | c'2.\lv r4 | c'1\lv\fermata |",
+        first(times(ring_three, 4), r"\ff", note=True) + r" <d''' a'''>2.\lv r4 | "
+        r"<d''' a'''>1\lv\fermata |",
+    )  # fmt: skip
+    block.add(
+        "perc5", 2,
+        r"""c'1\fff\lv | R1 | \switch "triangle" c'1:32\mp\< ~ | c'1:32 ~ | c'1:32 ~ | """
+        r"""c'1:32 ~ | c'1:32\ff | R1 | \switch "tam-tams" c'2.\fff\lv r4 | c'1\lv\fermata |""",
     )  # fmt: skip
     block.add(
         "perc6", 2,
-        r"""\switch "taiko" """
-        + times(r"c'4->\fff c'4-> c'4-> c'4-> |", 4)
-        + times(r" c'8-> c' c'-> c' c'-> c' c'-> c' |", 4)
-        + r" c'2.-> r4 | c'1->\fermata |",
+        r"c'4\fff\lv r4 r2 | R1*2 | c'1:32\mf\< | c'4\fff\lv r4 r2 | R1*2 | c'1:32\f\< | "
+        r"c'2.\fff\lv r4 | c'1\lv\fermata |",
     )  # fmt: skip
     block.add("perc3", 2, r"c'4\fff r r2 | R1*3 | c'1:32 ~ | c'1:32 ~ | c'1:32 ~ | c'1:32 | "
               r"c'2. r4 | c'1\fermata |")  # fmt: skip
     block.close()
+
+
+LEFT_HAND_TOP = 64  # E4: a group of a sweep with no higher note is in the left hand
+
+
+def _two_hands(
+    groups: list[tuple[str, int, int]],
+    slot: int,
+    low_marks: str,
+    high_marks: str,
+    low_end: str = "",
+    high_end: str = "",
+) -> tuple[str, str]:
+    """Return one bar of 4/4 for the two hands of the piano, with a sweep.
+
+    `groups` is the result of `sweep()`: each group fills one eighth note, and
+    the first group is at the eighth note `slot` of the bar (0 to 7). A low
+    group goes to the left hand, a high group to the right hand. The marks go
+    on the first note of each hand, and a slur is above the notes of each hand.
+    `low_end` and `high_end` are the music of each hand after the sweep, to
+    the end of the bar (default: rests). If a hand has a hairpin and no music
+    after the sweep, the hairpin stops on its last note.
+
+    The result is the bar of the left hand, then the bar of the right hand,
+    each with no bar line.
+    """
+    after = slot + len(groups)
+    bars = []
+    for right, marks, end in ((False, low_marks, low_end), (True, high_marks, high_end)):
+        mine = {
+            slot + number: group
+            for number, (group, _lowest, highest) in enumerate(groups)
+            if (highest > LEFT_HAND_TOP) == right
+        }
+        tokens: list[str] = []
+        position = 0
+        for number in sorted(mine):
+            tokens += _rests(position, number)
+            group = mine[number]
+            if number == min(mine):
+                group = group.replace("32", "32" + marks + "(", 1)
+            if number == max(mine):
+                stop = r"\!" if not end and ("<" in marks or ">" in marks) else ""
+                head, brace, tail = group.rpartition(" }")
+                group = head + ")" + stop + brace + tail if brace else group + ")" + stop
+            tokens.append(group)
+            position = number + 1
+        # After the notes of this hand: rests to the music after the sweep, or to the
+        # end of the bar.
+        tokens += _rests(position, after if end else 8)
+        bars.append(" ".join([*tokens, end]).strip())
+    return bars[0], bars[1]
+
+
+def _rests(first: int, last: int) -> list[str]:
+    """Return rests for the eighth notes `first` to before `last` of a bar of 4/4."""
+    result = []
+    while first < last:
+        if first % 4 == 0 and last - first >= 4:
+            result.append("r2")
+            first += 4
+        elif first % 2 == 0 and last - first >= 2:
+            result.append("r4")
+            first += 2
+        else:
+            result.append("r8")
+            first += 1
+    return result

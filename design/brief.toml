@@ -81,8 +81,11 @@ not_selected = ["space (antiphonal violins; distant players)"]
 
 # More decisions of the owner for the third version (2026-11-15, a later message).
 [third_version_additions]
-piano_interlude = "An interlude with the piano as its focus. It can add 5 to 6 minutes. The owner selected: across the turn (it starts in the night music of part 3 in E-flat minor, the piano makes the turn to D major, and it gives the warm theme to the cellos)."
-piano_interlude_orchestra = "The piano leads. A soft halo answers: string harmonics, celesta, vibraphone, gongs, and one or two solo winds."
+piano_interlude = "An interlude with the piano as its focus. It can add 5 to 6 minutes. It is across the turn: it starts in the night music of part 3, and it ends at the turn to D major."
+piano_interlude_first_form = "The owner rejected the first form (slow and soft, with a soft halo of the orchestra): the interlude must be virtuosic, almost a small piano concerto. It must give energy and direction to the work, and it must have a function in the form."
+piano_interlude_character = "The owner selected: a toccata and a cadenza."
+piano_interlude_turn = "The owner selected: a loud peak, then a sudden soft arrival in D major. The motion of the piano does not stop."
+piano_sound = "A better piano sound, or a better mix of the piano."
 themes = "Do not show the theme too frequently. Sometimes change the theme or hide it."
 high_strings = "The strings can sometimes be in their highest register."
 trades = "When the music is intense, the woodwinds and the strings can trade fast figures (sixteenth notes, short groups of thirty-second notes), especially immediately before a transition with a strong stroke of the bass drum. This keeps the texture interesting when the theme repeats."
@@ -90,6 +93,8 @@ main_climax = "At the main climax, the gongs and the bass drum play on beats 2 a
 silent_instrument = "The instrument at the mark G had no sound."
 brass_sound = "The loud brass must not sound as a 'splat' that cuts against the texture. The sound must have the balance of an orchestra."
 telephone_video = "A version of the score video that is readable on a telephone (not the landscape format)."
+violin_octave = "At a peak of a lush violin line, one time or two times, the line must not step down: it must go up one octave and sing."
+ending_sparkle = "The ending must sparkle: crotales, chimes, and other bright instruments."
 
 # Decisions that the composer's assistant made while the owner was not available
 # (night of 2026-11-15). The owner must examine each decision. Each decision is

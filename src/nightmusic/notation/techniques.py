@@ -90,6 +90,7 @@ TECHNIQUES: dict[str, Technique] = {
         _T("brillante", "brillante", italic=True, below=True),
         _T("leggiero", "leggiero", italic=True, below=True),
         _T("senzaped", "senza Ped.", italic=True, below=True),
+        _T("quasiarpa", "quasi arpa, liberamente", italic=True, below=True),
     ]
 }
 
