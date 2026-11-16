@@ -592,7 +592,32 @@ def _chase_end(work: Work) -> None:
 
     put(s, "vc bn1 bn2 cl3 tbn1 tbn2 cb:-1 btbn:-1 pno.rh pno.lh:-1", voice(1, -24))
     put(s, "va hn1 hn2 hn3 hn4 cl1", voice(2, -12))
-    put(s, "vn2 ob1 ob2 tpt1 tpt2 tpt3 vn1:1 fl1:1 fl2:1 fl3:1 cl2:1 perc2:1", voice(3, 0))
+    upper = voice(3, 0)
+    put(s, "vn2 ob1 ob2 tpt1 tpt2 tpt3 perc2:1", upper)
+    # The last two bars before the heavy section: the flutes and the first violins leave
+    # the canon and trade fast figures (a decision of the owner of the project). The
+    # figures go up through the scale of the chase. Then all go up together in
+    # thirty-second notes, to the first stroke of the heavy section.
+    chase_scale = "b c d es f fis gis a"
+
+    def burst(start: str, count: int, value: int = 16, marks: str = "") -> str:
+        notes = run(chase_scale, start, count, value).split()
+        return f"{notes[0]}{marks}( {' '.join(notes[1:])})"
+
+    rush = burst("f''", 12, 32)
+    winds = (
+        burst("f''", 4, marks=r"\ff") + " r4 " + burst("b''", 6) + " | "
+        "r4 " + burst("d'''", 4) + " " + rush + " |"
+    )  # fmt: skip
+    strings = (
+        "r4 " + burst("a''", 4, marks=r"\ff") + " r4. | "
+        + burst("gis''", 4) + " r4 " + rush + " |"
+    )  # fmt: skip
+    canon = [part.strip() for part in upper.split("|") if part.strip()]
+    head = octave(" | ".join(canon[:-2]) + " |", 1)
+    put(s, "fl1 fl2 fl3", head + " " + winds)
+    s.write("cl2", head + " " + octave(winds, -1))
+    s.write("vn1", head + " " + strings)
     s.write("timp", times(r"f,8->\f r r4 r4. |", 12))
     s.write("perc3", times(r"c'8->\f r r4 r4. | " + rest, 6))
     s.write("perc4", times(r"c'8\f r d'8 r c'8 r d'8 |", 12))

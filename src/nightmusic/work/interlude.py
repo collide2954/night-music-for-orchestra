@@ -160,8 +160,10 @@ def _lonely_octaves(work: Work) -> None:
 def _music_box(work: Work) -> None:
     """Mark W, bars 19 to 26: a distant music box in 7/8. The song theme of part 2, hidden."""
     structure = work.structure
-    s = work.section(8, 7, 8)
-    structure.tempo(s.bar(1), 1, BOX_TEMPO, "Poco mosso, come un carillon lontano")
+    s = work.section(8, 7, 8, (2, 2, 3))
+    structure.tempo(
+        s.bar(1), 1, BOX_TEMPO, "Poco mosso, come un carillon lontano (croma = croma della terzina)"
+    )
     rest = "R1*7/8 |"
     block = Block(s, rests(7, 8, 8))
 
