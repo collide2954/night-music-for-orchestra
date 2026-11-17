@@ -39,13 +39,35 @@ def compile_pdf(path: Path, output: Path) -> None:
 
 
 def build_pdfs(*, parts: bool = True) -> None:
-    """Build the score PDF and the part PDFs."""
+    """Build the PDF of the score in C. If `parts` is true, build the full set also.
+
+    The full set has the transposed score and the parts. The directory
+    `build/set` gets a copy of each document with the name that an orchestra
+    librarian expects.
+    """
+    import shutil
+
+    from .notation import lilypond
+    from .work import build
+
     paths = write_lilypond()
-    score = [path for path in paths if path.name == "score.ly"]
-    others = [path for path in paths if path.name != "score.ly"] if parts else []
-    compile_pdf(score[0], BUILD_DIR / "score")
+    scores = [path for path in paths if path.name.startswith("score")]
+    others = [path for path in paths if not path.name.startswith("score")] if parts else []
+    compile_pdf(scores[0], BUILD_DIR / "score")
+    if not parts:
+        return
+    # The two scores are large: they are engraved one at a time. The parts are small.
+    compile_pdf(scores[1], BUILD_DIR / "score")
     with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
         list(pool.map(lambda path: compile_pdf(path, BUILD_DIR / "parts"), others))
+    names = lilypond.set_names(build())
+    target = BUILD_DIR / "set"
+    target.mkdir(parents=True, exist_ok=True)
+    for old in target.glob("*.pdf"):
+        old.unlink()  # the documents of a build before this one
+    for path in paths:
+        directory = BUILD_DIR / ("score" if path.name.startswith("score") else "parts")
+        shutil.copyfile(directory / f"{path.stem}.pdf", target / f"{names[path.stem]}.pdf")
 
 
 def build_audio(

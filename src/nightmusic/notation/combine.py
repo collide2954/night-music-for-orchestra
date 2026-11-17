@@ -69,17 +69,17 @@ def duration_text(duration: Fraction) -> str:
     return f"1*{whole.numerator}" if whole.denominator == 1 else f"1*{whole}"
 
 
-def _timed(elements: list[music.Element]):
+def timed(elements: list[music.Element]):
     """Give each note and each rest of the elements, in the sequence of the text."""
     for element in elements:
         if isinstance(element, music.Note | music.Rest):
             yield element
         elif isinstance(element, music.Group):
-            yield from _timed(element.children)
+            yield from timed(element.children)
 
 
 def has_notes(elements: list[music.Element] | None) -> bool:
-    return bool(elements) and any(isinstance(item, music.Note) for item in _timed(elements))
+    return bool(elements) and any(isinstance(item, music.Note) for item in timed(elements))
 
 
 def _explicit(elements: list[music.Element]) -> list[music.Element]:
@@ -89,11 +89,33 @@ def _explicit(elements: list[music.Element]) -> list[music.Element]:
     units of a shared staff come from two players: thus each unit must be
     complete without the music before it.
     """
-    copied = copy.deepcopy(elements)
-    for item in _timed(copied):
-        if not item.duration_text:
-            item.duration_text = duration_text(item.duration)
-    return copied
+    return [_copy(element) for element in elements]
+
+
+def copied(elements: list[music.Element]) -> list[music.Element]:
+    """Return a copy of the elements: a change of the copy does not change the music."""
+    return [_copy(element) for element in elements]
+
+
+_DURATION_TEXTS: dict[Fraction, str] = {}
+
+
+def _copy(element: music.Element) -> music.Element:
+    """Return a copy of an element with its own lists. Each duration has its text."""
+    if isinstance(element, music.Note | music.Rest):
+        text = element.duration_text
+        if not text:
+            text = _DURATION_TEXTS.get(element.duration, "")
+            if not text:
+                text = _DURATION_TEXTS[element.duration] = duration_text(element.duration)
+        if isinstance(element, music.Rest):
+            return music.Rest(element.kind, element.duration, text, list(element.posts))
+        pitches = list(element.pitches)
+        return music.Note(pitches, element.chord, element.duration, text, list(element.posts))
+    if isinstance(element, music.Group):
+        children = [_copy(child) for child in element.children]
+        return music.Group(element.kind, children, element.header, element.ratio, element.count)
+    return element  # a command or a bar check: the code does not change these
 
 
 def _atoms(
@@ -117,7 +139,7 @@ def _atoms(
         elif isinstance(element, music.Group) and element.kind == "unfold" and inside:
             step = (end - position) / element.count
             for number in range(element.count):
-                children = copy.deepcopy(element.children)
+                children = [_copy(child) for child in element.children]
                 atoms.extend(_atoms(children, position + number * step, bar_lines))
         elif isinstance(element, music.Rest) and element.kind == "R" and inside:
             edges = [position, *inside, end]
@@ -173,17 +195,18 @@ class SharedStaff:
 # ----------------------------------------------------------------------------
 
 
-def _player_units(
+def player_atoms(
     work: Work, player_id: str
 ) -> tuple[list[list[tuple[Fraction, music.Element]]], list[set[Fraction]]]:
     """Return the atoms of each section for one player, and where a cut is possible."""
     structure = work.structure
+    starts = [bar.start for bar in structure.bars]
     all_atoms: list[list[tuple[Fraction, music.Element]]] = []
     all_cuts: list[set[Fraction]] = []
     for first_bar, chunk in work.chunks[player_id]:
         start = structure.bar(first_bar).start
         end = start + music.length(chunk)
-        bar_lines = [bar.start for bar in structure.bars if start < bar.start < end]
+        bar_lines = starts[first_bar : bisect.bisect_left(starts, end)]
         atoms = _atoms(_explicit(chunk.children), start, bar_lines)
         cuts = {position for position, _element in atoms} | {start, end}
         all_atoms.append(atoms)
@@ -348,7 +371,7 @@ def _merge(
 
 
 def _read_levels(elements: list[music.Element] | None, level: _Level) -> None:
-    for item in _timed(elements or []):
+    for item in timed(elements or []):
         level.read(item.posts)
 
 
@@ -363,7 +386,7 @@ class _Spans:
     joined: bool = False  # the last note has a tie or a glissando to the note after it
 
     def read(self, elements: list[music.Element] | None) -> None:
-        for item in _timed(elements or []):
+        for item in timed(elements or []):
             for post in item.posts:
                 if post.kind == "slur":
                     self.slurs += 1 if post.value == "(" else -1
@@ -398,8 +421,8 @@ def pair_units(work: Work, first_id: str, second_id: str) -> tuple[list[Unit], l
     primary = orchestra.player(first_id).instruments[0]
     if orchestra.player(second_id).instruments[0] != primary:
         raise ValueError(f"{first_id} and {second_id} do not have the same instrument")
-    atoms_one, cuts_one = _player_units(work, first_id)
-    atoms_two, cuts_two = _player_units(work, second_id)
+    atoms_one, cuts_one = player_atoms(work, first_id)
+    atoms_two, cuts_two = player_atoms(work, second_id)
     units: list[Unit] = []
     # For each unit: the music of a player on a different instrument.
     elsewhere: list[dict[tuple[str, str], list[music.Element]]] = []
@@ -509,13 +532,43 @@ def sounding(
             position = end
         elif isinstance(element, music.Rest):
             position += element.duration * scale
+        elif isinstance(element, music.Group) and element.kind == "parallel":
+            ends = [position]
+            for child in element.children:
+                found, end = sounding(child.children, position, scale)
+                notes.extend(found)
+                ends.append(end)
+            position = max(ends)
         elif isinstance(element, music.Group) and element.kind != "grace":
-            if element.kind == "parallel":
-                raise ValueError("a wind player cannot have two voices")
             for _ in range(element.count):
                 found, position = sounding(element.children, position, scale * element.ratio)
                 notes.extend(found)
     return notes, position
+
+
+def tie_points(
+    elements: list[music.Element], start: Fraction, scale: Fraction = Fraction(1)
+) -> tuple[list[Fraction], Fraction]:
+    """Return the positions at which a note ends that has a tie to the subsequent note."""
+    points: list[Fraction] = []
+    position = start
+    for element in elements:
+        if isinstance(element, music.Note | music.Rest):
+            position += element.duration * scale
+            if isinstance(element, music.Note) and any(p.kind == "tie" for p in element.posts):
+                points.append(position)
+        elif isinstance(element, music.Group) and element.kind == "parallel":
+            ends = [position]
+            for child in element.children:
+                found, end = tie_points(child.children, position, scale)
+                points.extend(found)
+                ends.append(end)
+            position = max(ends)
+        elif isinstance(element, music.Group) and element.kind != "grace":
+            for _ in range(element.count):
+                found, position = tie_points(element.children, position, scale * element.ratio)
+                points.extend(found)
+    return points, position
 
 
 def second_is_above(
@@ -569,7 +622,7 @@ def _timeline(
             found.append((position, element))
             position += element.duration * scale
         elif isinstance(element, music.Group) and element.kind == "grace":
-            found.extend((position, item) for item in _timed(element.children))
+            found.extend((position, item) for item in timed(element.children))
         elif isinstance(element, music.Group):
             for _ in range(element.count):
                 inner, position = _timeline(element.children, position, scale * element.ratio)
@@ -591,7 +644,7 @@ def _events(elements: list[music.Element], start: Fraction) -> list[tuple[Fracti
 
 def _hairpin_after(elements: list[music.Element], is_open: bool) -> bool:
     """Return true if a hairpin is open after the elements."""
-    for item in _timed(elements):
+    for item in timed(elements):
         for post in item.posts:
             if post.kind == "hairpin":
                 is_open = post.value != "!"
@@ -601,7 +654,7 @@ def _hairpin_after(elements: list[music.Element], is_open: bool) -> bool:
 
 
 def _first_note(elements: list[music.Element]) -> music.Note | None:
-    return next((item for item in _timed(elements) if isinstance(item, music.Note)), None)
+    return next((item for item in timed(elements) if isinstance(item, music.Note)), None)
 
 
 def _silence(length: Fraction, kind: str, stop: bool) -> music.Rest:
@@ -657,6 +710,10 @@ class _Writer:
     ) -> None:
         if bar in self.system_bars:
             self.label = ""
+        # The dynamic levels after this unit: from the music before a mark is removed.
+        after = (copy.copy(self.levels[0]), copy.copy(self.levels[1]))
+        _read_levels(unit.first, after[0])
+        _read_levels(unit.second, after[1])
         first, second = self._lines(unit)
         up = unit.mode == "voices" and self._split(unit, first, second)
         if up != self.dynamics_up:
@@ -680,8 +737,7 @@ class _Writer:
             self.silence += unit.length
             if self.silence >= LABEL_AFTER_SILENCE:
                 self.label = ""
-        _read_levels(unit.first, self.levels[0])
-        _read_levels(unit.second, self.levels[1])
+        self.levels = after
 
     def _lines(self, unit: Unit) -> tuple[list[music.Element] | None, list[music.Element] | None]:
         """Return the music of voice one and of voice two for a unit."""
@@ -751,7 +807,7 @@ class _Writer:
         """Remove marks from a voice. A hairpin of the voice that is open stops at such a mark."""
         is_open = self.open[voice]
         seen: set[int] = set()
-        for item in _timed(line):
+        for item in timed(line):
             if id(item) in seen:
                 continue
             seen.add(id(item))
@@ -793,7 +849,7 @@ class _Writer:
     def _sides(first: list[music.Element], second: list[music.Element]) -> None:
         """Put each text mark on the side of its voice."""
         for voice, line in ((1, first), (2, second)):
-            for item in _timed(line):
+            for item in timed(line):
                 item.posts = [_flip(post, voice) if _is_text(post) else post for post in item.posts]
 
 

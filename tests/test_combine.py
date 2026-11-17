@@ -156,3 +156,13 @@ def test_the_work_has_player_one_on_top_in_each_pair():
     work = build()
     for first, second in combine.PAIRS:
         assert combine.exchanged_units(work, first, second) == [], (first, second)
+
+
+def test_a_mark_of_two_voices_shows_where_it_is_first():
+    # Player 2 starts first, with the same marks as player 1: voice two shows them.
+    work = _work(r"r2 e''2\p\< | g''1\f |", r"c''1\p\< | d''2\f e''2 |")
+    staff = combine.shared_staff(work, "fl1", "fl2")
+    one, two = (_text(voice) for voice in staff.chunks[0])
+    assert one == r"\voiceOne r2 e''2 | g''1\f |"
+    # The hairpin of voice two stops at the mark that voice one shows.
+    assert two == r"\voiceTwo c''1\p\< | d''2\! e''2 |"

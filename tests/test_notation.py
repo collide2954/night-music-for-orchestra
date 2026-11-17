@@ -137,7 +137,7 @@ def test_score_and_part_text():
 def test_lilypond_compiles_the_files(tmp_path):
     work = _small_work()
     paths = lilypond.write_all(work, tmp_path)
-    for name in ["score.ly", "part-cl1.ly", "part-harp.ly"]:
+    for name in ["score.ly", "score-transposed.ly", "part-cl1.ly", "part-harp.ly"]:
         result = subprocess.run(
             ["lilypond", "-dno-point-and-click", "--loglevel=ERROR", name],
             cwd=tmp_path,
@@ -146,7 +146,7 @@ def test_lilypond_compiles_the_files(tmp_path):
             check=False,
         )
         assert result.returncode == 0, result.stderr
-    assert len(paths) == 45
+    assert len(paths) == 46  # the score in C, the transposed score, and 44 parts
     assert (tmp_path / "score.pdf").exists()
 
 

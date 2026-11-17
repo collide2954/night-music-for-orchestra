@@ -8,7 +8,7 @@ from fractions import Fraction
 from itertools import accumulate
 from pathlib import Path
 
-from . import combine, frontmatter, music, techniques
+from . import combine, cues, frontmatter, music, techniques, turns
 from .pitch import Interval
 from .structure import Bar, global_to_lilypond
 from .work import Instrument, Player, Work
@@ -34,6 +34,16 @@ STYLE = r"""
    "A change of instrument for one player."
    (interpret-markup layout props
      (markup #:box #:pad-markup 0.3 #:fontsize -1 text)))
+
+#(define-markup-command (tochange layout props text) (markup?)
+   "The notice after the last note on an instrument: take a different instrument."
+   (interpret-markup layout props
+     (markup #:normal-text #:italic text)))
+
+#(define-markup-command (cue layout props text) (markup?)
+   "The name of the instrument of a cue in a part."
+   (interpret-markup layout props
+     (markup #:normal-text #:fontsize 2 text)))
 
 #(define-markup-command (players layout props text) (markup?)
    "The players of a staff for two players: 1., 2., or a 2."
@@ -143,10 +153,6 @@ PART_LAYOUT = r"""
     \Staff
     \override TextScript.font-size = #-0.5
     \override DynamicTextSpanner.style = #'none
-    % A page turn is permitted where the player has a rest of three whole notes or
-    % more: the player needs the time to turn the page.
-    \consists Page_turn_engraver
-    pageTurnMinimumRestLength = #3
   }
 }
 """
@@ -206,6 +212,8 @@ PART_PAPER = r"""
   indent = 12\mm
   ragged-last-bottom = ##t
   print-page-number = ##t
+  % A page turn is only at a bar line that the code permits: the player has a rest
+  % there, and the rest gives the time to turn the page (see `turns.py`).
   page-breaking = #ly:page-turn-breaking
   % The first page: the instrument on the left, the title in the middle, the composer
   % on the right. The sizes are in points.
@@ -282,9 +290,17 @@ class _Emitter:
                     continue  # the player has this instrument: no mark
                 instrument = self.work.orchestra.instruments.get(name)
                 self.set_instrument(instrument)
-                label = name[0].upper() + name[1:]
+                label = _change_label(name)
                 parts.append(
                     f'\\clef {self.clef_of(instrument)} <>^\\markup \\instrumentchange "{label}"'
+                )
+            elif isinstance(element, music.Group) and element.kind == "cue":
+                # The rests of the player are low, and the small notes of the cue have
+                # stems up.
+                rests, notes = (self.emit(child.children, top=False) for child in element.children)
+                parts.append(
+                    f"<< {{ \\voiceTwo {rests} \\oneVoice }} "
+                    f"\\new CueVoice {{ \\voiceOne {notes} }} >>"
                 )
             elif isinstance(element, music.Group) and element.kind == "parallel":
                 voices = [
@@ -373,7 +389,12 @@ def _merge_full_bar_rests(
         full_bar = isinstance(element, music.Rest) and element.kind == "R"
         plain_rest = full_bar and not element.posts
         # A full-bar rest at which a hairpin stops can be the first rest of a long rest.
-        stop_only = full_bar and [(p.kind, p.value) for p in element.posts] == [("hairpin", "!")]
+        # A rest with the notice of a change of instrument also.
+        stop_only = (
+            full_bar
+            and bool(element.posts)
+            and all((p.kind, p.value) in (("hairpin", "!"), ("text", "to")) for p in element.posts)
+        )
         if run is not None and full_bar and start in splits:
             merged.append(music.BarCheck())
             run = None
@@ -478,8 +499,9 @@ def _with_clefs(
     """Return the music of the chunks with a clef command where the best clef changes."""
     elements: list[music.Element] = []
     first_instrument = instrument
-    # A staff starts with its usual clef, also if the player starts with rests.
-    current = emitter.clef_of(instrument)
+    # A staff starts with the usual clef of the instrument that plays first, also if
+    # the player starts with rests.
+    current = emitter.clef_of(_first_played(work, chunks, instrument))
     elements.append(music.Command("clef", [current]))
     ottava = 0
     position = Fraction(0)  # the start of the unit in the work, in quarter notes
@@ -487,8 +509,15 @@ def _with_clefs(
         # A hand of a keyboard instrument can change its clef in each bar: its music
         # moves through the full keyboard. Other instruments have one clef for a section.
         grand = instrument is not None and instrument.clef == "grand"
-        units = _bars_of(chunk.children) if grand else [chunk.children]
+        units = _bars_of(chunk.children) if grand else _instrument_units(chunk.children)
         for unit in units:
+            if len(unit) == 1 and _is_switch(unit[0]):
+                # A change of instrument changes the usual clef.
+                instrument = work.orchestra.instruments.get(unit[0].arguments[0].strip('"'))
+                emitter.set_instrument(instrument)
+                current = emitter.clef_of(instrument)
+                elements.extend(unit)
+                continue
             start = position
             position += sum((music.length(element) for element in unit), Fraction(0))
             shift = emitter.interval.semitones if emitter.interval else 0
@@ -515,14 +544,131 @@ def _with_clefs(
                     elements.append(music.Command("ottava", [f"#{octave}"]))
                     ottava = octave
                 elements.extend(piece)
-        # A change of instrument in the chunk changes the usual clef.
-        for command in _walk_commands(chunk.children):
-            if command.name == "switch":
-                instrument = work.orchestra.instruments.get(command.arguments[0].strip('"'))
-                emitter.set_instrument(instrument)
-                current = emitter.clef_of(instrument)
     emitter.set_instrument(first_instrument)
-    return elements
+    return _ottava_at_notes(elements)
+
+
+def _is_switch(element: music.Element) -> bool:
+    return isinstance(element, music.Command) and element.name == "switch"
+
+
+def _instrument_units(elements: list[music.Element]) -> list[list[music.Element]]:
+    """Divide the music of a section at each change of instrument.
+
+    A change of instrument is a unit of its own. The music between two
+    changes is one unit: it gets one clef.
+    """
+    units: list[list[music.Element]] = [[]]
+    for element in elements:
+        if _is_switch(element):
+            units.extend([[element], []])
+        else:
+            units[-1].append(element)
+    return [unit for unit in units if unit]
+
+
+def placed_switches(work: Work, player: Player, chunks: list[music.Group]) -> list[music.Group]:
+    """Put each change of instrument at the first note on the new instrument.
+
+    The composer writes a change of instrument at some point of a rest. The
+    player must know two things. After the last note on the old instrument,
+    the words "to ..." tell the player to take the new instrument. At the
+    first note on the new instrument, a box has its name.
+
+    A percussion player has many instruments: the first note also gets the
+    name of its instrument.
+    """
+    flat = [(index, element) for index, chunk in enumerate(chunks) for element in chunk.children]
+    result: list[tuple[int, music.Element]] = []
+    many = player.family == "percussion" and len(player.instruments) > 1
+    current = "" if many else player.instruments[0]
+    pending: music.Command | None = None
+    last_note: int | None = None
+    for index, element in flat:
+        if _is_switch(element):
+            pending = element
+            continue
+        if _pitches([element]):
+            if pending is None and not current:
+                pending = music.Command("switch", [f'"{player.instruments[0]}"'])
+            if pending is not None:
+                name = pending.arguments[0].strip('"')
+                if name != current:
+                    if current and last_note is not None:
+                        _add_notice(result, last_note, name)
+                    result.append((index, pending))
+                    current = name
+                pending = None
+            last_note = len(result)
+        result.append((index, element))
+    return [
+        music.Group("sequence", [element for number, element in result if number == index])
+        for index in range(len(chunks))
+    ]
+
+
+def _change_label(name: str) -> str:
+    return name[0].upper() + name[1:]
+
+
+def _add_notice(result: list[tuple[int, music.Element]], last_note: int, name: str) -> None:
+    """Give the words "to ..." to the first rest after the last note on the old instrument."""
+    for number in range(last_note + 1, len(result)):
+        index, element = result[number]
+        if isinstance(element, music.Rest):
+            notice = music.Post("text", f'^\\markup \\tochange "to {_change_label(name)}"', "to")
+            posts = [*element.posts, notice]
+            copy = music.Rest(element.kind, element.duration, element.duration_text, posts)
+            result[number] = (index, copy)
+            return
+
+
+def _first_played(work: Work, chunks: list[music.Group], instrument: Instrument | None):
+    """Return the instrument of the first note of a player (None: it has no pitch)."""
+    for chunk in chunks:
+        for element in chunk.children:
+            if isinstance(element, music.Command) and element.name == "switch":
+                return work.orchestra.instruments.get(element.arguments[0].strip('"'))
+            if _pitches([element]):
+                return instrument
+    return instrument
+
+
+# An octave sign stops at a silence of this length (in quarter notes) or more.
+OTTAVA_REST = Fraction(4)
+
+
+def _ottava_at_notes(elements: list[music.Element]) -> list[music.Element]:
+    """Stop each octave sign at a long silence, and start it again at the subsequent note.
+
+    LilyPond continues an octave sign until a command stops it. A sign that
+    goes through the bars of a long rest is wrong.
+    """
+    # The length of the silence that starts at each element with no notes.
+    silence: dict[int, Fraction] = {}
+    index = 0
+    while index < len(elements):
+        scan, length = index, Fraction(0)
+        while scan < len(elements) and not _pitches([elements[scan]]):
+            length += music.length(elements[scan])
+            scan += 1
+        if scan > index:
+            silence[index] = length
+        index = max(scan, index + 1)
+    result: list[music.Element] = []
+    wanted = shown = 0
+    for index, element in enumerate(elements):
+        if isinstance(element, music.Command) and element.name == "ottava":
+            wanted = int(element.arguments[0].lstrip("#"))
+            continue  # the subsequent note gets the sign
+        if silence.get(index, Fraction(0)) >= OTTAVA_REST and shown:
+            result.append(music.Command("ottava", ["#0"]))
+            shown = 0
+        if wanted != shown and _pitches([element]):
+            result.append(music.Command("ottava", [f"#{wanted}"]))
+            shown = wanted
+        result.append(element)
+    return result
 
 
 # A bar of one hand of a keyboard instrument that is wider than this (in semitones)
@@ -581,12 +727,90 @@ def _bars_of(elements: list[music.Element]) -> list[list[music.Element]]:
     return bars
 
 
-def _player_music(work: Work, player: Player, *, for_part: bool) -> str:
+def _with_cues(
+    work: Work, player: Player, elements: list[music.Element], part_cues: list[cues.Cue]
+) -> list[music.Element]:
+    """Put the cues of a part into the music of a staff of the part.
+
+    A cue replaces the full-bar rests before an entry. The notes of the cue
+    are in the octave that is best for the clef of the staff at that point.
+    """
+    if not part_cues:
+        return elements
+    structure = work.structure
+    edges = {
+        bar.start
+        for cue in part_cues
+        for bar in structure.bars
+        if cue.start <= bar.start <= cue.end
+    }
+    by_start = {cue.start: cue for cue in part_cues}
+    tracker = _Emitter(work, True, left_hand=player.id.endswith(".lh"))
+    instrument = work.orchestra.first_instrument(player.id)
+    tracker.set_instrument(instrument)
+    clef = tracker.clef_of(instrument)
+    cut = _cut_long_rests(elements, frozenset(edges))
+    result: list[music.Element] = []
+    position = Fraction(0)
+    index = 0
+    while index < len(cut):
+        element = cut[index]
+        if isinstance(element, music.Command) and element.name == "clef":
+            clef = element.arguments[0]
+        elif isinstance(element, music.Command) and element.name == "switch":
+            instrument = work.orchestra.instruments.get(element.arguments[0].strip('"'))
+            tracker.set_instrument(instrument)
+            clef = tracker.clef_of(instrument)
+        cue = by_start.get(position)
+        if cue is not None and isinstance(element, music.Rest) and element.kind == "R":
+            rests: list[music.Element] = []
+            scan, end = index, position
+            while scan < len(cut) and end < cue.end:
+                item = cut[scan]
+                if isinstance(item, music.Rest) and item.kind == "R":
+                    end += item.duration
+                elif not isinstance(item, music.BarCheck):
+                    break
+                rests.append(item)
+                scan += 1
+            if end == cue.end:
+                shift = tracker.interval.semitones if tracker.interval else 0
+                unpitched = clef not in cues.CLEF_CENTRE
+                notes = cues.fitted(
+                    combine.copied(cue.elements), "treble" if unpitched else clef, shift
+                )
+                first = next(iter(combine.timed(notes)), None)
+                if first is not None:
+                    first.posts.insert(0, music.Post("text", f'^\\markup \\cue "{cue.label}"'))
+                if unpitched:
+                    # A staff for instruments with no pitch: the cue has its own clef.
+                    notes.insert(0, music.Command("cueClef", ['"treble"']))
+                    notes.append(music.Command("cueClefUnset"))
+                groups = [music.Group("sequence", rests), music.Group("sequence", notes)]
+                result.append(music.Group("cue", groups, cue.label))
+                del by_start[position]
+                position, index = end, scan
+                continue
+        result.append(element)
+        position += music.length(element)
+        index += 1
+    return result
+
+
+def _player_music(
+    work: Work, player: Player, *, for_part: bool, part_cues: list[cues.Cue] | None = None
+) -> str:
     emitter = _Emitter(work, for_part, left_hand=player.id.endswith(".lh"))
     instrument = work.orchestra.first_instrument(player.id)
     emitter.set_instrument(instrument)
     chunks = [chunk for _first_bar, chunk in work.chunks.get(player.id, [])]
-    return emitter.emit(_with_clefs(work, player, chunks, emitter, instrument))
+    chunks = placed_switches(work, player, chunks)
+    elements = _with_clefs(work, player, chunks, emitter, instrument)
+    if part_cues:
+        elements = _with_cues(work, player, elements, part_cues)
+    if player.family == "percussion" and len(player.instruments) > 1:
+        emitter.instrument_name = ""  # the first note gets the name of its instrument
+    return emitter.emit(elements)
 
 
 def _header(work: Work, instrument_line: str = "", document: str = "") -> str:
@@ -677,6 +901,8 @@ def _definitions(
     for_part: bool,
     breaks: set[int] | None = None,
     shared: dict[str, combine.SharedStaff] | None = None,
+    part_cues: list[cues.Cue] | None = None,
+    page_turns: frozenset[int] = frozenset(),
 ) -> str:
     structure = work.structure if breaks is None else replace(work.structure, breaks=breaks)
     score = breaks is not None
@@ -685,7 +911,11 @@ def _definitions(
     blocks = [
         "global = {\n\\accidentalStyle Score.modern\n\\numericTimeSignature\n"
         + global_to_lilypond(
-            structure, change_context=None if score else "Score.", marks="none" if score else "all"
+            structure,
+            change_context=None if score else "Score.",
+            # A part: a rehearsal mark and a tempo mark at one bar line are side by side.
+            marks="none" if score else "line",
+            turns=page_turns,
         )
         + "\n}"
     ]
@@ -707,7 +937,9 @@ def _definitions(
                 text = _extra_music(work, extra, for_part=for_part)
                 blocks.append(f"{_extra_identifier(extra)} = {{\n{text}\n}}")
             continue
-        text = _player_music(work, player, for_part=for_part)
+        # The cues of a part are in its first staff.
+        mine = part_cues if player is players[0] else None
+        text = _player_music(work, player, for_part=for_part, part_cues=mine)
         blocks.append(f"{identifier(player.id)} = {{\n{text}\n}}")
     return "\n\n".join(blocks)
 
@@ -807,11 +1039,11 @@ def _score_staves(work: Work, shared: dict[str, combine.SharedStaff] | None = No
     return "\n".join(blocks)
 
 
-def score_notes(work: Work) -> list[str]:
+def score_notes(work: Work, *, transposed: bool = False) -> list[str]:
     """Return the notes for the performance on the first page of the score.
 
     The bar numbers come from the music. Thus they stay correct when the
-    music changes.
+    music changes. `transposed` is true for the transposed score.
     """
     from ..perform.events import perform  # at call time: that module imports this package
 
@@ -835,8 +1067,14 @@ def score_notes(work: Work) -> list[str]:
         first, last = min(numbers), max(numbers)
         return f"bar {first}" if first == last else f"bars {first} to {last}"
 
+    pitch = "The score is in C. The parts are transposed."
+    if transposed:
+        pitch = (
+            "This score is transposed: each staff has the notes of the part of its player. "
+            "The list of the instruments gives the key of each transposing instrument."
+        )
     notes = [
-        "The score is in C. The parts are transposed.",
+        pitch,
         "Piccolo, celesta, and glockenspiel sound higher than written, by one or two octaves. "
         "Contrabassoon, contrabass clarinet, and double basses sound one octave lower than "
         "written.",
@@ -950,9 +1188,11 @@ def style(rehearsal_points: float) -> str:
     return STYLE.replace("@REHEARSAL@", f"{rehearsal_points:g}").strip()
 
 
-def front_part(work: Work, page: frontmatter.Page, edition: str) -> str:
+def front_part(
+    work: Work, page: frontmatter.Page, edition: str, *, transposed: bool = False
+) -> str:
     """Return the pages before the music as one part of the book, with no page numbers."""
-    pages = frontmatter.pages(work, page, edition, score_notes(work))
+    pages = frontmatter.pages(work, page, edition, score_notes(work, transposed=transposed))
     body = "\n\n\\pageBreak\n\n".join(pages)
     return (
         "\\bookpart {\n"
@@ -1002,7 +1242,7 @@ def score_file(work: Work, *, transposed: bool = False) -> str:
                 _definitions(
                     work, work.orchestra.players, for_part=transposed, breaks=breaks, shared=shared
                 ),
-                front_part(work, SCORE_PAGE, edition),
+                front_part(work, SCORE_PAGE, edition, transposed=transposed),
                 music_part,
             ]
         )
@@ -1024,15 +1264,29 @@ def part_players(work: Work) -> dict[str, list[Player]]:
 # acceptable. Two string players read one part: they get the larger staff.
 PART_STAFF_POINTS = 20.0  # 7.1 mm
 STRING_PART_STAFF_POINTS = 21.0  # 7.4 mm
+PART_PAGE = frontmatter.Page(228.6, 304.8, PART_STAFF_POINTS, margin_mm=18.0)  # 9 x 12 inches
 
 
 def part_staff_size(family: str) -> float:
     return STRING_PART_STAFF_POINTS if family == "strings" else PART_STAFF_POINTS
 
 
-def part_file(work: Work, part_id: str) -> str:
-    """Return the LilyPond text of one part."""
+def part_file(work: Work, part_id: str, found: dict[str, list[cues.Cue]] | None = None) -> str:
+    """Return the LilyPond text of one part.
+
+    `found` has the cues of all parts (see `cues.find_cues`). If it is not
+    given, the function finds the cues.
+    """
+    if found is None:
+        found = cues.find_cues(work)
+    part_cues = found.get(part_id, [])
+    cue_starts = frozenset(cue.start for cue in part_cues)
     players = part_players(work)[part_id]
+    key = ""
+    if players[0].family == "percussion" and len(players[0].instruments) > 1:
+        # A percussion player has many instruments: the part starts with a list of them.
+        sentences = frontmatter.percussion_key(work, players[0].id)
+        key = frontmatter.key_markup(PART_PAGE, sentences) if sentences else ""
     first = players[0]
     name = first.name
     instrument = work.orchestra.first_instrument(first.id)
@@ -1053,7 +1307,14 @@ def part_file(work: Work, part_id: str) -> str:
                 f"#(set-global-staff-size {part_staff_size(first.family):g})",
                 PART_PAPER.strip(),
                 _header(work, line),
-                _definitions(work, players, for_part=True),
+                *([key] if key else []),
+                _definitions(
+                    work,
+                    players,
+                    for_part=True,
+                    part_cues=part_cues,
+                    page_turns=frozenset(turns.turn_bars(work, part_id, cue_starts)),
+                ),
                 "\\score {\n" + staves + "\n" + PART_LAYOUT.strip() + "\n}",
             ]
         )
@@ -1278,13 +1539,32 @@ def video_file(work: Work, index: int, staff_size: float, *, mobile: bool = Fals
     )
 
 
+def set_names(work: Work) -> dict[str, str]:
+    """Return the file name of each document of the performance set, with no extension.
+
+    The key is the name of the LilyPond file ("score", "part-fl1"). The names
+    are those that the orchestra librarians ask for: the composer, the title,
+    a number in the sequence of the score, and the instrument.
+    """
+    surname = work.composer.split()[-1].upper() if work.composer else "COMPOSER"
+    names = {
+        "score": f"{surname} {work.title} 00 - Score in C",
+        "score-transposed": f"{surname} {work.title} 00 - Transposed score",
+    }
+    for number, (part_id, players) in enumerate(part_players(work).items(), start=1):
+        names[f"part-{part_id}"] = f"{surname} {work.title} {number:02d} - {players[0].name}"
+    return names
+
+
 def write_all(work: Work, directory: Path) -> list[Path]:
-    """Write the score file and all part files. Return the paths."""
+    """Write the two score files and all part files. Return the paths."""
     directory.mkdir(parents=True, exist_ok=True)
-    paths = [directory / "score.ly"]
+    paths = [directory / "score.ly", directory / "score-transposed.ly"]
     paths[0].write_text(score_file(work), encoding="utf-8")
+    paths[1].write_text(score_file(work, transposed=True), encoding="utf-8")
+    found = cues.find_cues(work)
     for part_id in part_players(work):
         path = directory / f"part-{part_id}.ly"
-        path.write_text(part_file(work, part_id), encoding="utf-8")
+        path.write_text(part_file(work, part_id, found), encoding="utf-8")
         paths.append(path)
     return paths

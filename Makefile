@@ -34,7 +34,7 @@ format: ## Format the code
 score: ## Build the conductor score (build/score/score.pdf)
 	uv run nightmusic score
 
-parts: ## Build the conductor score and all parts (build/parts)
+parts: ## Build the two conductor scores and all parts (build/set)
 	uv run nightmusic parts
 
 audio: ## Render the audio master (build/audio)

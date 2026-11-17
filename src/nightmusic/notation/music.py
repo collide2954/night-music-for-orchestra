@@ -145,8 +145,10 @@ class BarCheck:
 class Group:
     """A group of elements.
 
-    kind: `sequence`, `tuplet`, `grace`, `unfold`, `tremolo`, or `parallel`.
+    kind: `sequence`, `tuplet`, `grace`, `unfold`, `tremolo`, `parallel`, or `cue`.
     A `parallel` group has one child group for each voice.
+    A `cue` group is in a part only: its first child has the rests of the
+    player, and its second child has the notes of a different instrument.
     """
 
     kind: str
@@ -486,6 +488,8 @@ def length(element: Element) -> Fraction:
     if isinstance(element, Group):
         if element.kind == "grace":
             return Fraction(0)
+        if element.kind == "cue":
+            return length(element.children[0])
         if element.kind == "parallel":
             lengths = {length(child) for child in element.children}
             if len(lengths) != 1:

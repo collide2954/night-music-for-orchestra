@@ -82,7 +82,8 @@ jobs:
         run: |
           mkdir -p build/release
           cp build/score/score.pdf build/release/night-music-score.pdf
-          (cd build/parts && zip -q -r ../release/night-music-parts.zip . -i "*.pdf")
+          cp build/score/score-transposed.pdf build/release/night-music-score-transposed.pdf
+          (cd build/set && zip -q -r ../release/night-music-parts.zip . -i "* - *.pdf" -x "* 00 - *")
           cp build/audio/night-music.flac build/audio/night-music.mp3 build/release/
           cp build/video/night-music.mp4 build/video/night-music-mobile.mp4 build/release/
 

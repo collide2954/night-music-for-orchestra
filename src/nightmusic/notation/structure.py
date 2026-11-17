@@ -277,7 +277,11 @@ CHANGE_WIDTH = "\\once \\override {context}MetronomeMark.extra-spacing-width = #
 
 
 def global_to_lilypond(
-    structure: Structure, *, change_context: str | None = None, marks: str = "all"
+    structure: Structure,
+    *,
+    change_context: str | None = None,
+    marks: str = "all",
+    turns: frozenset[int] = frozenset(),
 ) -> str:
     """Write the structure as a LilyPond voice of spacer rests with all marks.
 
@@ -295,6 +299,8 @@ def global_to_lilypond(
     - "line": a line of marks of a score. A rehearsal mark and a tempo mark at
       the same bar line are one mark: the letter in its box, then the tempo.
       Thus the two marks are side by side, and the line is not high.
+
+    `turns` are the bars before which a page turn is possible (a part).
     """
     events: dict[Fraction, list[str]] = {}
     with_tempo: dict[Fraction, str] = {}  # a rehearsal mark that goes into a tempo mark
@@ -313,6 +319,8 @@ def global_to_lilypond(
             add(bar.start, '\\bar "||"')
         if bar.number - 1 in structure.breaks:
             add(bar.start, "\\break")
+        if bar.number in turns:
+            add(bar.start, "\\allowPageTurn")
         changed = previous is None or (
             (bar.numerator, bar.denominator, bar.grouping)
             != (previous.numerator, previous.denominator, previous.grouping)

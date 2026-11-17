@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .pitch import from_midi
+from .pitch import Pitch, from_midi
 from .work import Work
 
 POINT_MM = 0.3528  # one point in millimetres
@@ -246,6 +246,86 @@ def note_name(midi: int) -> str:
     return f"{letter}{accidental}{midi // 12 - 1}"
 
 
+def _with_ranges(
+    player_id: str, instruments: list[str], ranges: dict[tuple[str, str], tuple[int, int]]
+) -> list[str]:
+    """Return the instruments of a percussion player, each tuned instrument with its range."""
+    items = []
+    for instrument in instruments:
+        low, high = ranges.get((player_id, instrument), (0, 0))
+        if high and low != high:
+            items.append(f"{instrument} ({note_name(low)} to {note_name(high)})")
+        elif high:
+            items.append(f"{instrument} ({note_name(low)})")
+        else:
+            items.append(instrument)
+    return items
+
+
+# The places on a staff with the percussion clef. The key is the number of steps
+# from the middle line.
+STAFF_PLACES = {
+    -4: "the first line",
+    -3: "the first space",
+    -2: "the second line",
+    -1: "the second space",
+    0: "the middle line",
+    1: "the third space",
+    2: "the fourth line",
+    3: "the fourth space",
+    4: "the fifth line",
+}
+
+
+def percussion_key(work: Work, player_id: str) -> list[str]:
+    """Return the sentences of the key at the start of the part of a percussion player.
+
+    The key lists the instruments of the player in the sequence of their use.
+    An instrument with no pitch that has more than one size gets the places of
+    its sizes on the staff.
+    """
+    from ..perform.events import perform  # at call time: that module imports this package
+
+    instruments = work.orchestra.instruments
+    used: list[str] = []
+    places: dict[str, set[int]] = {}
+    for note in perform(work, player_id):
+        if note.instrument not in used:
+            used.append(note.instrument)
+        if instruments.get(note.instrument) is None:
+            pitch = from_midi(note.midi)
+            places.setdefault(note.instrument, set()).add(pitch.step + 7 * pitch.octave)
+    if not used:
+        return []
+    middle = Pitch.parse("c'")
+    centre = middle.step + 7 * middle.octave
+    items = _with_ranges(player_id, used, _ranges(work))
+    sentences = ["Instruments, in the sequence of their use: " + ", ".join(items) + "."]
+    for instrument, steps in places.items():
+        if len(steps) > 1:
+            names = [STAFF_PLACES.get(step - centre, "") for step in sorted(steps)]
+            sentences.append(
+                f"{instrument[0].upper()}{instrument[1:]}: {len(steps)} sizes. "
+                f"From the largest to the smallest, their notes are on {', '.join(names)}."
+            )
+    sentences.append(
+        "A box gives the name of an instrument at its first note. "
+        'The words "to ..." after a note tell you to go to a different instrument.'
+    )
+    return sentences
+
+
+def key_markup(page: Page, sentences: list[str], size: float = 8.5) -> str:
+    """Return the key of a percussion part as a LilyPond markup below the title."""
+    skip = page.units(page.points(size) * POINT_MM * 1.55)
+    blocks = [block(page, sentence, size, page.text_width) for sentence in sentences]
+    return (
+        f"\\markup \\override #'(baseline-skip . {skip:.2f}) \\column {{\n  "
+        + "\n  ".join(blocks)
+        + "\n  \\vspace #0.3\n}"
+    )
+
+
 def instrument_lines(work: Work) -> dict[str, list[tuple[str, str]]]:
     """Return the list of the players in families: the name of each player, and a remark.
 
@@ -276,15 +356,7 @@ def instrument_lines(work: Work) -> dict[str, list[tuple[str, str]]]:
             lines["strings"].append((name, f"{player.count} players" if player.count > 1 else ""))
             continue
         if player.family == "percussion":
-            items = []
-            for instrument in used:
-                low, high = ranges.get((player.id, instrument), (0, 0))
-                if high and low != high:
-                    items.append(f"{instrument} ({note_name(low)} to {note_name(high)})")
-                elif high:
-                    items.append(f"{instrument} ({note_name(low)})")
-                else:
-                    items.append(instrument)
+            items = _with_ranges(player.id, used, ranges)
             if len(player.instruments) > 1:
                 lines["percussion"].append((player.name, ", ".join(items)))
             else:

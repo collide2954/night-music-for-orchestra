@@ -19,7 +19,8 @@ Each build of the repository publishes the results in the release
 | File | Contents |
 | --- | --- |
 | `night-music-score.pdf` | The conductor score, in C |
-| `night-music-parts.zip` | The parts of all players (PDF files) |
+| `night-music-score-transposed.pdf` | The conductor score with the notes of the parts (transposed) |
+| `night-music-parts.zip` | The 44 parts (PDF files). Each file name has the number of the part in the sequence of the score. |
 | `night-music.flac` | The audio master (24 bit, 48 kHz) |
 | `night-music.mp3` | The audio master (MP3) |
 | `night-music.mp4` | The score video: the score, a cursor, and a ribbon that shows which instruments play |
@@ -55,7 +56,7 @@ It also has four instruments that are not usual in an orchestra: cimbalom, accor
 | 1. Style study | Tables of measured and sourced style parameters | First edition complete |
 | 2. Design | Form, orchestra, and material of the work | Complete |
 | 3. Composition | The music, written as code | Second version complete (603 bars) |
-| 4. Engraving | Conductor score and parts | The rules of the orchestra librarians are in work. See [`docs/engraving.md`](docs/engraving.md) and "Limits". |
+| 4. Engraving | Two conductor scores and 44 parts | The documents follow the rules of the orchestra librarians: front pages, shared staves, cues, page turns at rests. See [`docs/engraving.md`](docs/engraving.md). |
 | 5. Audio | Audio from MuseScore Studio with Muse Sounds (free sample libraries) | Second version. See [`docs/audio.md`](docs/audio.md). |
 | 6. Video | Score video with part tracking | Complete |
 
@@ -121,7 +122,7 @@ The directory [`design`](design) contains the decisions and the plan of the work
    uv run nightmusic check
    ```
 
-3. Build the score and the parts:
+3. Build the two scores and the parts. The directory `build/set` gets the full set:
 
    ```bash
    uv run nightmusic parts
@@ -189,7 +190,6 @@ make study
   the accordion (chromatic harmonica), the cimbalom (Hungarian zither),
   the contrabass clarinet (contrabassoon), and the tuned gongs (tubular bells).
 - The audio does not play trills as trills.
-- The parts do not have cue notes.
 - No orchestra has played the work. A conductor and the players must examine the parts before a performance.
 
 ## Licence
